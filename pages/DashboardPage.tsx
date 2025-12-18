@@ -27,10 +27,13 @@ const DashboardPage: React.FC = () => {
           config: { imageConfig: { aspectRatio: "16:9" } }
         });
         
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData) {
-            setHeroImage(`data:image/png;base64,${part.inlineData.data}`);
-          }
+        // Correção: Verificação segura para evitar erro TS18048 (Objeto possivelmente undefined)
+        if (response.candidates && response.candidates.length > 0 && response.candidates[0].content?.parts) {
+            for (const part of response.candidates[0].content.parts) {
+              if (part.inlineData) {
+                setHeroImage(`data:image/png;base64,${part.inlineData.data}`);
+              }
+            }
         }
       } catch (e) {
         console.error("Erro artístico ou chave inválida:", e);
