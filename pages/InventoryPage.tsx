@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType } from '../types';
@@ -140,13 +139,25 @@ const InventoryPage: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade no Cofre</label>
-                                <input type="number" min="1" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
-                                    value={tempItemData.quantity} onChange={e => setTempItemData({...tempItemData, quantity: Number(e.target.value)})} />
+                                <input 
+                                  type="number" 
+                                  min="1" 
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                  value={tempItemData.quantity} 
+                                  onChange={e => setTempItemData({...tempItemData, quantity: Number(e.target.value)})}
+                                  onFocus={(e) => e.target.select()}
+                                />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Valor Unitário (T$)</label>
-                                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
-                                    value={tempItemData.value} onChange={e => setTempItemData({...tempItemData, value: Number(e.target.value)})} />
+                                <input 
+                                  type="number" 
+                                  min="0" 
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                  value={tempItemData.value} 
+                                  onChange={e => setTempItemData({...tempItemData, value: Number(e.target.value)})}
+                                  onFocus={(e) => e.target.select()}
+                                />
                             </div>
                             <div className="space-y-4 pt-8">
                                 <label className="flex items-center gap-4 cursor-pointer group">
@@ -186,7 +197,16 @@ const InventoryPage: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
-                                <input type="number" min="1" max={activeItem.quantity} className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" required value={opQty} onChange={e => setOpQty(Number(e.target.value))} />
+                                <input 
+                                  type="number" 
+                                  min="1" 
+                                  max={activeItem.quantity} 
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" 
+                                  required 
+                                  value={opQty} 
+                                  onChange={e => setOpQty(Number(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                />
                             </div>
                          </div>
                          <div className="space-y-3">
@@ -224,7 +244,16 @@ const InventoryPage: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
-                                <input type="number" min="1" max={activeItem.quantity} className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" required value={opQty} onChange={e => setOpQty(Number(e.target.value))} />
+                                <input 
+                                  type="number" 
+                                  min="1" 
+                                  max={activeItem.quantity} 
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" 
+                                  required 
+                                  value={opQty} 
+                                  onChange={e => setOpQty(Number(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                />
                             </div>
                          </div>
                          <div className="space-y-3">
@@ -249,7 +278,15 @@ const InventoryPage: React.FC = () => {
                     
                     <div className="space-y-3 max-w-xs mx-auto">
                         <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest">Quantidade a Remover</label>
-                        <input type="number" min="1" max={activeItem.quantity} className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-3xl text-center" value={opQty} onChange={e => setOpQty(Number(e.target.value))} />
+                        <input 
+                          type="number" 
+                          min="1" 
+                          max={activeItem.quantity} 
+                          className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-3xl text-center" 
+                          value={opQty} 
+                          onChange={e => setOpQty(Number(e.target.value))}
+                          onFocus={(e) => e.target.select()}
+                        />
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-6">

@@ -1,63 +1,21 @@
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useGuild } from '../context/GuildContext';
 import { RATES } from '../constants';
-import { TrendingUp, Shield, Coins, Castle, Users, Scroll, LandPlot, Sword, Sparkles, BarChart3, Map as MapIcon } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, BarChart3, Map as MapIcon } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
-  const { wallet, domains, guildName, npcs, members } = useGuild();
-  const [heroImage, setHeroImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const generateHero = async () => {
-      // Verificação de segurança: Se não houver API KEY, não tenta chamar o Google, evitando crash.
-      if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
-          console.warn("API Key não configurada. Usando fallback visual.");
-          return; 
-      }
-
-      try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image',
-          contents: {
-            parts: [{ text: `A majestic fantasy library filled with golden treasures and magical grimoires, high fantasy style, cinematic lighting, Arton RPG vibes.` }]
-          },
-          config: { imageConfig: { aspectRatio: "16:9" } }
-        });
-        
-        // Correção: Verificação segura para evitar erro TS18048 (Objeto possivelmente undefined)
-        if (response.candidates && response.candidates.length > 0 && response.candidates[0].content?.parts) {
-            for (const part of response.candidates[0].content.parts) {
-              if (part.inlineData) {
-                setHeroImage(`data:image/png;base64,${part.inlineData.data}`);
-              }
-            }
-        }
-      } catch (e) {
-        console.error("Erro artístico ou chave inválida:", e);
-        // Falha silenciosa para não quebrar a UI
-      }
-    };
-    generateHero();
-  }, [guildName]);
-
+  const { wallet, domains, guildName, npcs } = useGuild();
+  
   const totalTS = (wallet.TC * RATES.TC) + (wallet.TS * RATES.TS) + (wallet.TO * RATES.TO) + (wallet.LO * RATES.LO);
   const totalNPCCost = npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
 
   return (
     <div className="space-y-12 pb-20 font-serif">
       <div className="relative h-[250px] md:h-[400px] w-full rounded-[40px] md:rounded-[60px] overflow-hidden border-8 border-[#3d2b1f] shadow-2xl group">
-        {heroImage ? (
-          <img src={heroImage} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[2000ms]" alt="Estandarte" />
-        ) : (
-          <div className="w-full h-full bg-slate-900 animate-pulse flex items-center justify-center overflow-hidden relative">
+          <div className="w-full h-full bg-slate-900 flex items-center justify-center overflow-hidden relative">
              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
              <Sparkles className="text-fantasy-gold animate-spin-slow" size={64}/>
-             <span className="absolute bottom-4 right-8 text-[10px] text-white/20 uppercase tracking-widest font-black">AI Art Offline</span>
           </div>
-        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
         <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12">
           <div className="flex items-center gap-4 mb-4">
@@ -91,7 +49,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="parchment-card p-8 md:p-12 rounded-[60px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
            <h3 className="font-medieval text-2xl md:text-4xl text-fantasy-wood dark:text-fantasy-parchment mb-8 md:mb-12 border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6 md:pb-8 flex items-center gap-6">
-             <Scroll size={32} className="text-fantasy-gold"/> Livro de Contas de Arton
+             <Scroll size={32} className="text-fantasy-gold"/> Livro de Contas
            </h3>
            <div className="space-y-8 md:space-y-10">
               {[
