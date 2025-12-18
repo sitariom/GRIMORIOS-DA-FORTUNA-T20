@@ -332,7 +332,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (d.treasury < cost) return notify("Tesouro Real (LO) insuficiente para expansão.", "error");
     updateActiveGuild({
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, level: x.level + 1, treasury: x.treasury - cost } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Crescimento Territorial em ${d.name} (Nível ${d.level + 1})`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Crescimento Territorial em ${d.name} (Nível ${d.level + 1})`, -cost * RATES.LO, 'SYSTEM')
     });
     notify("Fronteiras expandidas!");
   };
@@ -342,7 +342,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     updateActiveGuild({
       wallet: { ...activeGuild.wallet, LO: activeGuild.wallet.LO - amt },
       domains: activeGuild.domains.map(d => d.id === id ? { ...d, treasury: d.treasury + amt } : d),
-      logs: internalAddLog(activeGuild, 'Dominio', `Investimento no Tesouro Real: ${amt} LO em ${activeGuild.domains.find(x => x.id === id)?.name}`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Investimento no Tesouro Real: ${amt} LO em ${activeGuild.domains.find(x => x.id === id)?.name}`, -amt * RATES.LO, 'SYSTEM')
     });
     notify("Transferência para o Tesouro Real concluída.");
   };
@@ -353,7 +353,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     updateActiveGuild({
       wallet: { ...activeGuild.wallet, LO: activeGuild.wallet.LO + amt },
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: x.treasury - amt } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Resgate do Tesouro Real: ${amt} LO de ${d.name}`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Resgate do Tesouro Real: ${amt} LO de ${d.name}`, amt * RATES.LO, 'SYSTEM')
     });
     notify("Riquezas transferidas ao cofre central.");
   };
@@ -363,7 +363,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'Expense' && (!d || d.treasury < amt)) return notify("Tesouro insuficiente para o ajuste.", "error");
     updateActiveGuild({
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: type === 'Income' ? x.treasury + amt : x.treasury - amt } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Ajuste de Tesouro (${reason}): ${type === 'Income' ? '+' : '-'}${amt} LO`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Ajuste de Tesouro (${reason}): ${type === 'Income' ? '+' : '-'}${amt} LO`, (type === 'Income' ? amt : -amt) * RATES.LO, 'SYSTEM')
     });
   };
 
@@ -403,7 +403,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         treasury: Math.max(0, x.treasury + net), 
         popularity: POPULARITY_LEVELS[newPopIndex]
       } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Governança em ${d.name}: ${succ ? 'Sucesso' : 'Falha'} (Resultado: ${net > 0 ? '+' : ''}${net} LO)`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Governança em ${d.name}: ${succ ? 'Sucesso' : 'Falha'} (Resultado: ${net > 0 ? '+' : ''}${net} LO)`, net * RATES.LO, 'SYSTEM')
     });
 
     notify(succ ? "Regência próspera." : "Gestão conturbada.", succ ? 'success' : 'error');
@@ -418,7 +418,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     updateActiveGuild({
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: paid ? x.treasury - b.costLO : x.treasury, buildings: [...x.buildings, { ...b, id: crypto.randomUUID() }] } : x),
-      logs: internalAddLog(activeGuild, 'Investimento', `Obra Realizada em ${d.name}: ${b.name}`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Investimento', `Obra Realizada em ${d.name}: ${b.name}`, paid ? -b.costLO * RATES.LO : 0, 'SYSTEM')
     });
     notify("Obra finalizada no domínio.");
   };
@@ -433,7 +433,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (paid && (!d || d.treasury < u.costLO)) return notify("Tesouro Real insuficiente para recrutamento.", "error");
     updateActiveGuild({
       domains: activeGuild.domains.map(x => x.id === dId ? { ...x, treasury: paid ? x.treasury - u.costLO : x.treasury, units: [...x.units, { ...u, id: crypto.randomUUID() }] } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Recrutamento de Legião (${u.name}) em ${d?.name}`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Recrutamento de Legião (${u.name}) em ${d?.name}`, paid ? -u.costLO * RATES.LO : 0, 'SYSTEM')
     });
     notify("Legião alistada.");
   };
