@@ -6,7 +6,7 @@ import { NPCLocationType } from '../types';
 import { NPC_ROLES } from '../constants';
 
 const NPCsPage: React.FC = () => {
-  const { bases, domains, npcs, addNPC, removeNPC, payAllNPCs } = useGuild();
+  const { bases, domains, npcs, addNPC, removeNPC, payAllNPCs, notify } = useGuild();
   const [showAdd, setShowAdd] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -18,6 +18,13 @@ const NPCsPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validação de segurança para garantir integridade dos dados
+    if (locationType !== 'Grupo' && !targetId) {
+        notify("Selecione uma Base ou Domínio específico para alocar o funcionário.", "error");
+        return;
+    }
+
     let locationName = 'Em Comitiva';
     
     if (locationType === 'Base') {
@@ -26,10 +33,6 @@ const NPCsPage: React.FC = () => {
     } else if (locationType === 'Dominio') {
         const d = domains.find(d => d.id === targetId);
         locationName = d ? `Domínio: ${d.name}` : 'Domínio Desconhecido';
-    } else if (locationType === 'Construcao') {
-        // Lógica simplificada: listar construções de todos os domínios seria complexo na UI, 
-        // então vamos focar em Base/Domínio/Grupo por enquanto para melhor UX
-        locationName = 'Construção Específica';
     }
 
     addNPC({ name: newName, role: newRole, monthlyCost: newCost, locationType, locationId: targetId, locationName });
@@ -139,9 +142,9 @@ const NPCsPage: React.FC = () => {
                        <div className="space-y-3">
                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Alocação do Funcionário</label>
                            <div className="flex gap-2">
-                               <button type="button" onClick={() => setLocationType('Grupo')} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Grupo' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Grupo</button>
-                               <button type="button" onClick={() => setLocationType('Base')} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Base' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Base</button>
-                               <button type="button" onClick={() => setLocationType('Dominio')} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Dominio' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Domínio</button>
+                               <button type="button" onClick={() => { setLocationType('Grupo'); setTargetId(''); }} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Grupo' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Grupo</button>
+                               <button type="button" onClick={() => { setLocationType('Base'); setTargetId(''); }} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Base' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Base</button>
+                               <button type="button" onClick={() => { setLocationType('Dominio'); setTargetId(''); }} className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Dominio' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Domínio</button>
                            </div>
                        </div>
 

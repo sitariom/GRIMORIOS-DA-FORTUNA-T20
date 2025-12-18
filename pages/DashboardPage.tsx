@@ -11,6 +11,12 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     const generateHero = async () => {
+      // Verificação de segurança: Se não houver API KEY, não tenta chamar o Google, evitando crash.
+      if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
+          console.warn("API Key não configurada. Usando fallback visual.");
+          return; 
+      }
+
       try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const response = await ai.models.generateContent({
@@ -27,7 +33,8 @@ const DashboardPage: React.FC = () => {
           }
         }
       } catch (e) {
-        console.error("Erro artístico:", e);
+        console.error("Erro artístico ou chave inválida:", e);
+        // Falha silenciosa para não quebrar a UI
       }
     };
     generateHero();
@@ -42,8 +49,10 @@ const DashboardPage: React.FC = () => {
         {heroImage ? (
           <img src={heroImage} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[2000ms]" alt="Estandarte" />
         ) : (
-          <div className="w-full h-full bg-slate-900 animate-pulse flex items-center justify-center">
-             <Sparkles className="text-fantasy-gold" size={64}/>
+          <div className="w-full h-full bg-slate-900 animate-pulse flex items-center justify-center overflow-hidden relative">
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
+             <Sparkles className="text-fantasy-gold animate-spin-slow" size={64}/>
+             <span className="absolute bottom-4 right-8 text-[10px] text-white/20 uppercase tracking-widest font-black">AI Art Offline</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>

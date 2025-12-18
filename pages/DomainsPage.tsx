@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, ScrollText, Map as MapIcon, Settings, UserCircle, Type, ArrowLeftRight, TrendingUp, TrendingDown, Hammer, Swords, PenTool, Book } from 'lucide-react';
+import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, ScrollText, Map as MapIcon, Settings, UserCircle, Type, ArrowLeftRight, TrendingUp, TrendingDown, Hammer, Swords, PenTool, Book, Dices } from 'lucide-react';
 import { POPULARITY_LEVELS, TERRAIN_TYPES, COURT_DATA, CRISIS_EVENTS, DOMAIN_BUILDINGS_CATALOG, DOMAIN_UNITS_CATALOG } from '../constants';
 import { GovernResult, PopularityType, CourtType } from '../types';
 
@@ -30,7 +30,7 @@ const DomainsPage: React.FC = () => {
   const [transReason, setTransReason] = useState('');
 
   // Govern States
-  const [governRoll, setGovernRoll] = useState(15);
+  const [governRoll, setGovernRoll] = useState(10);
   const [governResult, setGovernResult] = useState<GovernResult | null>(null);
 
   // Crisis States
@@ -170,7 +170,7 @@ const DomainsPage: React.FC = () => {
 
   const closeModal = () => {
     setActiveDomainId(null); setModalMode(null); setTransAmount(0); setTransReason('');
-    setGovernResult(null); setGovernRoll(15); setActiveCrisis(null); setSubTab('catalog');
+    setGovernResult(null); setGovernRoll(10); setActiveCrisis(null); setSubTab('catalog');
     
     // Reset Custom Forms
     setCustomBuildName(''); setCustomBuildDesc(''); setCustomBuildCost(0); setCustomBuildBenefit(''); setCustomBuildPaid(true);
@@ -316,7 +316,6 @@ const DomainsPage: React.FC = () => {
              <div className="parchment-card p-14 rounded-[80px] w-full max-w-3xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <button onClick={() => {setShowAddModal(false); closeModal();}} className="absolute top-12 right-12 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={32}/></button>
                 
-                {/* ... (Modais anteriores mantidos) ... */}
                 {showAddModal && (
                    <form onSubmit={handleCreate} className="space-y-12">
                         <div className="flex flex-col items-center text-center mb-12">
@@ -637,6 +636,69 @@ const DomainsPage: React.FC = () => {
                            Publicar Decreto Real
                        </button>
                   </form>
+                )}
+
+                {modalMode === 'govern' && (
+                   <form onSubmit={handleGovern} className="space-y-12 text-center">
+                       <div className="flex flex-col items-center">
+                          <div className="wax-seal w-28 h-28 mb-8 flex items-center justify-center text-white bg-gradient-to-br from-emerald-800 to-green-900 shadow-xl"><Gavel size={48}/></div>
+                          <h3 className="text-5xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Decreto de Regência</h3>
+                       </div>
+
+                       {!governResult ? (
+                           <div className="space-y-10 animate-fade-in">
+                               <p className="text-lg font-serif italic text-fantasy-wood/70 dark:text-fantasy-parchment/70">
+                                  "O peso da coroa é sentido no momento da decisão." <br/> Role 1d20 + Perícias do Regente.
+                               </p>
+                               <div className="max-w-xs mx-auto space-y-4">
+                                  <label className="text-xs font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-[0.3em] block">Resultado do D20</label>
+                                  <div className="relative">
+                                     <Dices className="absolute left-6 top-1/2 -translate-y-1/2 text-fantasy-wood/30 dark:text-fantasy-parchment/30" size={32}/>
+                                     <input type="number" min="1" className="w-full bg-white/40 dark:bg-black/40 border-4 border-fantasy-wood/10 dark:border-white/10 rounded-[40px] pl-20 pr-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-5xl text-center focus:outline-none focus:border-emerald-600 transition-colors shadow-inner" value={governRoll} onChange={e => setGovernRoll(Number(e.target.value))} autoFocus/>
+                                  </div>
+                               </div>
+                               <button type="submit" className="w-full bg-emerald-800 text-white py-10 rounded-[48px] font-medieval text-3xl uppercase tracking-[0.2em] shadow-5xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all hover:bg-emerald-700">
+                                   Selar Destino
+                               </button>
+                           </div>
+                       ) : (
+                           <div className="space-y-8 animate-bounce-in">
+                               <div className={`p-8 rounded-[40px] border-4 ${governResult.success ? 'bg-emerald-800/10 border-emerald-800/30' : 'bg-red-900/10 border-red-900/30'}`}>
+                                   <h4 className={`text-4xl font-medieval uppercase mb-2 ${governResult.success ? 'text-emerald-800 dark:text-emerald-400' : 'text-red-900 dark:text-red-400'}`}>
+                                      {governResult.success ? 'Gestão Próspera' : 'Tempos Difíceis'}
+                                   </h4>
+                                   <p className="text-sm font-black uppercase tracking-widest opacity-60 mb-6">{governResult.success ? 'Sucesso no Teste' : 'Falha no Teste'}</p>
+                                   
+                                   <div className="space-y-3 text-left bg-white/40 dark:bg-black/20 p-6 rounded-[24px]">
+                                       {governResult.details.map((det, i) => (
+                                           <div key={i} className="flex items-center gap-3 font-serif text-lg text-fantasy-wood/80 dark:text-fantasy-parchment/80 border-b border-black/5 dark:border-white/5 last:border-0 pb-2 last:pb-0">
+                                               <div className="w-1.5 h-1.5 rounded-full bg-fantasy-gold shrink-0"></div> {det}
+                                           </div>
+                                       ))}
+                                   </div>
+                               </div>
+
+                               <div className="grid grid-cols-3 gap-4">
+                                   <div className="p-4 bg-emerald-100 dark:bg-emerald-900/20 rounded-2xl border border-emerald-500/20">
+                                       <div className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-400 tracking-widest mb-1">Receita</div>
+                                       <div className="font-medieval text-2xl text-emerald-900 dark:text-emerald-300">+{governResult.income}</div>
+                                   </div>
+                                   <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-2xl border border-red-500/20">
+                                       <div className="text-[10px] font-black uppercase text-red-800 dark:text-red-400 tracking-widest mb-1">Despesa</div>
+                                       <div className="font-medieval text-2xl text-red-900 dark:text-red-300">-{governResult.maintenance}</div>
+                                   </div>
+                                   <div className="p-4 bg-fantasy-gold/20 rounded-2xl border border-fantasy-gold/40">
+                                       <div className="text-[10px] font-black uppercase text-fantasy-wood dark:text-fantasy-parchment tracking-widest mb-1">Líquido</div>
+                                       <div className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-gold">{governResult.net > 0 ? '+' : ''}{governResult.net}</div>
+                                   </div>
+                               </div>
+
+                               <button onClick={closeModal} className="w-full bg-fantasy-wood dark:bg-fantasy-parchment text-fantasy-parchment dark:text-black py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105">
+                                   Arquivar Relatório
+                               </button>
+                           </div>
+                       )}
+                   </form>
                 )}
              </div>
           </div>
