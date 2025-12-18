@@ -408,7 +408,7 @@ const DomainsPage: React.FC = () => {
                               <div className="text-4xl font-medieval text-indigo-900 dark:text-indigo-400 mb-2">Custo: {activeDomain.level * 20} LO</div>
                               <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest">Disponível: {activeDomain.treasury} LO</div>
                           </div>
-                          <button onClick={() => { levelUpDomain(activeDomainId); closeModal(); }} className="w-full bg-indigo-900 text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-indigo-950 active:translate-y-2 active:border-b-0 transition-all">
+                          <button onClick={() => { if (activeDomainId) { levelUpDomain(activeDomainId); closeModal(); } }} className="w-full bg-indigo-900 text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-indigo-950 active:translate-y-2 active:border-b-0 transition-all">
                               Autorizar Expansão
                           </button>
                       </div>
