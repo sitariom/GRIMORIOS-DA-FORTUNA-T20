@@ -1,22 +1,22 @@
-
 import React from 'react';
 
-const Logo: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+const Logo: React.FC<{ size?: 'xs' | 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
   const sizes = {
-    sm: { container: 'w-16 h-16', font: 'text-lg', scale: 'scale-[0.6]' },
-    md: { container: 'w-24 h-24', font: 'text-2xl', scale: 'scale-[1.0]' },
-    lg: { container: 'w-48 h-48', font: 'text-5xl', scale: 'scale-[1.8]' }
+    xs: { container: 'w-10 h-10', font: 'text-sm', scale: 'scale-[0.4]', hideText: false },
+    sm: { container: 'w-16 h-16', font: 'text-lg', scale: 'scale-[0.6]', hideText: false },
+    md: { container: 'w-24 h-24', font: 'text-2xl', scale: 'scale-[1.0]', hideText: false },
+    lg: { container: 'w-48 h-48', font: 'text-5xl', scale: 'scale-[1.8]', hideText: false }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center group cursor-default select-none">
-      <div className={`${sizes[size].container} relative flex items-center justify-center transition-all duration-700 group-hover:rotate-[-5deg] group-hover:scale-110`}>
+    <div className={`flex items-center justify-center group cursor-default select-none ${size === 'xs' ? 'gap-2' : 'flex-col'}`}>
+      <div className={`${sizes[size].container} relative flex items-center justify-center transition-all duration-700 group-hover:rotate-[-5deg] group-hover:scale-110 shrink-0`}>
         
         {/* Glow Aura - Pulsing effect */}
-        <div className="absolute inset-0 bg-fantasy-gold rounded-full opacity-20 blur-2xl animate-pulse group-hover:opacity-40 transition-opacity"></div>
+        <div className="absolute inset-0 bg-fantasy-gold rounded-full opacity-20 blur-xl animate-pulse group-hover:opacity-40 transition-opacity"></div>
         
         {/* The Grimoire SVG */}
-        <div className={`${sizes[size].scale} transition-transform`}>
+        <div className={`${sizes[size].scale} transition-transform origin-center`}>
           <svg width="100" height="120" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]">
             {/* Book Base (Capa) */}
             <path d="M15 10C15 7.23858 17.2386 5 20 5H85C87.7614 5 90 7.23858 90 10V110C90 112.761 87.7614 115 85 115H20C17.2386 115 15 112.761 15 110V10Z" 
@@ -53,7 +53,7 @@ const Logo: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
       </div>
       
       {/* App Name Styling */}
-      <div className={`mt-6 font-medieval uppercase tracking-tighter text-center leading-none ${sizes[size].font}`}>
+      <div className={`font-medieval uppercase tracking-tighter text-center leading-none ${sizes[size].font} ${size === 'xs' ? 'text-left' : 'mt-6'}`}>
         <span className="text-fantasy-gold block drop-shadow-[0_2px_4px_rgba(212,175,55,0.4)] group-hover:text-white transition-colors duration-500">Grimório</span>
         <span className="text-fantasy-parchment dark:text-fantasy-parchment/60 group-hover:text-fantasy-gold transition-colors duration-500">da Fortuna</span>
       </div>
