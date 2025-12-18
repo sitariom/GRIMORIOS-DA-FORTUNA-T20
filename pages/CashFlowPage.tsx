@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGuild } from '../context/GuildContext';
 import { ArrowDownLeft, ArrowUpRight, Scroll, History } from 'lucide-react';
@@ -11,7 +10,7 @@ const CashFlowPage: React.FC = () => {
     <div className="space-y-10 pb-20 font-serif">
       <header>
         <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Registros tesouraria</h2>
-        <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O rastro de prata e ouro deixado pela guilda em Arton.</p>
+        <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O rastro de prata e ouro deixado pela guilda.</p>
       </header>
 
       <div className="parchment-card rounded-[40px] shadow-5xl border-4 border-fantasy-gold/20 overflow-hidden animate-scroll-unroll">

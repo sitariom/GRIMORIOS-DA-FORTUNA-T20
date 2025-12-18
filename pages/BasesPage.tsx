@@ -1,13 +1,12 @@
-
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { PORTE_DATA, TYPE_DATA } from '../constants';
 import { BasePorte, BaseType } from '../types';
-import { Hammer, Coins, Home, Trash2, Bed, Plus, X, AlertTriangle, ShieldCheck, Map, Castle, Info } from 'lucide-react';
+import { Hammer, Coins, Home, Trash2, Bed, Plus, X, ShieldCheck, Map, Castle, Info, TrendingUp } from 'lucide-react';
 
 const BasesPage: React.FC = () => {
   const { bases, addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase, addRoom, removeRoom, addFurniture, removeFurniture } = useGuild();
-  const [modalMode, setModalMode] = useState<'buy' | 'addRoom' | 'addFurn' | 'upgrade' | null>(null);
+  const [modalMode, setModalMode] = useState<'buy' | 'addRoom' | 'addFurn' | 'upgrade' | 'income' | null>(null);
   
   const [newName, setNewName] = useState('');
   const [newPorte, setNewPorte] = useState<BasePorte>('Minima');
@@ -17,9 +16,10 @@ const BasesPage: React.FC = () => {
   const [activeRoomId, setActiveRoomId] = useState('');
   const [itemName, setItemName] = useState('');
   const [itemCost, setItemCost] = useState(0);
+  const [incomeAmount, setIncomeAmount] = useState(0);
 
   const resetModal = () => {
-    setModalMode(null); setNewName(''); setItemName(''); setItemCost(0); setActiveBaseId(''); setActiveRoomId('');
+    setModalMode(null); setNewName(''); setItemName(''); setItemCost(0); setIncomeAmount(0); setActiveBaseId(''); setActiveRoomId('');
   };
 
   const activeBase = bases.find(b => b.id === activeBaseId);
@@ -29,7 +29,7 @@ const BasesPage: React.FC = () => {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h2 className="text-4xl md:text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Bases e Fortalezas</h2>
-          <p className="text-xs md:text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Cidadelas sob seu estandarte nos Reinos de Arton.</p>
+          <p className="text-xs md:text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Cidadelas sob seu estandarte nos Reinos.</p>
         </div>
         <button onClick={() => setModalMode('buy')} className="w-full md:w-auto bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
            <Home size={24} /> Erigir Nova Sede
@@ -95,7 +95,17 @@ const BasesPage: React.FC = () => {
                                   </div>
                               </div>
                           </div>
-                          <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance)} className="w-full bg-emerald-800 text-white py-6 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all">Saldar Dívidas Prediais</button>
+                          
+                          <div className="space-y-3">
+                            {base.type === 'Empreendimento' && (
+                                <button onClick={() => { setActiveBaseId(base.id); setModalMode('income'); }} className="w-full bg-fantasy-gold hover:bg-[#bfa030] text-black py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 transition-all flex items-center justify-center gap-3">
+                                    <TrendingUp size={24}/> Coletar Lucros
+                                </button>
+                            )}
+                            <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance)} className="w-full bg-emerald-800 text-white py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all">
+                                Saldar Dívidas
+                            </button>
+                          </div>
                       </div>
 
                       <div className="lg:col-span-2 space-y-8">
@@ -200,7 +210,14 @@ const BasesPage: React.FC = () => {
                          </div>
                          <div className="space-y-2">
                             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest ml-6">Custo de Reforma (T$)</label>
-                            <input type="number" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" required value={itemCost} onChange={e => setItemCost(Number(e.target.value))} />
+                            <input 
+                              type="number" 
+                              className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" 
+                              required 
+                              value={itemCost} 
+                              onChange={e => setItemCost(Number(e.target.value))}
+                              onFocus={(e) => e.target.select()}
+                            />
                          </div>
                          <div className="bg-black/5 dark:bg-black/20 p-6 md:p-8 rounded-[40px] border-4 border-fantasy-wood/10 dark:border-white/10 flex flex-col gap-4">
                             <label className="flex items-center gap-4 cursor-pointer">
@@ -232,7 +249,14 @@ const BasesPage: React.FC = () => {
                          </div>
                          <div className="space-y-2">
                             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest ml-6">Valor da Peça (T$)</label>
-                            <input type="number" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" required value={itemCost} onChange={e => setItemCost(Number(e.target.value))} />
+                            <input 
+                              type="number" 
+                              className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" 
+                              required 
+                              value={itemCost} 
+                              onChange={e => setItemCost(Number(e.target.value))}
+                              onFocus={(e) => e.target.select()}
+                            />
                          </div>
                          <div className="bg-black/5 dark:bg-black/20 p-6 md:p-8 rounded-[40px] border-4 border-fantasy-wood/10 dark:border-white/10 flex flex-col gap-4">
                             <label className="flex items-center gap-4 cursor-pointer">
@@ -272,6 +296,33 @@ const BasesPage: React.FC = () => {
                       </div>
                       <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 transition-all">
                           Finalizar Expansão
+                      </button>
+                  </form>
+               )}
+
+               {modalMode === 'income' && (
+                  <form onSubmit={(e) => { e.preventDefault(); collectBaseIncome(activeBaseId, incomeAmount); resetModal(); }} className="space-y-8 md:space-y-12">
+                      <div className="flex flex-col items-center text-center">
+                         <div className="wax-seal w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center text-white"><TrendingUp size={40}/></div>
+                         <h3 className="text-3xl md:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Colheita de Lucros</h3>
+                         <p className="text-[10px] md:text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/40 uppercase tracking-widest mt-2">Adicione os rendimentos do empreendimento ao cofre.</p>
+                      </div>
+                      <div className="space-y-6 md:space-y-8">
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest ml-6">Valor Recebido (TO)</label>
+                            <input 
+                              type="number" 
+                              min="0"
+                              className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl text-center" 
+                              required 
+                              value={incomeAmount} 
+                              onChange={e => setIncomeAmount(Number(e.target.value))}
+                              onFocus={(e) => e.target.select()}
+                            />
+                         </div>
+                      </div>
+                      <button type="submit" className="w-full bg-emerald-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all">
+                          Confirmar Recebimento
                       </button>
                   </form>
                )}

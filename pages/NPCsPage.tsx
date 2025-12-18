@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Contact, Trash2, Plus, Coins, MapPin, X, Filter, UserSearch, Briefcase, Castle, LandPlot } from 'lucide-react';
@@ -135,7 +134,15 @@ const NPCsPage: React.FC = () => {
 
                    <div className="space-y-3">
                        <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Custo Mensal (T$)</label>
-                       <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-3xl text-center shadow-inner" required value={newCost} onChange={e => setNewCost(Number(e.target.value))} />
+                       <input 
+                         type="number" 
+                         min="0" 
+                         className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-3xl text-center shadow-inner" 
+                         required 
+                         value={newCost} 
+                         onChange={e => setNewCost(Number(e.target.value))}
+                         onFocus={(e) => e.target.select()}
+                       />
                    </div>
 
                    <div className="bg-black/5 dark:bg-black/20 p-6 rounded-[32px] border-4 border-fantasy-wood/10 dark:border-white/10 space-y-6">
@@ -154,7 +161,7 @@ const NPCsPage: React.FC = () => {
                                <select className="w-full bg-white/60 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl appearance-none cursor-pointer" value={targetId} onChange={e => setTargetId(e.target.value)} required>
                                    <option value="" className="dark:bg-black">Escolha uma Base...</option>
                                    {bases.map(b => <option key={b.id} value={b.id} className="dark:bg-black">{b.name}</option>)}
-                               </select>
+                                </select>
                            </div>
                        )}
 

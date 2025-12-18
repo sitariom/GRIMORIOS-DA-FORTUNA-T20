@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Coins, Package, Castle, LandPlot, Users, 
   X, History, Contact, ShieldCheck, Scroll, Hammer, BookOpen, 
-  Sword, Map, Briefcase, FileText, NotebookPen, Sun, Moon
+  NotebookPen, Sun, Moon
 } from 'lucide-react';
 import { useGuild } from '../context/GuildContext';
 import { RATES } from '../constants';
@@ -19,7 +19,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, toggle, theme, toggleTheme }) => {
-  const { wallet, domains, guildName } = useGuild();
+  const { wallet, domains } = useGuild();
   
   const totalWealth = (wallet.TC * RATES.TC) + (wallet.TS * RATES.TS) + (wallet.TO * RATES.TO) + (wallet.LO * RATES.LO) + 
                      domains.reduce((acc, domain) => acc + (domain.treasury * RATES.LO), 0);
@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, toggle,
 
         <div className="p-8 border-t-4 border-[#3d2b1f] bg-black/30">
           <div className="flex items-center justify-center gap-3 text-[9px] font-black text-fantasy-gold/40 uppercase tracking-[0.4em]">
-             <Scroll size={14}/> Crônicas de Arton
+             <Scroll size={14}/> Grimório da Fortuna
           </div>
         </div>
       </aside>

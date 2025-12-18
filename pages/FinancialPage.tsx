@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { CurrencyType } from '../types';
@@ -85,7 +84,15 @@ const FinancialPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase ml-4 tracking-widest">Montante</label>
-                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl shadow-inner" value={amount} onChange={e => setAmount(Number(e.target.value))} required />
+                <input 
+                  type="number" 
+                  min="0" 
+                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl shadow-inner" 
+                  value={amount} 
+                  onChange={e => setAmount(Number(e.target.value))}
+                  onFocus={(e) => e.target.select()}
+                  required 
+                />
               </div>
               <div className="space-y-3">
                 <label className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase ml-4 tracking-widest">Tipo de Moeda</label>
@@ -117,7 +124,15 @@ const FinancialPage: React.FC = () => {
           <form onSubmit={handleConversion} className="space-y-10">
              <div className="space-y-3">
                 <label className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase ml-4 tracking-widest">Quantidade a Trocar</label>
-                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-10 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-4xl md:text-6xl text-center focus:outline-none shadow-inner" value={convAmount} onChange={e => setConvAmount(Number(e.target.value))} required />
+                <input 
+                  type="number" 
+                  min="0" 
+                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-10 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-4xl md:text-6xl text-center focus:outline-none shadow-inner" 
+                  value={convAmount} 
+                  onChange={e => setConvAmount(Number(e.target.value))} 
+                  onFocus={(e) => e.target.select()}
+                  required 
+                />
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-8">

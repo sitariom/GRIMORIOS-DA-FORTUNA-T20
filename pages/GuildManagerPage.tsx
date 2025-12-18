@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Users, Plus, Download, Upload, Trash2, Edit3, Check, X, ShieldCheck, ScrollText } from 'lucide-react';
@@ -48,7 +47,7 @@ const GuildManagerPage: React.FC = () => {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Minhas campanhas</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O mural dos grandes feitos de Arton.</p>
+          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O mural dos grandes feitos.</p>
         </div>
         <div className="flex gap-4 w-full md:w-auto">
             <button onClick={() => fileInput.current?.click()} className="flex-1 md:flex-none bg-[#3d2b1f] dark:bg-black hover:bg-[#4d3b2f] text-fantasy-parchment px-8 py-4 rounded-2xl border-2 border-fantasy-gold/20 flex items-center justify-center gap-3 font-medieval uppercase text-xs tracking-widest transition-all">
