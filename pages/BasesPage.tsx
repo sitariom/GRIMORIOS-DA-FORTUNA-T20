@@ -24,6 +24,14 @@ const BasesPage: React.FC = () => {
 
   const activeBase = bases.find(b => b.id === activeBaseId);
 
+  const getUpgradeCost = () => {
+      if (!activeBase) return 0;
+      const diff = PORTE_DATA[newPorte].cost - PORTE_DATA[activeBase.porte].cost;
+      return diff > 0 ? diff : 0;
+  };
+
+  const isDowngrade = activeBase ? PORTE_DATA[newPorte].cost < PORTE_DATA[activeBase.porte].cost : false;
+
   return (
     <div className="space-y-12 pb-20 font-serif">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -211,7 +219,8 @@ const BasesPage: React.FC = () => {
                          <div className="space-y-2">
                             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest ml-6">Custo de Reforma (T$)</label>
                             <input 
-                              type="number" 
+                              type="number"
+                              min="0"
                               className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" 
                               required 
                               value={itemCost} 
@@ -250,7 +259,8 @@ const BasesPage: React.FC = () => {
                          <div className="space-y-2">
                             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest ml-6">Valor da Peça (T$)</label>
                             <input 
-                              type="number" 
+                              type="number"
+                              min="0"
                               className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-6 py-4 md:px-8 md:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl" 
                               required 
                               value={itemCost} 
@@ -290,12 +300,17 @@ const BasesPage: React.FC = () => {
                             </select>
                          </div>
                          <div className="p-6 md:p-8 bg-blue-900/10 dark:bg-blue-400/5 rounded-[40px] border-4 border-blue-900/20 dark:border-blue-400/20 text-center">
-                            <p className="text-sm font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest">Custo de Diferença de Upgrade</p>
-                            <p className="text-3xl md:text-5xl font-medieval text-blue-900 dark:text-blue-400 mt-2">T$ {activeBase ? Math.max(0, PORTE_DATA[newPorte].cost - PORTE_DATA[activeBase.porte].cost) : 0}</p>
+                            <p className="text-sm font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest">{isDowngrade ? "Redução de Porte" : "Custo de Upgrade"}</p>
+                            <p className="text-3xl md:text-5xl font-medieval text-blue-900 dark:text-blue-400 mt-2">
+                                {isDowngrade ? "Sem Custo" : `T$ ${getUpgradeCost()}`}
+                            </p>
+                            {isDowngrade && (
+                                <p className="text-[10px] text-red-500 uppercase font-black tracking-widest mt-2">Atenção: Não há reembolso por redução.</p>
+                            )}
                          </div>
                       </div>
                       <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 transition-all">
-                          Finalizar Expansão
+                          {isDowngrade ? 'Confirmar Redução' : 'Finalizar Expansão'}
                       </button>
                   </form>
                )}
