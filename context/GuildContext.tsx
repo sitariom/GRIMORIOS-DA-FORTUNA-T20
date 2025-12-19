@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GuildState, MultiGuildState, Wallet, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, PopularityType, NPC, NPCLocationType, GovernResult } from '../types';
 import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS } from '../constants';
@@ -18,6 +17,7 @@ interface GuildContextType extends GuildState {
   renameActiveGuild: (name: string) => void;
   deleteActiveGuild: () => void;
   addMember: (name: string) => void;
+  updateMember: (id: string, updates: Partial<Member>) => void;
   removeMember: (id: string) => void;
   deposit: (memberId: string, value: number, currency: CurrencyType, reason: string) => void;
   withdraw: (memberId: string, value: number, currency: CurrencyType, reason: string) => void;
@@ -25,8 +25,10 @@ interface GuildContextType extends GuildState {
   addItem: (item: Omit<Item, 'id'>) => void;
   updateItem: (id: string, updates: Partial<Item>) => void;
   sellItem: (itemId: string, qty: number, sellerId: string, percentage: number) => void;
+  sellBatchItems: (itemIds: string[], sellerId: string, percentage: number) => void;
   withdrawItem: (itemId: string, memberId: string, reason: string, qty: number) => void;
   deleteItem: (itemId: string, qty: number) => void;
+  deleteBatchItems: (itemIds: string[]) => void;
   addBase: (name: string, porte: BasePorte, type: BaseType, initialCostPaid: boolean) => void;
   upgradeBase: (baseId: string, newPorte: BasePorte) => void;
   payBaseMaintenance: (baseId: string, type: 'Regular' | 'Extra', amount: number) => void;
@@ -35,6 +37,7 @@ interface GuildContextType extends GuildState {
   addNPC: (npc: Omit<NPC, 'id'>) => void;
   removeNPC: (npcId: string) => void;
   payAllNPCs: () => void;
+  paySingleNPC: (npcId: string) => void;
   addRoom: (baseId: string, name: string, cost: number, isPaid: boolean) => void;
   removeRoom: (baseId: string, roomId: string) => void;
   addFurniture: (baseId: string, roomId: string, name: string, cost: number, isPaid: boolean) => void;
@@ -132,18 +135,28 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addMember = (name: string) => {
-    const members = [...activeGuild.members, { id: crypto.randomUUID(), name }];
+    const newMember: Member = { id: crypto.randomUUID(), name, status: 'Ativo' };
+    const members = [...activeGuild.members, newMember];
     updateActiveGuild({ members, logs: internalAddLog(activeGuild, 'Sistema', `Membro ${name} alistado.`, 0, 'SYSTEM') });
     notify(`Membro ${name} registrado.`);
   };
 
+  const updateMember = (id: string, updates: Partial<Member>) => {
+    updateActiveGuild({ members: activeGuild.members.map(m => m.id === id ? { ...m, ...updates } : m) });
+  };
+
   const removeMember = (id: string) => {
+    const memberName = activeGuild.members.find(m => m.id === id)?.name || 'Desconhecido';
     const members = activeGuild.members.filter(m => m.id !== id);
-    updateActiveGuild({ members });
+    updateActiveGuild({ 
+      members,
+      logs: internalAddLog(activeGuild, 'Sistema', `Baixa de Membro: ${memberName}`, 0, 'SYSTEM')
+    });
     notify("Membro removido do grimório.");
   };
 
   const deposit = (mId: string, val: number, cur: CurrencyType, reason: string) => {
+    if (!mId) return notify("Selecione um membro responsável.", "error");
     updateActiveGuild({
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] + val },
       logs: internalAddLog(activeGuild, 'Deposito', `+${val} ${cur}: ${reason}`, val * RATES[cur], mId)
@@ -152,6 +165,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const withdraw = (mId: string, val: number, cur: CurrencyType, reason: string) => {
+    if (!mId) return notify("Selecione um membro responsável.", "error");
     if (activeGuild.wallet[cur] < val) return notify("Cofre insuficiente para este saque.", "error");
     updateActiveGuild({
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] - val },
@@ -162,26 +176,44 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const convertWallet = (amt: number, from: CurrencyType, to: CurrencyType) => {
     if (activeGuild.wallet[from] < amt) return notify("Quantidade insuficiente para câmbio.", "error");
+    
+    // Cálculo do ganho exato
     const conv = Math.floor((amt * RATES[from]) / RATES[to]);
+    if (conv === 0) return notify(`Quantidade insuficiente para gerar pelo menos 1 ${to}. Aumente a oferta.`, "error");
+
+    // Cálculo do custo real (Troco automático)
+    const realCost = (conv * RATES[to]) / RATES[from];
+
+    const remainder = amt - realCost;
+    const details = remainder > 0 
+        ? `Câmbio: ${realCost} ${from} (de ${amt}) por ${conv} ${to}. Troco: ${remainder} ${from}`
+        : `Câmbio Direto: ${amt} ${from} por ${conv} ${to}`;
+
     updateActiveGuild({
-      wallet: { ...activeGuild.wallet, [from]: activeGuild.wallet[from] - amt, [to]: activeGuild.wallet[to] + conv },
-      logs: internalAddLog(activeGuild, 'Conversao', `Câmbio Real: ${amt}${from} em ${conv}${to}`, 0, 'SYSTEM')
+      wallet: { ...activeGuild.wallet, [from]: activeGuild.wallet[from] - realCost, [to]: activeGuild.wallet[to] + conv },
+      logs: internalAddLog(activeGuild, 'Conversao', details, 0, 'SYSTEM')
     });
     notify("Troca autorizada pela Casa de Câmbio.");
   };
 
   const addItem = (item: Omit<Item, 'id'>) => {
-    updateActiveGuild({ items: [...activeGuild.items, { ...item, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'Estoque', `Item Registrado: ${item.name}`, 0, 'SYSTEM') });
+    if (item.quantity <= 0) return notify("A quantidade deve ser maior que zero.", "error");
+    if (item.value < 0) return notify("O valor não pode ser negativo.", "error");
+    updateActiveGuild({ items: [...activeGuild.items, { ...item, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'Estoque', `Item Registrado: ${item.name} (${item.rarity})`, 0, 'SYSTEM') });
     notify("Item catalogado no arsenal.");
   };
 
   const updateItem = (id: string, up: Partial<Item>) => {
+    if (up.quantity !== undefined && up.quantity < 0) return notify("Quantidade inválida.", "error");
+    if (up.value !== undefined && up.value < 0) return notify("Valor inválido.", "error");
     updateActiveGuild({ items: activeGuild.items.map(i => i.id === id ? { ...i, ...up } : i) });
   };
 
   const sellItem = (id: string, qty: number, sId: string, p: number) => {
     const item = activeGuild.items.find(i => i.id === id);
     if (!item || item.quantity < qty) return notify("Estoque insuficiente.", "error");
+    if (item.isNonNegotiable) return notify("Este item é inalienável e não pode ser comercializado.", "error");
+    
     const val = Math.floor(((item.value * qty) * (p / 100)));
     updateActiveGuild({
       items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0),
@@ -189,6 +221,46 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       logs: internalAddLog(activeGuild, 'Venda', `Venda ${qty}x ${item.name} (${p}%)`, val, sId)
     });
     notify("Venda processada. Tibares de Prata adicionados.");
+  };
+
+  const sellBatchItems = (itemIds: string[], sellerId: string, percentage: number) => {
+    let totalValue = 0;
+    let itemsToProcess = [...activeGuild.items];
+    let soldCount = 0;
+
+    for (const id of itemIds) {
+        const index = itemsToProcess.findIndex(i => i.id === id);
+        if (index === -1) continue;
+        const item = itemsToProcess[index];
+        if (item.isNonNegotiable) continue;
+
+        const sellValue = Math.floor((item.value * item.quantity) * (percentage / 100));
+        totalValue += sellValue;
+        itemsToProcess.splice(index, 1);
+        soldCount++;
+    }
+
+    if (soldCount === 0) return notify("Nenhum item válido para venda selecionado.", "error");
+
+    updateActiveGuild({
+        items: itemsToProcess,
+        wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + totalValue },
+        logs: internalAddLog(activeGuild, 'Venda', `Venda em Lote: ${soldCount} itens (${percentage}%)`, totalValue, sellerId)
+    });
+    notify(`Lote de ${soldCount} itens vendido por T$ ${totalValue.toLocaleString()}.`);
+  };
+
+  const deleteBatchItems = (itemIds: string[]) => {
+      const itemsToKeep = activeGuild.items.filter(i => !itemIds.includes(i.id));
+      const removedCount = activeGuild.items.length - itemsToKeep.length;
+      
+      if (removedCount === 0) return;
+
+      updateActiveGuild({
+          items: itemsToKeep,
+          logs: internalAddLog(activeGuild, 'Estoque', `Remoção em Massa: ${removedCount} itens`, 0, 'SYSTEM')
+      });
+      notify(`${removedCount} registros removidos do arsenal.`);
   };
 
   const withdrawItem = (id: string, mId: string, r: string, qty: number) => {
@@ -202,9 +274,10 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteItem = (id: string, qty: number) => {
+    const item = activeGuild.items.find(i => i.id === id);
     updateActiveGuild({ 
       items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: Math.max(0, i.quantity - qty) } : i).filter(i => i.quantity > 0),
-      logs: internalAddLog(activeGuild, 'Sistema', `Remoção manual de item`, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Estoque', `Descarte: ${item?.name || 'Item'} (x${qty})`, 0, 'SYSTEM')
     });
     notify("Registro de item removido.");
   };
@@ -213,24 +286,39 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const cost = PORTE_DATA[porte].cost;
     if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente no cofre central.", "error");
     updateActiveGuild({
-      bases: [...activeGuild.bases, { id: crypto.randomUUID(), name, porte, type, rooms: [], history: [] }],
+      bases: [...activeGuild.bases, { id: crypto.randomUUID(), name, porte, type, rooms: [], history: [`Fundada como ${porte} em ${new Date().toLocaleDateString()}`] }],
       wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
       logs: internalAddLog(activeGuild, 'Base', `Fundação de Base: ${name}`, paid ? -cost : 0, 'SYSTEM')
     });
     notify("Base estabelecida!");
   };
 
-  const upgradeBase = (id: string, porte: BasePorte) => {
-    const b = activeGuild.bases.find(x => x.id === id);
+  const upgradeBase = (baseId: string, newPorte: BasePorte) => {
+    const b = activeGuild.bases.find(x => x.id === baseId);
     if (!b) return;
-    const diff = PORTE_DATA[porte].cost - PORTE_DATA[b.porte].cost;
-    if (activeGuild.wallet.TS < diff) return notify("Saldo insuficiente para expansão.", "error");
-    updateActiveGuild({
-      bases: activeGuild.bases.map(x => x.id === id ? { ...x, porte } : x),
-      wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - diff },
-      logs: internalAddLog(activeGuild, 'Base', `Expansão de Base: ${b.name} para ${porte}`, -diff, 'SYSTEM')
-    });
-    notify("Propriedade expandida com sucesso.");
+    
+    const currentCost = PORTE_DATA[b.porte].cost;
+    const newCost = PORTE_DATA[newPorte].cost;
+    const diff = newCost - currentCost;
+
+    if (diff < 0) {
+        if (b.rooms.length > PORTE_DATA[newPorte].slots) {
+            return notify(`Impossível reduzir: A base possui ${b.rooms.length} cômodos, mas o porte ${PORTE_DATA[newPorte].label} suporta apenas ${PORTE_DATA[newPorte].slots}. Remova cômodos antes.`, "error");
+        }
+        updateActiveGuild({
+            bases: activeGuild.bases.map(x => x.id === baseId ? { ...x, porte: newPorte, history: [...x.history, `Reduzida para ${newPorte} em ${new Date().toLocaleDateString()}`] } : x),
+            logs: internalAddLog(activeGuild, 'Base', `Redução de Base: ${b.name} para ${newPorte}`, 0, 'SYSTEM')
+        });
+        notify("Base reestruturada (Redução de Porte).");
+    } else {
+        if (activeGuild.wallet.TS < diff) return notify("Saldo insuficiente para expansão.", "error");
+        updateActiveGuild({
+            bases: activeGuild.bases.map(x => x.id === baseId ? { ...x, porte: newPorte, history: [...x.history, `Expandida para ${newPorte} em ${new Date().toLocaleDateString()}`] } : x),
+            wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - diff },
+            logs: internalAddLog(activeGuild, 'Base', `Expansão de Base: ${b.name} para ${newPorte}`, -diff, 'SYSTEM')
+        });
+        notify("Propriedade expandida com sucesso.");
+    }
   };
 
   const payBaseMaintenance = (id: string, type: 'Regular' | 'Extra', amt: number) => {
@@ -249,11 +337,21 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const demolishBase = (id: string) => {
-    updateActiveGuild({ bases: activeGuild.bases.filter(b => b.id !== id), logs: internalAddLog(activeGuild, 'Base', `Base Abandonada`, 0, 'SYSTEM') });
-    notify("Propriedade removida dos registros.");
+    // Atualizar NPCs que estavam nesta base para "Grupo"
+    const updatedNPCs = activeGuild.npcs.map(npc => 
+        npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Base Destruída)' } : npc
+    );
+
+    updateActiveGuild({ 
+        bases: activeGuild.bases.filter(b => b.id !== id), 
+        npcs: updatedNPCs,
+        logs: internalAddLog(activeGuild, 'Base', `Base Abandonada e Demolida`, 0, 'SYSTEM') 
+    });
+    notify("Propriedade removida. Funcionários realocados.");
   };
 
   const addNPC = (npc: Omit<NPC, 'id'>) => {
+    if (npc.monthlyCost < 0) return notify("Custo não pode ser negativo.", "error");
     updateActiveGuild({ 
       npcs: [...activeGuild.npcs, { ...npc, id: crypto.randomUUID() }],
       logs: internalAddLog(activeGuild, 'NPC', `Contrato firmado: ${npc.name} (${npc.role})`, 0, 'SYSTEM')
@@ -271,9 +369,22 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (activeGuild.wallet.TS < total) return notify("T$ insuficiente para pagar todos os especialistas.", "error");
     updateActiveGuild({
       wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - total },
-      logs: internalAddLog(activeGuild, 'NPC', `Pagamento de Especialistas (Folha Mensal)`, -total, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'NPC', `Pagamento de Folha (${activeGuild.npcs.length} especialistas)`, -total, 'SYSTEM')
     });
     notify("Pagamentos realizados.");
+  };
+
+  const paySingleNPC = (npcId: string) => {
+    const npc = activeGuild.npcs.find(n => n.id === npcId);
+    if (!npc) return;
+    
+    if (activeGuild.wallet.TS < npc.monthlyCost) return notify("Saldo insuficiente em Tibares de Prata.", "error");
+
+    updateActiveGuild({
+      wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - npc.monthlyCost },
+      logs: internalAddLog(activeGuild, 'NPC', `Pagamento Individual: ${npc.name} (${npc.role})`, -npc.monthlyCost, 'SYSTEM')
+    });
+    notify(`Salário de ${npc.name} pago com sucesso.`);
   };
 
   const addRoom = (id: string, name: string, cost: number, paid: boolean) => {
@@ -322,7 +433,18 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateDomain = (id: string, up: Partial<Domain>) => {
-    updateActiveGuild({ domains: activeGuild.domains.map(d => d.id === id ? { ...d, ...up } : d) });
+    // Se o nome do domínio mudar, atualizar NPCs alocados
+    let updatedNPCs = activeGuild.npcs;
+    if (up.name) {
+        updatedNPCs = activeGuild.npcs.map(npc => 
+            npc.locationId === id ? { ...npc, locationName: `Domínio: ${up.name}` } : npc
+        );
+    }
+    
+    updateActiveGuild({ 
+        domains: activeGuild.domains.map(d => d.id === id ? { ...d, ...up } : d),
+        npcs: updatedNPCs
+    });
   };
 
   const levelUpDomain = (id: string) => {
@@ -368,16 +490,32 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const demolishDomain = (id: string) => {
-    updateActiveGuild({ domains: activeGuild.domains.filter(d => d.id !== id), logs: internalAddLog(activeGuild, 'Dominio', `Abandono de Território`, 0, 'SYSTEM') });
-    notify("O território foi entregue ao destino.");
+    // Atualizar NPCs que estavam neste domínio para "Grupo"
+    const updatedNPCs = activeGuild.npcs.map(npc => 
+        npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Domínio Destruído)' } : npc
+    );
+
+    updateActiveGuild({ 
+        domains: activeGuild.domains.filter(d => d.id !== id), 
+        npcs: updatedNPCs,
+        logs: internalAddLog(activeGuild, 'Dominio', `Abandono de Território`, 0, 'SYSTEM') 
+    });
+    notify("O território foi entregue ao destino. Funcionários realocados.");
   };
 
   const governDomain = (id: string, roll: number): GovernResult | null => {
     const d = activeGuild.domains.find(x => x.id === id);
     if (!d) return null;
+    
+    // Penalidade por ausência de regente
+    const regentPenalty = d.regent.trim() ? 0 : 5;
     const cd = 15 + (d.level * 2);
-    const succ = roll >= cd;
+    const finalRoll = roll - regentPenalty;
+    const succ = finalRoll >= cd;
+    
     const details: string[] = [];
+    details.push(`Resultado: ${roll} ${!d.regent.trim() ? '(-5 Sem Regente)' : ''} vs CD ${cd}`);
+    
     let inc = d.level; details.push(`Arrecadação Base: +${inc} LO`);
     
     d.buildings.forEach(b => {
@@ -386,13 +524,23 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       else if (b.name === 'Mina') { const v = Math.floor(Math.random()*12+1); inc+=v; details.push(`Mina: +${v} LO`); }
     });
 
-    if (!succ) { inc = Math.floor(inc/2); details.push(`FALHA NA GESTÃO (Dado ${roll} vs CD ${cd}): Arrecadação reduzida pela metade.`); }
-    else { details.push(`SUCESSO NA GESTÃO (Dado ${roll} vs CD ${cd})`); }
+    if (!succ) { 
+        inc = Math.floor(inc/2); 
+        details.push(`FALHA NA GESTÃO: Arrecadação reduzida pela metade.`); 
+    } else { 
+        details.push(`SUCESSO NA GESTÃO`); 
+    }
 
-    const maint = COURT_DATA[d.court].maintenance; details.push(`Custos de Corte: -${maint} LO`);
-    const net = inc - maint;
+    const courtMaint = COURT_DATA[d.court].maintenance; 
+    details.push(`Manutenção da Corte: -${courtMaint} LO`);
     
-    // Safety check for popularity index
+    // Custos de Unidades (1 LO por unidade para simplificação e balanceamento)
+    const unitMaint = d.units.length; 
+    if (unitMaint > 0) details.push(`Manutenção de Tropas (${d.units.length}): -${unitMaint} LO`);
+
+    const totalMaint = courtMaint + unitMaint;
+    const net = inc - totalMaint;
+    
     const popChange = succ ? 0 : -1;
     const currentPopIndex = POPULARITY_LEVELS.indexOf(d.popularity);
     const newPopIndex = Math.max(0, Math.min(POPULARITY_LEVELS.length - 1, currentPopIndex + popChange));
@@ -403,11 +551,11 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         treasury: Math.max(0, x.treasury + net), 
         popularity: POPULARITY_LEVELS[newPopIndex]
       } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Governança em ${d.name}: ${succ ? 'Sucesso' : 'Falha'} (Resultado: ${net > 0 ? '+' : ''}${net} LO)`, net * RATES.LO, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Governança em ${d.name}: ${succ ? 'Sucesso' : 'Falha'} (Líquido: ${net > 0 ? '+' : ''}${net} LO)`, net * RATES.LO, 'SYSTEM')
     });
 
     notify(succ ? "Regência próspera." : "Gestão conturbada.", succ ? 'success' : 'error');
-    return { income: inc, maintenance: maint, net, success: succ, popularityChange: popChange, details };
+    return { income: inc, maintenance: totalMaint, net, success: succ, popularityChange: popChange, details };
   };
 
   const addDomainBuilding = (id: string, b: Omit<DomainBuilding, 'id'>, paid: boolean) => {
@@ -456,9 +604,9 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <GuildContext.Provider value={{
       ...activeGuild, feedback, guilds: multiState.guilds, activeGuildId: multiState.activeGuildId,
       setActiveGuild, createNewGuild, importGuild, renameActiveGuild, deleteActiveGuild,
-      addMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, withdrawItem, deleteItem,
+      addMember, updateMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems,
       addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase,
-      addNPC, removeNPC, payAllNPCs, addRoom, removeRoom, addFurniture, removeFurniture,
+      addNPC, removeNPC, payAllNPCs, paySingleNPC, addRoom, removeRoom, addFurniture, removeFurniture,
       createDomain, updateDomain, investDomain, withdrawDomain, manageDomainTreasury, demolishDomain, levelUpDomain, governDomain,
       addDomainBuilding, removeDomainBuilding, addDomainUnit, removeDomainUnit, exportLogs, notify
     }}>

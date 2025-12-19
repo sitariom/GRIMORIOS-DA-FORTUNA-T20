@@ -10,11 +10,13 @@ export interface Wallet {
 }
 
 export type ItemType = 'Consumivel' | 'Equipamento' | 'Tesouro' | 'Arma' | 'Riqueza';
+export type ItemRarity = 'Comum' | 'Superior' | 'Magico' | 'Liturgico' | 'Artefato';
 
 export interface Item {
   id: string;
   name: string;
   type: ItemType;
+  rarity: ItemRarity;
   quantity: number;
   value: number;
   origin: string;
@@ -114,9 +116,12 @@ export interface LogEntry {
   memberName: string;
 }
 
+export type MemberStatus = 'Ativo' | 'Inativo' | 'Morto' | 'Ferido' | 'Em Missao' | 'Viajando';
+
 export interface Member {
   id: string;
   name: string;
+  status: MemberStatus;
 }
 
 export interface GuildState {

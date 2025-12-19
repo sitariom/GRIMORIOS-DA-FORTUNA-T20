@@ -1,4 +1,5 @@
-import { BasePorte, BaseType, CourtType, PopularityType } from "./types";
+
+import { BasePorte, BaseType, CourtType, PopularityType, ItemRarity } from "./types";
 
 export const PORTE_DATA: Record<BasePorte, { cost: number; maintenance: number; slots: number; label: string }> = {
   Minima: { cost: 1000, maintenance: 100, slots: 0, label: 'Mínima (T$ 1k)' },
@@ -19,6 +20,14 @@ export const TYPE_DATA: Record<BaseType, { label: string; bonus: string }> = {
 };
 
 export const ITEM_TYPES = ['Consumivel', 'Equipamento', 'Tesouro', 'Arma', 'Riqueza'];
+
+export const RARITY_CONFIG: Record<ItemRarity, { label: string, color: string, bg: string, border: string }> = {
+  Comum: { label: 'Comum', color: 'text-fantasy-wood/70 dark:text-fantasy-parchment/70', bg: '', border: 'border-fantasy-wood/10 dark:border-white/5' },
+  Superior: { label: 'Superior', color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-900/5 dark:bg-emerald-400/5', border: 'border-emerald-700/20' },
+  Magico: { label: 'Mágico', color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-900/5 dark:bg-blue-400/5', border: 'border-blue-700/20' },
+  Liturgico: { label: 'Litúrgico', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-900/5 dark:bg-amber-400/5', border: 'border-amber-700/20' },
+  Artefato: { label: 'Artefato', color: 'text-purple-700 dark:text-purple-400', bg: 'bg-purple-900/5 dark:bg-purple-400/5', border: 'border-purple-700/20' },
+};
 
 export const RATES = {
   TC: 0.1,   

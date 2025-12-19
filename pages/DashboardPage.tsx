@@ -2,9 +2,10 @@ import React from 'react';
 import { useGuild } from '../context/GuildContext';
 import { RATES } from '../constants';
 import { TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, Map as MapIcon, Shield } from 'lucide-react';
+import { CurrencyType } from '../types';
 
 const DashboardPage: React.FC = () => {
-  const { wallet, domains, guildName, npcs } = useGuild();
+  const { wallet, domains, guildName, npcs, members } = useGuild();
   
   const totalTS = (wallet.TC * RATES.TC) + (wallet.TS * RATES.TS) + (wallet.TO * RATES.TO) + (wallet.LO * RATES.LO);
   const totalNPCCost = npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
@@ -51,7 +52,7 @@ const DashboardPage: React.FC = () => {
           { label: 'Cofre da Ordem', val: `T$ ${totalTS.toLocaleString()}`, icon: Coins, color: 'text-amber-900 dark:text-fantasy-gold', border: 'border-amber-900/30' },
           { label: 'Custo Mensal', val: `T$ ${totalNPCCost.toLocaleString()}`, icon: TrendingUp, color: 'text-red-900 dark:text-red-400', border: 'border-red-900/30' },
           { label: 'Domínios', val: domains.length, icon: MapIcon, color: 'text-indigo-900 dark:text-indigo-400', border: 'border-indigo-900/30' },
-          { label: 'Membros & NPCs', val: npcs.length + 1, icon: Users, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
+          { label: 'Membros & NPCs', val: members.length + npcs.length, icon: Users, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
         ].map((kpi, i) => (
           <div key={i} className={`parchment-card p-6 md:p-8 rounded-[32px] animate-slide-up relative overflow-hidden group border-b-[6px] ${kpi.border}`} style={{ animationDelay: `${i * 100}ms` }}>
              {/* Decorative Corner */}
@@ -84,11 +85,15 @@ const DashboardPage: React.FC = () => {
            </h3>
            <div className="space-y-6">
               {[
-                { label: 'Tibares de Cobre', val: wallet.TC, color: 'bg-orange-800' },
-                { label: 'Tibares de Prata', val: wallet.TS, color: 'bg-slate-500' },
-                { label: 'Tibares de Ouro', val: wallet.TO, color: 'bg-fantasy-gold' },
-                { label: 'Lingotes de Ouro', val: wallet.LO, color: 'bg-indigo-700' },
-              ].map((coin, i) => (
+                { label: 'Tibares de Cobre', code: 'TC', val: wallet.TC, color: 'bg-orange-800' },
+                { label: 'Tibares de Prata', code: 'TS', val: wallet.TS, color: 'bg-slate-500' },
+                { label: 'Tibares de Ouro', code: 'TO', val: wallet.TO, color: 'bg-fantasy-gold' },
+                { label: 'Lingotes de Ouro', code: 'LO', val: wallet.LO, color: 'bg-indigo-700' },
+              ].map((coin, i) => {
+                const coinValueInTS = coin.val * RATES[coin.code as CurrencyType];
+                const percentage = totalTS > 0 ? Math.min(100, (coinValueInTS / totalTS) * 100) : 0;
+                
+                return (
                 <div key={i} className="group">
                   <div className="flex justify-between items-end mb-2">
                     <span className="font-medieval text-lg text-fantasy-wood/80 dark:text-fantasy-parchment/80">{coin.label}</span>
@@ -97,11 +102,14 @@ const DashboardPage: React.FC = () => {
                   <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
                     <div 
                       className={`h-full ${coin.color} rounded-full transition-all duration-1000`}
-                      style={{ width: `${Math.min(100, (coin.val / (totalTS || 1)) * 100)}%` }}
+                      style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
+                  <div className="text-[10px] text-right text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-black mt-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                      {percentage.toFixed(1)}% do Patrimônio
+                  </div>
                 </div>
-              ))}
+              )})}
            </div>
         </div>
 

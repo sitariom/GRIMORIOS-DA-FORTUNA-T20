@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, ScrollText, Map as MapIcon, Settings, UserCircle, Type, ArrowLeftRight, TrendingUp, TrendingDown, Hammer, Swords, PenTool, Book, Dices } from 'lucide-react';
+import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, Map as MapIcon, Settings, UserCircle, Swords, TrendingUp, TrendingDown, Dices, ArrowLeftRight } from 'lucide-react';
 import { POPULARITY_LEVELS, TERRAIN_TYPES, COURT_DATA, CRISIS_EVENTS, DOMAIN_BUILDINGS_CATALOG, DOMAIN_UNITS_CATALOG } from '../constants';
 import { GovernResult, PopularityType, CourtType } from '../types';
 
@@ -146,8 +146,7 @@ const DomainsPage: React.FC = () => {
     } else if (activeCrisis.impact === 'treasury') {
         const currentT = d.treasury;
         const change = activeCrisis.value;
-        let finalT = currentT + change;
-        if (finalT < 0) finalT = 0; 
+        let finalT = Math.max(0, currentT + change); // Prevent negative treasury
         updateDomain(activeDomainId, { treasury: finalT });
     } else if (activeCrisis.impact === 'fortification') {
         updateDomain(activeDomainId, { fortification: Math.max(0, d.fortification + activeCrisis.value) });
@@ -193,7 +192,9 @@ const DomainsPage: React.FC = () => {
                 <p className="font-medieval text-3xl md:text-4xl uppercase tracking-widest italic text-fantasy-wood dark:text-fantasy-parchment">O mapa está em branco...</p>
              </div>
           ) : (
-             domains.map((domain, idx) => (
+             domains.map((domain, idx) => {
+                const totalMaint = COURT_DATA[domain.court].maintenance + domain.units.length; // Estimativa visual
+                return (
                 <div key={domain.id} className="parchment-card rounded-[60px] shadow-5xl overflow-hidden border-4 border-fantasy-gold/20 animate-slide-up" style={{ animationDelay: `${idx*100}ms` }}>
                     {/* Header */}
                     <div className="bg-fantasy-wood/10 dark:bg-black/20 p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
@@ -203,7 +204,7 @@ const DomainsPage: React.FC = () => {
                           </div>
                           <div>
                              <h3 className="text-3xl md:text-5xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-2 leading-none">{domain.name}</h3>
-                             <p className="text-xs md:text-sm font-black text-fantasy-wood/50 dark:text-fantasy-parchment/50 uppercase tracking-[0.3em]">Regente: {domain.regent || 'Sem Liderança'}</p>
+                             <p className={`text-xs md:text-sm font-black uppercase tracking-[0.3em] ${!domain.regent.trim() ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Regente: {domain.regent || 'VACANTE (Penalidade -5)'}</p>
                           </div>
                        </div>
                        <div className="flex flex-wrap gap-3">
@@ -230,7 +231,7 @@ const DomainsPage: React.FC = () => {
                         {[
                           { label: 'Nível de Poder', val: domain.level, sub: 'Tier', icon: Castle },
                           { label: 'Tesouro Real', val: `${domain.treasury} LO`, sub: 'Riqueza', icon: Coins },
-                          { label: 'Status da Corte', val: domain.court, sub: 'Política', icon: Gavel },
+                          { label: 'Custo de Corte', val: `${totalMaint} LO`, sub: 'Manutenção', icon: TrendingDown },
                           { label: 'Popularidade', val: domain.popularity, sub: 'Moral', icon: UserCircle },
                           { label: 'Fortificação', val: domain.fortification, sub: 'Defesa', icon: Shield },
                         ].map((stat, i) => (
@@ -281,7 +282,7 @@ const DomainsPage: React.FC = () => {
                                 <div key={u.id} className="bg-white/40 dark:bg-black/20 p-6 rounded-3xl border border-fantasy-wood/5 dark:border-white/5 flex justify-between items-center group hover:border-indigo-500/30 transition-all">
                                    <div>
                                       <div className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-parchment">{u.name}</div>
-                                      <div className="text-xs font-black uppercase text-indigo-800 dark:text-indigo-400 tracking-widest">{u.type} • PWR {u.power}</div>
+                                      <div className="text-xs font-black uppercase text-indigo-800 dark:text-indigo-400 tracking-widest">{u.type} • PWR {u.power} • Custo 1 LO</div>
                                    </div>
                                    <button onClick={() => removeDomainUnit(domain.id, u.id)} className="text-fantasy-wood/20 hover:text-red-800 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><X size={18}/></button>
                                 </div>
@@ -290,7 +291,7 @@ const DomainsPage: React.FC = () => {
                        </div>
                     </div>
                 </div>
-             ))
+             )})
           )}
       </div>
 
