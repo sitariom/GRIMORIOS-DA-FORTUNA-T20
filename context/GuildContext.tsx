@@ -35,6 +35,7 @@ interface GuildContextType extends GuildState {
   collectBaseIncome: (baseId: string, amountTO: number) => void;
   demolishBase: (baseId: string) => void;
   addNPC: (npc: Omit<NPC, 'id'>) => void;
+  updateNPC: (id: string, updates: Partial<NPC>) => void;
   removeNPC: (npcId: string) => void;
   payAllNPCs: () => void;
   paySingleNPC: (npcId: string) => void;
@@ -225,42 +226,63 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const sellBatchItems = (itemIds: string[], sellerId: string, percentage: number) => {
     let totalValue = 0;
-    let itemsToProcess = [...activeGuild.items];
-    let soldCount = 0;
+    const newLogs: LogEntry[] = [];
+    const sellerName = activeGuild.members.find(m => m.id === sellerId)?.name || 'Desconhecido';
 
-    for (const id of itemIds) {
-        const index = itemsToProcess.findIndex(i => i.id === id);
-        if (index === -1) continue;
-        const item = itemsToProcess[index];
-        if (item.isNonNegotiable) continue;
+    const itemsToProcess = activeGuild.items.filter(i => itemIds.includes(i.id) && !i.isNonNegotiable);
+    
+    if (itemsToProcess.length === 0) return notify("Nenhum item válido para venda selecionado.", "error");
 
+    itemsToProcess.forEach(item => {
         const sellValue = Math.floor((item.value * item.quantity) * (percentage / 100));
         totalValue += sellValue;
-        itemsToProcess.splice(index, 1);
-        soldCount++;
-    }
+        
+        newLogs.push({
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            category: 'Venda',
+            details: `Venda Lote: ${item.quantity}x ${item.name} (${percentage}%)`,
+            value: sellValue,
+            memberId: sellerId,
+            memberName: sellerName
+        });
+    });
 
-    if (soldCount === 0) return notify("Nenhum item válido para venda selecionado.", "error");
+    // Remove os itens vendidos (assumindo venda total do estoque no lote)
+    const itemsToKeep = activeGuild.items.filter(i => !itemsToProcess.find(p => p.id === i.id));
 
     updateActiveGuild({
-        items: itemsToProcess,
+        items: itemsToKeep,
         wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + totalValue },
-        logs: internalAddLog(activeGuild, 'Venda', `Venda em Lote: ${soldCount} itens (${percentage}%)`, totalValue, sellerId)
+        logs: [...newLogs, ...activeGuild.logs]
     });
-    notify(`Lote de ${soldCount} itens vendido por T$ ${totalValue.toLocaleString()}.`);
+    notify(`Lote vendido. T$ ${totalValue.toLocaleString()} adicionados.`);
   };
 
   const deleteBatchItems = (itemIds: string[]) => {
+      const itemsToDelete = activeGuild.items.filter(i => itemIds.includes(i.id));
+      if (itemsToDelete.length === 0) return;
+
+      const newLogs: LogEntry[] = [];
+      itemsToDelete.forEach(item => {
+          newLogs.push({
+              id: crypto.randomUUID(),
+              date: new Date().toISOString(),
+              category: 'Estoque',
+              details: `Descarte Lote: ${item.name} (x${item.quantity})`,
+              value: 0,
+              memberId: 'SYSTEM',
+              memberName: 'Sistema'
+          });
+      });
+
       const itemsToKeep = activeGuild.items.filter(i => !itemIds.includes(i.id));
-      const removedCount = activeGuild.items.length - itemsToKeep.length;
-      
-      if (removedCount === 0) return;
 
       updateActiveGuild({
           items: itemsToKeep,
-          logs: internalAddLog(activeGuild, 'Estoque', `Remoção em Massa: ${removedCount} itens`, 0, 'SYSTEM')
+          logs: [...newLogs, ...activeGuild.logs]
       });
-      notify(`${removedCount} registros removidos do arsenal.`);
+      notify(`${itemsToDelete.length} itens removidos do arsenal.`);
   };
 
   const withdrawItem = (id: string, mId: string, r: string, qty: number) => {
@@ -357,6 +379,18 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       logs: internalAddLog(activeGuild, 'NPC', `Contrato firmado: ${npc.name} (${npc.role})`, 0, 'SYSTEM')
     });
     notify(`${npc.name} contratado.`);
+  };
+
+  const updateNPC = (id: string, updates: Partial<NPC>) => {
+    if (updates.monthlyCost !== undefined && updates.monthlyCost < 0) return notify("Custo não pode ser negativo.", "error");
+    const old = activeGuild.npcs.find(n => n.id === id);
+    if (!old) return;
+
+    updateActiveGuild({ 
+      npcs: activeGuild.npcs.map(n => n.id === id ? { ...n, ...updates } : n),
+      logs: internalAddLog(activeGuild, 'NPC', `Renegociação de Contrato: ${old.name}`, 0, 'SYSTEM')
+    });
+    notify("Contrato renegociado.");
   };
 
   const removeNPC = (id: string) => {
@@ -606,7 +640,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveGuild, createNewGuild, importGuild, renameActiveGuild, deleteActiveGuild,
       addMember, updateMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems,
       addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase,
-      addNPC, removeNPC, payAllNPCs, paySingleNPC, addRoom, removeRoom, addFurniture, removeFurniture,
+      addNPC, updateNPC, removeNPC, payAllNPCs, paySingleNPC, addRoom, removeRoom, addFurniture, removeFurniture,
       createDomain, updateDomain, investDomain, withdrawDomain, manageDomainTreasury, demolishDomain, levelUpDomain, governDomain,
       addDomainBuilding, removeDomainBuilding, addDomainUnit, removeDomainUnit, exportLogs, notify
     }}>
