@@ -29,6 +29,7 @@ export type BasePorte = 'Minima' | 'Modesta' | 'Basica' | 'Formidavel' | 'Grandi
 export type BaseType = 'CentroDePoder' | 'Empreendimento' | 'Esconderijo' | 'Fortificacao' | 'Movel' | 'Residencia';
 
 export type NPCLocationType = 'Base' | 'Dominio' | 'Construcao' | 'Grupo';
+export type NPCRelationship = 'Contratado' | 'Aliado' | 'Parceiro' | 'Recrutado';
 
 export interface NPC {
   id: string;
@@ -38,6 +39,7 @@ export interface NPC {
   locationType: NPCLocationType;
   locationId?: string; // ID da base, domínio ou construção
   locationName: string; // Nome descritivo para exibição
+  relationship?: NPCRelationship;
 }
 
 export interface Furniture {

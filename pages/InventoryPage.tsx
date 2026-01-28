@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType, ItemRarity } from '../types';
 import { ITEM_TYPES, RARITY_CONFIG } from '../constants';
-import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square } from 'lucide-react';
+import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown } from 'lucide-react';
 
 const InventoryPage: React.FC = () => {
   const { items, members, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems } = useGuild();
@@ -23,6 +22,11 @@ const InventoryPage: React.FC = () => {
   const [filterType, setFilterType] = useState<ItemType | 'Todos'>('Todos');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Sorting State
+  type SortField = 'name' | 'type' | 'quantity' | 'value';
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const openAdd = () => {
       setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
@@ -48,8 +52,8 @@ const InventoryPage: React.FC = () => {
   };
 
   const toggleSelectAll = () => {
-      if (selectedIds.size === filteredItems.length) setSelectedIds(new Set());
-      else setSelectedIds(new Set(filteredItems.map(i => i.id)));
+      if (selectedIds.size === sortedItems.length) setSelectedIds(new Set());
+      else setSelectedIds(new Set(sortedItems.map(i => i.id)));
   };
   
   const handleBulkSell = (e: React.FormEvent) => {
@@ -65,13 +69,44 @@ const InventoryPage: React.FC = () => {
       closeModal();
   };
 
-  const filteredItems = items.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'Todos' || item.type === filterType;
-      return matchesSearch && matchesType;
-  });
+  const filteredItems = useMemo(() => {
+      return items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'Todos' || item.type === filterType;
+        return matchesSearch && matchesType;
+      });
+  }, [items, searchTerm, filterType]);
+
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+        let valA: string | number = a[sortField];
+        let valB: string | number = b[sortField];
+
+        // Ensure case-insensitive string comparison
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+  }, [filteredItems, sortField, sortDirection]);
   
   const totalAssetsValue = items.reduce((acc, item) => acc + (item.value * item.quantity), 0);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+        setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+        setSortField(field);
+        setSortDirection('asc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+      if (sortField !== field) return null;
+      return sortDirection === 'asc' ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />;
+  };
 
   return (
     <div className="space-y-10 pb-20 font-serif relative">
@@ -130,18 +165,26 @@ const InventoryPage: React.FC = () => {
                   <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/40 tracking-[0.3em]">
                     <th className="px-6 py-8 text-center w-16">
                         <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity">
-                            {selectedIds.size === filteredItems.length && filteredItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
+                            {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
                         </button>
                     </th>
-                    <th className="px-6 py-8">Relíquia / Bem</th>
-                    <th className="px-6 py-8">Essência</th>
-                    <th className="px-6 py-8 text-center">Qtd</th>
-                    <th className="px-6 py-8">Valor Estimado</th>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('name')}>
+                        Relíquia / Bem <SortIcon field="name"/>
+                    </th>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('type')}>
+                        Essência <SortIcon field="type"/>
+                    </th>
+                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('quantity')}>
+                        Qtd <SortIcon field="quantity"/>
+                    </th>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('value')}>
+                        Valor Estimado <SortIcon field="value"/>
+                    </th>
                     <th className="px-6 py-8 text-right">Ações de Gestão</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
-                  {filteredItems.map(item => {
+                  {sortedItems.map(item => {
                     const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
                     const isSelected = selectedIds.has(item.id);
                     
