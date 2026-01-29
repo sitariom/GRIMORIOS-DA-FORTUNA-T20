@@ -43,7 +43,7 @@ const Toast: React.FC = () => {
 };
 
 const LoadingScreen: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-full space-y-6 text-fantasy-gold animate-pulse">
+  <div className="flex flex-col items-center justify-center h-full space-y-6 text-fantasy-wood dark:text-fantasy-gold animate-pulse">
     <Logo size="lg" />
     <div className="flex items-center gap-3 text-xl font-medieval">
       <Loader className="animate-spin" /> Acessando os Arquivos...
@@ -81,7 +81,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   return (
-    <div className="flex h-screen overflow-hidden selection:bg-fantasy-gold selection:text-fantasy-wood transition-colors duration-500 bg-[#0d0d0d] dark:bg-black">
+    <div className="flex h-screen overflow-hidden selection:bg-fantasy-gold selection:text-fantasy-wood transition-colors duration-500 bg-fantasy-parchment dark:bg-black">
       <Toast />
       
       {/* Sidebar visível apenas se autenticado */}
@@ -112,7 +112,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-[#0d0d0d] dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-fantasy-parchment dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
           <div className="max-w-7xl mx-auto h-full">
             {isLoading ? <LoadingScreen /> : children}
           </div>
@@ -162,3 +162,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+    

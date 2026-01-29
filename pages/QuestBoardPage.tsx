@@ -40,6 +40,7 @@ const QuestBoardPage: React.FC = () => {
           addQuest({
               title: newTitle,
               description: newDesc,
+              status: 'Disponivel',
               rewardGold: newGold,
               rewardCurrency: newCurrency,
               rewardXP: newXP,

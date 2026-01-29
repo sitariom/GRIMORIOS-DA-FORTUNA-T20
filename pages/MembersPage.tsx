@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings } from 'lucide-react';
+import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check } from 'lucide-react';
 import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
 import { RARITY_CONFIG, ITEM_TYPES } from '../constants';
@@ -42,6 +42,10 @@ const MembersPage: React.FC = () => {
       type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
   });
 
+  // State for Item Action (Transfer/Delete quantity)
+  const [itemAction, setItemAction] = useState<{ itemId: string, type: 'transfer' | 'delete', max: number, name: string } | null>(null);
+  const [actionQty, setActionQty] = useState(1);
+
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (newName.trim()) {
@@ -81,6 +85,19 @@ const MembersPage: React.FC = () => {
       createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
       setShowAddItem(false);
       setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
+  };
+
+  const confirmItemAction = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!activeMember || !itemAction) return;
+      
+      if (itemAction.type === 'transfer') {
+          transferItemFromMember(itemAction.itemId, activeMember.id, actionQty);
+      } else {
+          deleteItemFromMember(activeMember.id, itemAction.itemId, actionQty);
+      }
+      setItemAction(null);
+      setActionQty(1);
   };
 
   return (
@@ -184,7 +201,7 @@ const MembersPage: React.FC = () => {
       {activeMember && (
         <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
            <div className="parchment-card p-8 md:p-12 rounded-[40px] w-full max-w-4xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col gap-10">
-               <button onClick={() => setDetailMemberId(null)} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+               <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
                
                <div className="text-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
                    <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
@@ -238,7 +255,7 @@ const MembersPage: React.FC = () => {
                    </div>
 
                    {/* Inventory Management */}
-                   <div className="space-y-6">
+                   <div className="space-y-6 relative">
                        <div className="flex justify-between items-center">
                            <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila</h4>
                            <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors">
@@ -246,6 +263,36 @@ const MembersPage: React.FC = () => {
                            </button>
                        </div>
                        
+                       {/* Item Action Overlay */}
+                       {itemAction && (
+                           <div className="absolute inset-0 bg-white/90 dark:bg-black/90 z-20 rounded-3xl flex flex-col items-center justify-center p-6 text-center animate-fade-in border-2 border-fantasy-gold/50">
+                               <h5 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-parchment mb-2">
+                                   {itemAction.type === 'transfer' ? 'Devolver ao Cofre' : 'Descartar Item'}
+                               </h5>
+                               <p className="text-xs font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50 mb-4">{itemAction.name}</p>
+                               <form onSubmit={confirmItemAction} className="w-full space-y-4">
+                                   <div className="flex items-center gap-2 justify-center">
+                                       <input 
+                                         type="number" 
+                                         min="1" 
+                                         max={itemAction.max} 
+                                         className="w-20 bg-black/10 dark:bg-white/10 rounded-xl py-2 text-center font-medieval text-2xl" 
+                                         value={actionQty} 
+                                         onChange={e => setActionQty(Number(e.target.value))}
+                                         autoFocus
+                                       />
+                                       <span className="text-xs opacity-50">/ {itemAction.max}</span>
+                                   </div>
+                                   <div className="flex gap-2">
+                                       <button type="button" onClick={() => setItemAction(null)} className="flex-1 py-2 rounded-xl bg-gray-500/10 text-gray-500 text-xs font-black uppercase tracking-widest">Cancelar</button>
+                                       <button type="submit" className={`flex-1 py-2 rounded-xl text-white text-xs font-black uppercase tracking-widest ${itemAction.type === 'transfer' ? 'bg-blue-700' : 'bg-red-700'}`}>
+                                           Confirmar
+                                       </button>
+                                   </div>
+                               </form>
+                           </div>
+                       )}
+
                        {showAddItem && (
                            <form onSubmit={handleCreateItem} className="bg-fantasy-wood/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fade-in border border-fantasy-wood/10">
                                <input className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval" required value={newItemData.name} onChange={e => setNewItemData({...newItemData, name: e.target.value})} placeholder="Nome do Item" />
@@ -278,8 +325,20 @@ const MembersPage: React.FC = () => {
                                                <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity}</div>
                                            </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                               <button onClick={() => transferItemFromMember(item.id, activeMember.id, 1)} title="Devolver 1 ao Cofre" className="p-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-lg"><ArrowRight size={14}/></button>
-                                               <button onClick={() => deleteItemFromMember(activeMember.id, item.id, 1)} title="Jogar fora 1 (Lixeira)" className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg"><Trash2 size={14}/></button>
+                                               <button 
+                                                 onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'transfer', max: item.quantity, name: item.name }); }} 
+                                                 title="Devolver ao Cofre" 
+                                                 className="p-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-lg"
+                                               >
+                                                   <ArrowRight size={14}/>
+                                               </button>
+                                               <button 
+                                                 onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'delete', max: item.quantity, name: item.name }); }} 
+                                                 title="Jogar fora (Lixeira)" 
+                                                 className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg"
+                                               >
+                                                   <Trash2 size={14}/>
+                                               </button>
                                            </div>
                                        </div>
                                    )
