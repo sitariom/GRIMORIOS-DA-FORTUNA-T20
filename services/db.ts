@@ -15,11 +15,17 @@ const apiRequest = async (endpoint: string, options?: RequestInit) => {
   try {
     data = text ? JSON.parse(text) : {};
   } catch (e) {
-    // Se falhar o parse e o status for erro, lança erro com status
     throw new Error(`Erro no Servidor: ${res.status} ${res.statusText}`);
   }
 
-  if (!res.ok) throw new Error(data.error || `API Error: ${res.status} ${res.statusText}`);
+  if (!res.ok) {
+      // Propaga o erro com tipo se disponível
+      const errorMessage = data.error || `API Error: ${res.status} ${res.statusText}`;
+      const error: any = new Error(errorMessage);
+      error.status = res.status;
+      error.type = data.type;
+      throw error;
+  }
   return data;
 };
 
@@ -48,13 +54,11 @@ export const dbService = {
     try {
       return await apiRequest('guilds');
     } catch (e: any) {
-      // Silencia erro 404 (API não encontrada/Deploy incompleto) para não travar a UI inicial
       if (e.message.includes('404')) {
-          console.warn("API de guildas não encontrada (404). Verifique se o backend está rodando.");
+          console.warn("API de guildas não encontrada (404).");
           return [];
       }
       console.error("Erro ao buscar lista de guildas:", e);
-      // Retorna array vazio para não quebrar o map na UI
       return [];
     }
   },
