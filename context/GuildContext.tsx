@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { 
   GuildState, LogEntry, Wallet, Item, Base, Domain, NPC, Quest, CalendarState, Member, 
   CurrencyType, LogCategory, MemberStatus, ItemType, ItemRarity, BasePorte, BaseType, 
@@ -110,6 +110,7 @@ const GuildContext = createContext<GuildContextData | undefined>(undefined);
 const initialGuildState: GuildState = {
     id: '',
     guildName: '',
+    version: 0,
     wallet: { TC: 0, TS: 0, TO: 0, LO: 0 },
     items: [],
     bases: [],
@@ -125,6 +126,9 @@ const initialGuildState: GuildState = {
 const sanitizeGuildData = (data: any): GuildState => {
     const safeData = { ...initialGuildState, ...data };
     
+    // Garante que version exista
+    safeData.version = typeof safeData.version === 'number' ? safeData.version : 0;
+
     // Fallback profundo para objetos principais
     safeData.wallet = { ...initialGuildState.wallet, ...(safeData.wallet || {}) };
     safeData.calendar = { ...initialGuildState.calendar, ...(safeData.calendar || {}) };
@@ -155,6 +159,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [guildList, setGuildList] = useState<GuildSummary[]>([]);
     const [feedback, setFeedback] = useState<Feedback | null>(null);
     const [sessionKey, setSessionKey] = useState<string>('');
+    const syncIntervalRef = useRef<number | null>(null);
 
     // --- Helpers ---
     const notify = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -174,14 +179,62 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, []);
 
+    // Sincronização Silenciosa (Polling)
+    const syncGuild = useCallback(async () => {
+        if (!isAuthenticated || !activeGuild.id || !sessionKey) return;
+        
+        try {
+            const remoteData = await dbService.getGuild(activeGuild.id, sessionKey);
+            if (remoteData) {
+                const safeRemote = sanitizeGuildData(remoteData);
+                // Se a versão do servidor for maior que a local, atualiza
+                setActiveGuild(prev => {
+                    if (safeRemote.version > prev.version) {
+                        // Opcional: notify("Dados sincronizados com o servidor.", "info");
+                        return safeRemote;
+                    }
+                    return prev;
+                });
+            }
+        } catch (e) {
+            // Silently fail on sync errors to not disturb user
+            console.error("Erro de sincronização:", e);
+        }
+    }, [isAuthenticated, activeGuild.id, sessionKey]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            syncIntervalRef.current = window.setInterval(syncGuild, 5000); // Sincroniza a cada 5 segundos
+        } else {
+            if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+        }
+        return () => {
+            if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+        };
+    }, [isAuthenticated, syncGuild]);
+
     const triggerSave = useCallback(async (newState: GuildState) => {
-        setActiveGuild(newState);
+        // Incrementa versão localmente antes de enviar
+        const versionedState = { ...newState, version: (newState.version || 0) + 1 };
+        setActiveGuild(versionedState); // Otimistic UI update
+
         if (isAuthenticated && sessionKey) {
             try {
-                await dbService.saveGuild(newState, sessionKey);
-            } catch (e) {
-                console.error("Auto-save failed", e);
-                notify("Erro ao salvar automaticamente", "error");
+                await dbService.saveGuild(versionedState, sessionKey);
+            } catch (e: any) {
+                console.error("Save failed", e);
+                
+                // Tratamento de Conflito (409)
+                if (e.status === 409) {
+                    notify("Conflito de edição detectado! Sincronizando dados...", "error");
+                    // Força busca dos dados mais recentes do servidor, descartando a alteração conflituosa local
+                    const freshData = await dbService.getGuild(versionedState.id, sessionKey);
+                    if (freshData) {
+                        setActiveGuild(sanitizeGuildData(freshData));
+                    }
+                } else {
+                    notify("Erro ao salvar automaticamente", "error");
+                }
             }
         }
     }, [isAuthenticated, sessionKey, notify]);
@@ -253,6 +306,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSessionKey('');
         setActiveGuild(initialGuildState);
         dbService.setSession('');
+        if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
         notify("Desconectado com sucesso.");
     };
 
@@ -273,7 +327,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const newGuild: GuildState = {
             ...initialGuildState,
             id,
-            guildName: name
+            guildName: name,
+            version: 1
         };
         try {
             await dbService.saveGuild(newGuild, password);
@@ -300,6 +355,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const parsed = JSON.parse(json);
             if (!parsed.id || !parsed.guildName) throw new Error("Formato inválido");
             const safeData = sanitizeGuildData(parsed);
+            // Reset version on import to avoid conflicts with previous states
+            safeData.version = (safeData.version || 0) + 1; 
             await dbService.saveGuild(safeData, password);
             await fetchGuilds();
             notify("Guilda importada com sucesso.");

@@ -152,6 +152,7 @@ export interface Quest {
 export interface GuildState {
   id: string;
   guildName: string;
+  version: number; // Controle de Concorrência
   wallet: Wallet;
   items: Item[];
   bases: Base[];
