@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Coins, Package, Castle, LandPlot, Users, 
   X, History, Contact, ShieldCheck, Scroll, Hammer, BookOpen, 
-  NotebookPen, Sun, Moon
+  NotebookPen, Sun, Moon, Calendar, Map, CheckSquare
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useGuild } from '../context/GuildContext';
@@ -27,15 +27,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
   const navItems = [
     { path: '/guilds', label: 'Minhas campanhas', icon: ShieldCheck },
     { path: '/', label: 'Resumo & analise', icon: LayoutDashboard },
+    { path: '/quests', label: 'Quadro de Missões', icon: CheckSquare },
+    { path: '/calendar', label: 'Calendário Artoniano', icon: Calendar },
+    { path: '/members', label: 'Aventureiros', icon: Users },
     { path: '/finance', label: 'Finanças do grupo', icon: Coins },
-    { path: '/cashflow', label: 'Registros tesouraria', icon: History },
     { path: '/inventory', label: 'Arsenal e bens', icon: Package },
-    { path: '/itemhistory', label: 'Movimentação de itens', icon: BookOpen },
     { path: '/bases', label: 'Bases', icon: Castle },
     { path: '/domains', label: 'Dominios', icon: LandPlot },
     { path: '/npcs', label: 'Funcionarios e serviços', icon: Contact },
     { path: '/investments', label: 'Investimentos', icon: Hammer },
-    { path: '/members', label: 'Aventureiros', icon: Users },
     { path: '/chronicles', label: 'Livro de Crônicas', icon: NotebookPen },
   ];
 

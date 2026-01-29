@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { GuildState, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, NPC, GovernResult } from '../types';
-import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS } from '../constants';
+import { GuildState, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, NPC, GovernResult, CalendarState, Quest, QuestStatus } from '../types';
+import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS, ARTON_MONTHS, ARTON_WEEKDAYS } from '../constants';
 import { dbService, GuildSummary } from '../services/db';
 
 interface FeedbackMessage {
@@ -39,16 +39,26 @@ interface GuildContextType extends GuildState {
   addMember: (name: string) => void;
   updateMember: (id: string, updates: Partial<Member>) => void;
   removeMember: (id: string) => void;
+  
+  // Inventory & Money (Guild to Member)
   deposit: (memberId: string, value: number, currency: CurrencyType, reason: string) => void;
   withdraw: (memberId: string, value: number, currency: CurrencyType, reason: string) => void;
+  transferGoldToMember: (memberId: string, value: number, currency: CurrencyType) => void;
+  transferGoldFromMember: (memberId: string, value: number, currency: CurrencyType) => void;
   convertWallet: (amount: number, from: CurrencyType, to: CurrencyType) => void; 
+  
   addItem: (item: Omit<Item, 'id'>) => void;
   updateItem: (id: string, updates: Partial<Item>) => void;
   sellItem: (itemId: string, qty: number, sellerId: string, percentage: number) => void;
   sellBatchItems: (itemIds: string[], sellerId: string, percentage: number) => void;
   withdrawItem: (itemId: string, memberId: string, reason: string, qty: number) => void;
+  transferItemToMember: (itemId: string, memberId: string, qty: number) => void;
+  transferItemFromMember: (itemId: string, memberId: string, qty: number) => void;
+  memberDiscardItem: (itemId: string, memberId: string, qty: number) => void;
   deleteItem: (itemId: string, qty: number) => void;
   deleteBatchItems: (itemIds: string[]) => void;
+  
+  // Bases & NPCs
   addBase: (name: string, porte: BasePorte, type: BaseType, initialCostPaid: boolean) => void;
   upgradeBase: (baseId: string, newPorte: BasePorte) => void;
   payBaseMaintenance: (baseId: string, type: 'Regular' | 'Extra', amount: number) => void;
@@ -63,6 +73,8 @@ interface GuildContextType extends GuildState {
   removeRoom: (baseId: string, roomId: string) => void;
   addFurniture: (baseId: string, roomId: string, name: string, cost: number, isPaid: boolean) => void;
   removeFurniture: (baseId: string, roomId: string, furnitureId: string) => void;
+  
+  // Domains
   createDomain: (name: string, regent: string, terrain: string, paidCost: boolean) => void;
   updateDomain: (id: string, updates: Partial<Domain>) => void;
   investDomain: (domainId: string, amountLO: number) => void; 
@@ -75,6 +87,13 @@ interface GuildContextType extends GuildState {
   removeDomainBuilding: (domainId: string, buildingId: string) => void;
   addDomainUnit: (domainId: string, unit: Omit<DomainUnit, 'id'>, paidWithTreasury: boolean) => void;
   removeDomainUnit: (domainId: string, unitId: string) => void;
+  
+  // New Features
+  advanceDate: (days: number) => void;
+  addQuest: (quest: Omit<Quest, 'id' | 'status'>) => void;
+  updateQuestStatus: (questId: string, newStatus: QuestStatus) => void;
+  deleteQuest: (questId: string) => void;
+
   exportLogs: () => void;
   notify: (text: string, type?: 'success' | 'error' | 'info') => void;
 }
@@ -91,6 +110,8 @@ const EMPTY_GUILD: GuildState = {
   npcs: [],
   logs: [],
   members: [],
+  calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0 },
+  quests: []
 };
 
 const INITIAL_GUILD_FACTORY = (name: string): GuildState => ({
@@ -129,7 +150,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       } catch (error) {
         console.error("Init Error", error);
-        // Não notificamos erro no init para não assustar se for apenas 404 local
       } finally {
         setIsLoading(false);
       }
@@ -153,7 +173,18 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
           const guild = await dbService.getGuild(id, key);
           if (guild) {
-              setActiveGuild(guild);
+              // Ensure new fields exist for old saves
+              const sanitizedGuild = {
+                  ...guild,
+                  calendar: guild.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0 },
+                  quests: guild.quests || [],
+                  members: guild.members.map(m => ({
+                      ...m,
+                      wallet: m.wallet || { TC: 0, TS: 0, TO: 0, LO: 0 },
+                      inventory: m.inventory || []
+                  }))
+              };
+              setActiveGuild(sanitizedGuild);
               setPassword(key);
               setIsAuthenticated(true);
               dbService.setSession(id, key);
@@ -276,7 +307,11 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const g = JSON.parse(json) as GuildState;
       if (!g.guildName) throw new Error();
       g.id = crypto.randomUUID(); 
-      
+      // Sanitize on import too
+      g.calendar = g.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0 };
+      g.quests = g.quests || [];
+      g.members = g.members.map(m => ({ ...m, wallet: m.wallet || {TC:0, TS:0, TO:0, LO:0}, inventory: m.inventory || [] }));
+
       await dbService.saveGuild(g, pwd);
       await refreshGuildList();
       
@@ -305,7 +340,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
   };
 
-  // --- ACTIONS WRAPPERS (Identical logic) ---
+  // --- ACTIONS WRAPPERS ---
   const renameActiveGuild = (name: string) => triggerSave({ ...activeGuild, guildName: name });
 
   const internalAddLog = (currentGuild: GuildState, category: LogCategory, details: string, value: number, mId: string): LogEntry[] => {
@@ -314,7 +349,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addMember = (name: string) => {
-    const newMember: Member = { id: crypto.randomUUID(), name, status: 'Ativo' };
+    const newMember: Member = { id: crypto.randomUUID(), name, status: 'Ativo', wallet: {TC:0,TS:0,TO:0,LO:0}, inventory: [] };
     triggerSave({ ...activeGuild, members: [...activeGuild.members, newMember], logs: internalAddLog(activeGuild, 'Sistema', `Membro ${name} alistado.`, 0, 'SYSTEM') });
     notify(`Membro ${name} registrado.`);
   };
@@ -367,6 +402,117 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
     notify("Troca autorizada.");
   };
+
+  // --- NEW: MEMBER WALLET & INVENTORY ---
+
+  const transferGoldToMember = (memberId: string, val: number, cur: CurrencyType) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return notify("Membro não encontrado", "error");
+      if(activeGuild.wallet[cur] < val) return notify("Cofre da Guilda insuficiente", "error");
+
+      const updatedMembers = activeGuild.members.map(m => {
+          if(m.id === memberId) return { ...m, wallet: { ...m.wallet, [cur]: m.wallet[cur] + val } };
+          return m;
+      });
+
+      triggerSave({
+          ...activeGuild,
+          members: updatedMembers,
+          wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] - val },
+          logs: internalAddLog(activeGuild, 'Saque', `Repasse: ${val} ${cur} para ${member.name}`, -(val * RATES[cur]), memberId)
+      });
+      notify(`Transferência para ${member.name} realizada.`);
+  };
+
+  const transferGoldFromMember = (memberId: string, val: number, cur: CurrencyType) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return notify("Membro não encontrado", "error");
+      if(member.wallet[cur] < val) return notify("Carteira do membro insuficiente", "error");
+
+      const updatedMembers = activeGuild.members.map(m => {
+          if(m.id === memberId) return { ...m, wallet: { ...m.wallet, [cur]: m.wallet[cur] - val } };
+          return m;
+      });
+
+      triggerSave({
+          ...activeGuild,
+          members: updatedMembers,
+          wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] + val },
+          logs: internalAddLog(activeGuild, 'Deposito', `Devolução: ${val} ${cur} de ${member.name}`, (val * RATES[cur]), memberId)
+      });
+      notify(`Devolução de ${member.name} recebida.`);
+  };
+
+  const transferItemToMember = (itemId: string, memberId: string, qty: number) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      const item = activeGuild.items.find(i => i.id === itemId);
+      if(!member || !item || item.quantity < qty) return notify("Operação inválida", "error");
+
+      // 1. Remove from Guild
+      const updatedGuildItems = activeGuild.items.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
+      
+      // 2. Add to Member
+      const memberItem = member.inventory.find(i => i.name === item.name && i.rarity === item.rarity); // Match by name/rarity logic or ID? Usually create new instance or stack.
+      let newInventory = [...member.inventory];
+      if (memberItem) {
+          newInventory = newInventory.map(i => i.id === memberItem.id ? { ...i, quantity: i.quantity + qty } : i);
+      } else {
+          newInventory.push({ ...item, id: crypto.randomUUID(), quantity: qty });
+      }
+
+      triggerSave({
+          ...activeGuild,
+          items: updatedGuildItems,
+          members: activeGuild.members.map(m => m.id === memberId ? { ...m, inventory: newInventory } : m),
+          logs: internalAddLog(activeGuild, 'Estoque', `Entrega: ${qty}x ${item.name} para ${member.name}`, 0, memberId)
+      });
+      notify(`Item entregue a ${member.name}.`);
+  };
+
+  const transferItemFromMember = (itemId: string, memberId: string, qty: number) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return;
+      const item = member.inventory.find(i => i.id === itemId);
+      if(!item || item.quantity < qty) return notify("Item não encontrado no inventário do membro", "error");
+
+      // 1. Remove from Member
+      const newInventory = member.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
+
+      // 2. Add to Guild
+      const guildItem = activeGuild.items.find(i => i.name === item.name && i.rarity === item.rarity);
+      let newGuildItems = [...activeGuild.items];
+      if(guildItem) {
+          newGuildItems = newGuildItems.map(i => i.id === guildItem.id ? { ...i, quantity: i.quantity + qty } : i);
+      } else {
+          newGuildItems.push({ ...item, id: crypto.randomUUID(), quantity: qty });
+      }
+
+      triggerSave({
+          ...activeGuild,
+          members: activeGuild.members.map(m => m.id === memberId ? { ...m, inventory: newInventory } : m),
+          items: newGuildItems,
+          logs: internalAddLog(activeGuild, 'Estoque', `Retorno: ${qty}x ${item.name} de ${member.name}`, 0, memberId)
+      });
+      notify("Item devolvido ao cofre.");
+  };
+
+  const memberDiscardItem = (itemId: string, memberId: string, qty: number) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return;
+      const item = member.inventory.find(i => i.id === itemId);
+      if(!item || item.quantity < qty) return notify("Erro", "error");
+
+      const newInventory = member.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
+      
+      triggerSave({
+          ...activeGuild,
+          members: activeGuild.members.map(m => m.id === memberId ? { ...m, inventory: newInventory } : m),
+          logs: internalAddLog(activeGuild, 'Estoque', `Descarte: ${qty}x ${item.name} por ${member.name}`, 0, memberId)
+      });
+      notify("Item descartado pelo aventureiro.");
+  };
+
+  // --- EXISTING ITEMS ACTIONS ---
 
   const addItem = (item: Omit<Item, 'id'>) => {
     triggerSave({ ...activeGuild, items: [...activeGuild.items, { ...item, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'Estoque', `Item: ${item.name}`, 0, 'SYSTEM') });
@@ -429,6 +575,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     notify("Item removido.");
   };
 
+  // --- BASES & DOMAINS WRAPPERS (Unchanged logic, just forwarding) ---
   const addBase = (name: string, porte: BasePorte, type: BaseType, paid: boolean) => {
     const cost = PORTE_DATA[porte].cost;
     if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente.", "error");
@@ -680,6 +827,109 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     notify("Dispensado.");
   };
 
+  // --- CALENDAR FEATURES ---
+
+  const advanceDate = (days: number) => {
+      let { day, month, year, dayOfWeek } = activeGuild.calendar;
+      let newDay = day + days;
+      let newMonth = month;
+      let newYear = year;
+      let newWeekDay = (dayOfWeek + days) % 7;
+      let costDeducted = 0;
+      let logMessages: string[] = [];
+
+      // Logic: 360 days (12 months x 30 days)
+      while (newDay > 30) {
+          newDay -= 30;
+          newMonth++;
+          
+          // Month Rollover Logic - Trigger Maintenance
+          const totalBaseMaint = activeGuild.bases.reduce((acc, b) => acc + PORTE_DATA[b.porte].maintenance, 0);
+          const totalNpcMaint = activeGuild.npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
+          const monthlyTotal = totalBaseMaint + totalNpcMaint;
+
+          costDeducted += monthlyTotal;
+          logMessages.push(`Virada de Mês (${ARTON_MONTHS[newMonth-1] || 'Ano Novo'}): Manutenção -${monthlyTotal} T$`);
+
+          if (newMonth >= 12) {
+              newMonth = 0;
+              newYear++;
+              logMessages.push(`Ano Novo! Bem-vindo a ${newYear}.`);
+          }
+      }
+
+      let newWallet = { ...activeGuild.wallet };
+      if (costDeducted > 0) {
+          if (newWallet.TS >= costDeducted) {
+              newWallet.TS -= costDeducted;
+          } else {
+              logMessages.push("ALERTA: Cofre insuficiente para manutenção automática!");
+              // Optional: Deduct what is possible or go negative? Keeping it safe, just alerting for now in this MVP
+          }
+      }
+
+      const newLogs = logMessages.map(msg => ({
+          id: crypto.randomUUID(), 
+          date: new Date().toISOString(), 
+          category: 'Calendario' as LogCategory, 
+          details: msg, 
+          value: msg.includes('Manutenção') ? -costDeducted : 0, 
+          memberId: 'SYSTEM', 
+          memberName: 'Tempo'
+      }));
+
+      triggerSave({
+          ...activeGuild,
+          calendar: { day: newDay, month: newMonth, year: newYear, dayOfWeek: newWeekDay },
+          wallet: newWallet,
+          logs: [...newLogs, ...activeGuild.logs]
+      });
+      
+      notify(`${days} dia(s) se passaram.`);
+  };
+
+  // --- QUESTS FEATURES ---
+
+  const addQuest = (quest: Omit<Quest, 'id' | 'status'>) => {
+      triggerSave({
+          ...activeGuild,
+          quests: [...activeGuild.quests, { ...quest, id: crypto.randomUUID(), status: 'Disponivel' }],
+          logs: internalAddLog(activeGuild, 'Quest', `Nova Missão: ${quest.title}`, 0, 'SYSTEM')
+      });
+      notify("Missão afixada no quadro.");
+  };
+
+  const updateQuestStatus = (questId: string, newStatus: QuestStatus) => {
+      const quest = activeGuild.quests.find(q => q.id === questId);
+      if (!quest) return;
+
+      let newWallet = activeGuild.wallet;
+      let newLogs = [];
+
+      if (newStatus === 'Concluida' && quest.status !== 'Concluida') {
+          // Auto reward distribution logic
+          newWallet = { ...newWallet, TS: newWallet.TS + quest.rewardGold };
+          newLogs.push({
+              id: crypto.randomUUID(), date: new Date().toISOString(), 
+              category: 'Quest' as LogCategory, details: `Recompensa Missão "${quest.title}"`, 
+              value: quest.rewardGold, memberId: 'SYSTEM', memberName: 'Guilda'
+          });
+          notify(`Missão Concluída! T$ ${quest.rewardGold} adicionados.`);
+      }
+
+      triggerSave({
+          ...activeGuild,
+          quests: activeGuild.quests.map(q => q.id === questId ? { ...q, status: newStatus } : q),
+          wallet: newWallet,
+          logs: [...newLogs, ...activeGuild.logs]
+      });
+  };
+
+  const deleteQuest = (questId: string) => {
+      triggerSave({ ...activeGuild, quests: activeGuild.quests.filter(q => q.id !== questId) });
+      notify("Missão removida.");
+  };
+
   const exportLogs = () => {
     const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeGuild.logs, null, 2));
     const node = document.createElement('a');
@@ -696,11 +946,21 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       activeGuildId: activeGuild.id,
       createNewGuild, importGuild, exportGuildData, renameActiveGuild, deleteActiveGuild, deleteGuildById,
       changeAdminPassword, resetGuildPassword,
-      addMember, updateMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems,
+      addMember, updateMember, removeMember, deposit, withdraw, convertWallet, 
+      transferGoldToMember, transferGoldFromMember,
+      
+      addItem, updateItem, sellItem, sellBatchItems, withdrawItem, 
+      transferItemToMember, transferItemFromMember, memberDiscardItem,
+      deleteItem, deleteBatchItems,
+      
       addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase,
       addNPC, updateNPC, removeNPC, payAllNPCs, paySingleNPC, addRoom, removeRoom, addFurniture, removeFurniture,
       createDomain, updateDomain, investDomain, withdrawDomain, manageDomainTreasury, demolishDomain, levelUpDomain, governDomain,
-      addDomainBuilding, removeDomainBuilding, addDomainUnit, removeDomainUnit, exportLogs, notify
+      addDomainBuilding, removeDomainBuilding, addDomainUnit, removeDomainUnit, 
+      
+      advanceDate, addQuest, updateQuestStatus, deleteQuest,
+      
+      exportLogs, notify
     }}>
       {children}
     </GuildContext.Provider>

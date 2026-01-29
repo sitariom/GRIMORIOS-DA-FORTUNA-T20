@@ -91,3 +91,15 @@ export const DOMAIN_UNITS_CATALOG = [
   { name: 'Guarda Real', type: 'Elite', power: 6, costLO: 6 },
   { name: 'Mercenários', type: 'Variado', power: 3, costLO: 3 },
 ];
+
+// CALENDAR CONSTANTS
+export const ARTON_MONTHS = [
+  'Caravana', 'Pomo', 'Keenvia', // Primavera
+  'Sirravia', 'Vigília', 'Prussvia', // Verão
+  'Ceifa', 'Contenda', 'Clausura', // Outono
+  'Pharstyth', 'Véu', 'Pyra' // Inverno
+];
+
+export const ARTON_WEEKDAYS = [
+  'Valk', 'Hedryl', 'Luna', 'Astar', 'Dallia', 'Haya', 'Leen'
+];

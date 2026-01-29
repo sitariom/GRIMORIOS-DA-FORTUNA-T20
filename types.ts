@@ -106,7 +106,7 @@ export interface GovernResult {
   details: string[];
 }
 
-export type LogCategory = 'Venda' | 'Compra' | 'Saque' | 'Deposito' | 'Investimento' | 'Manutencao' | 'Conversao' | 'Sistema' | 'Base' | 'Dominio' | 'Estoque' | 'NPC';
+export type LogCategory = 'Venda' | 'Compra' | 'Saque' | 'Deposito' | 'Investimento' | 'Manutencao' | 'Conversao' | 'Sistema' | 'Base' | 'Dominio' | 'Estoque' | 'NPC' | 'Quest' | 'Calendario' | 'Membro';
 
 export interface LogEntry {
   id: string;
@@ -124,6 +124,27 @@ export interface Member {
   id: string;
   name: string;
   status: MemberStatus;
+  wallet: Wallet; // Carteira individual do aventureiro
+  inventory: Item[]; // Inventário individual
+}
+
+export interface CalendarState {
+  day: number;
+  month: number; // 0-11 index based on ARTON_MONTHS
+  year: number;
+  dayOfWeek: number; // 0-6 index based on ARTON_WEEKDAYS
+}
+
+export type QuestStatus = 'Disponivel' | 'Em Andamento' | 'Concluida' | 'Falha';
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  status: QuestStatus;
+  rewardGold: number; // Valor em TS
+  rewardXP: string;
+  assignedMemberIds: string[];
 }
 
 export interface GuildState {
@@ -136,6 +157,8 @@ export interface GuildState {
   npcs: NPC[];
   logs: LogEntry[];
   members: Member[];
+  calendar: CalendarState;
+  quests: Quest[];
 }
 
 export interface MultiGuildState {

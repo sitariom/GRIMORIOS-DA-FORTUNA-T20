@@ -117,7 +117,7 @@ const GuildManagerPage: React.FC = () => {
                     </button>
                 </>
             ) : (
-                <button onClick={() => setShowAdminLogin(true)} className="text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-gold transition-colors flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+                <button onClick={() => setShowAdminLogin(true)} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-gold transition-colors flex items-center gap-2 text-xs font-black uppercase tracking-widest">
                     <Lock size={14}/> Acesso Admin
                 </button>
             )}
@@ -131,7 +131,7 @@ const GuildManagerPage: React.FC = () => {
                   <div className="flex items-center gap-6">
                       <div className="wax-seal w-16 h-16 flex items-center justify-center animate-pulse"><Check size={32} className="text-white"/></div>
                       <div>
-                          <p className="text-xs font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50 tracking-widest">Sessão Ativa</p>
+                          <p className="text-xs font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest">Sessão Ativa</p>
                           <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{guildName}</h3>
                       </div>
                   </div>
@@ -170,7 +170,7 @@ const GuildManagerPage: React.FC = () => {
                 </div>
                 
                 <h3 className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-parchment leading-tight mb-2 truncate">{g.guild_name}</h3>
-                <p className="text-[10px] font-black uppercase text-fantasy-wood/30 dark:text-fantasy-parchment/30 mb-8">
+                <p className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 mb-8">
                     Atualizado em: {new Date(g.updated_at).toLocaleDateString()}
                 </p>
                 
@@ -179,7 +179,7 @@ const GuildManagerPage: React.FC = () => {
                         <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">Ativo Agora</p>
                     </div>
                 ) : (
-                    <button onClick={() => setShowLogin(g.id)} className="w-full bg-black/10 dark:bg-white/10 hover:bg-fantasy-wood dark:hover:bg-fantasy-gold text-fantasy-wood dark:text-fantasy-parchment dark:hover:text-black py-4 rounded-2xl font-medieval uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                    <button onClick={() => setShowLogin(g.id)} className="w-full bg-white/40 dark:bg-white/10 hover:bg-fantasy-wood dark:hover:bg-fantasy-gold text-fantasy-wood dark:text-fantasy-parchment dark:hover:text-black py-4 rounded-2xl font-medieval uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                         <Lock size={16}/> Autenticar
                     </button>
                 )}
@@ -191,17 +191,17 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Guild Login */}
       {showLogin && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowLogin(null)} className="absolute top-6 right-6 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={24}/></button>
+                  <button onClick={() => setShowLogin(null)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={24}/></button>
                   <div className="text-center mb-8">
                       <div className="wax-seal w-16 h-16 mx-auto mb-4 flex items-center justify-center text-white"><Key size={32}/></div>
                       <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">Acesso Restrito</h3>
                   </div>
                   <form onSubmit={handleLogin} className="space-y-6">
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha da Guilda</label>
-                          <input type="password" autoFocus className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[20px] px-6 py-4 text-center text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment focus:border-fantasy-gold outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha da Guilda</label>
+                          <input type="password" autoFocus className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[20px] px-6 py-4 text-center text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment focus:border-fantasy-gold outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
                       </div>
                       <button type="submit" className="w-full bg-fantasy-gold text-black py-4 rounded-[24px] font-medieval text-xl uppercase tracking-widest hover:brightness-110 shadow-lg">Entrar</button>
                   </form>
@@ -211,17 +211,17 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Admin Login */}
       {showAdminLogin && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-red-900/30 shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowAdminLogin(false)} className="absolute top-6 right-6 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={24}/></button>
+                  <button onClick={() => setShowAdminLogin(false)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={24}/></button>
                   <div className="text-center mb-8">
                       <div className="wax-seal w-16 h-16 mx-auto mb-4 flex items-center justify-center text-white bg-red-900 border-red-950"><Settings size={32}/></div>
                       <h3 className="text-3xl font-medieval text-red-900 dark:text-red-500">Mestre do Sistema</h3>
                   </div>
                   <form onSubmit={handleAdminLogin} className="space-y-6">
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha de Administrador</label>
-                          <input type="password" autoFocus className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[20px] px-6 py-4 text-center text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment focus:border-fantasy-gold outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha de Administrador</label>
+                          <input type="password" autoFocus className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[20px] px-6 py-4 text-center text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment focus:border-fantasy-gold outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
                       </div>
                       <button type="submit" className="w-full bg-red-900 text-white py-4 rounded-[24px] font-medieval text-xl uppercase tracking-widest hover:brightness-110 shadow-lg">Autenticar</button>
                   </form>
@@ -231,18 +231,18 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Admin Settings Panel */}
       {showAdminPanel && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowAdminPanel(false)} className="absolute top-6 right-6 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={24}/></button>
+                  <button onClick={() => setShowAdminPanel(false)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={24}/></button>
                   <h3 className="text-3xl font-medieval text-center mb-8 text-fantasy-wood dark:text-fantasy-parchment">Configuração Admin</h3>
                   <form onSubmit={handleChangeAdminPass} className="space-y-6">
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha Atual</label>
-                          <input type="password" className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha Atual</label>
+                          <input type="password" className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={inputPassword} onChange={e => setInputPassword(e.target.value)}/>
                       </div>
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nova Senha</label>
-                          <input type="password" className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={newPassword} onChange={e => setNewPassword(e.target.value)}/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nova Senha</label>
+                          <input type="password" className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={newPassword} onChange={e => setNewPassword(e.target.value)}/>
                       </div>
                       <button type="submit" className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black py-4 rounded-[24px] font-medieval text-xl uppercase tracking-widest hover:brightness-110 shadow-lg">Alterar Senha</button>
                   </form>
@@ -252,15 +252,15 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Reset Guild Password Modal */}
       {showResetGuild && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-amber-500/30 shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowResetGuild(null)} className="absolute top-6 right-6 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={24}/></button>
+                  <button onClick={() => setShowResetGuild(null)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={24}/></button>
                   <h3 className="text-3xl font-medieval text-center mb-8 text-fantasy-wood dark:text-fantasy-parchment">Redefinir Acesso</h3>
                   <form onSubmit={handleResetGuildPass} className="space-y-6">
-                      <p className="text-center text-xs font-serif italic opacity-70 text-fantasy-wood/80 dark:text-fantasy-parchment/80">Define uma nova senha para a guilda selecionada.</p>
+                      <p className="text-center text-xs font-serif italic text-fantasy-wood/80 dark:text-fantasy-parchment/80">Define uma nova senha para a guilda selecionada.</p>
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nova Senha da Guilda</label>
-                          <input type="password" autoFocus className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={newPassword} onChange={e => setNewPassword(e.target.value)}/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nova Senha da Guilda</label>
+                          <input type="password" autoFocus className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[20px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none" value={newPassword} onChange={e => setNewPassword(e.target.value)}/>
                       </div>
                       <button type="submit" className="w-full bg-amber-700 text-white py-4 rounded-[24px] font-medieval text-xl uppercase tracking-widest hover:brightness-110 shadow-lg">Redefinir</button>
                   </form>
@@ -270,18 +270,18 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Create Modal */}
       {showCreate && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-12 rounded-[56px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={28}/></button>
+                  <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={28}/></button>
                   <h3 className="text-4xl font-medieval text-center mb-10 text-fantasy-wood dark:text-fantasy-gold">Fundar Nova Ordem</h3>
                   <form onSubmit={handleCreate} className="space-y-6">
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nome da Guilda</label>
-                          <input className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="Ex: Cavaleiros de Tanna-Toh"/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Nome da Guilda</label>
+                          <input className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="Ex: Cavaleiros de Tanna-Toh"/>
                       </div>
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha Mestra (Não esqueça!)</label>
-                          <input type="password" className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="******"/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Senha Mestra (Não esqueça!)</label>
+                          <input type="password" className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="******"/>
                       </div>
                       <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[32px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-4 border-red-950 hover:translate-y-1 active:border-b-0">Criar Registro</button>
                   </form>
@@ -291,18 +291,18 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Import Modal */}
       {showImport && (
-          <div className="fixed inset-0 bg-[#0d0d0d] z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
               <div className="parchment-card p-12 rounded-[56px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
-                  <button onClick={() => setShowImport(false)} className="absolute top-10 right-10 text-fantasy-wood/40 hover:text-fantasy-wood"><X size={28}/></button>
+                  <button onClick={() => setShowImport(false)} className="absolute top-10 right-10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors"><X size={28}/></button>
                   <h3 className="text-4xl font-medieval text-center mb-10 text-fantasy-wood dark:text-fantasy-gold">Importar Registro</h3>
                   <form onSubmit={handleImport} className="space-y-6">
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Arquivo JSON</label>
-                          <input type="file" ref={fileInput} accept=".json" className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[24px] px-6 py-4 text-sm font-bold text-fantasy-wood dark:text-fantasy-parchment outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-fantasy-wood file:text-white hover:file:bg-fantasy-wood/80"/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Arquivo JSON</label>
+                          <input type="file" ref={fileInput} accept=".json" className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[24px] px-6 py-4 text-sm font-bold text-fantasy-wood dark:text-fantasy-parchment outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-fantasy-wood file:text-white hover:file:bg-fantasy-wood/80"/>
                       </div>
                       <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest ml-4 opacity-50 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Definir Senha de Acesso</label>
-                          <input type="password" className="w-full bg-black/10 dark:bg-black/40 border-2 border-fantasy-wood/10 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="******"/>
+                          <label className="text-xs font-black uppercase tracking-widest ml-4 text-fantasy-wood/60 dark:text-fantasy-parchment/60">Definir Senha de Acesso</label>
+                          <input type="password" className="w-full bg-white/40 dark:bg-black/60 border-2 border-fantasy-wood/10 dark:border-fantasy-parchment/20 rounded-[24px] px-6 py-4 text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment outline-none focus:border-fantasy-gold" value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="******"/>
                       </div>
                       <button type="submit" className="w-full bg-indigo-900 text-white py-6 rounded-[32px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-4 border-indigo-950 hover:translate-y-1 active:border-b-0">Restaurar</button>
                   </form>
