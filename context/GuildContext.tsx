@@ -1,8 +1,8 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { GuildState, MultiGuildState, Wallet, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, PopularityType, NPC, NPCLocationType, GovernResult } from '../types';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { GuildState, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, NPC, GovernResult } from '../types';
 import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS } from '../constants';
-import { dbService } from '../services/db';
+import { dbService, GuildSummary } from '../services/db';
 
 interface FeedbackMessage {
   type: 'success' | 'error' | 'info';
@@ -12,13 +12,30 @@ interface FeedbackMessage {
 interface GuildContextType extends GuildState {
   isLoading: boolean;
   feedback: FeedbackMessage | null;
-  guilds: GuildState[];
+  
+  // Auth & List
+  guildList: GuildSummary[];
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  guildPassword?: string;
+  refreshGuildList: () => void;
+  loginToGuild: (id: string, password: string) => Promise<boolean>;
+  loginAsAdmin: (password: string) => Promise<boolean>;
+  logout: () => void;
+
   activeGuildId: string;
-  setActiveGuild: (id: string) => void;
-  createNewGuild: (name: string) => void;
-  importGuild: (data: string) => void;
+  createNewGuild: (name: string, password: string) => Promise<void>;
+  importGuild: (data: string, password: string) => Promise<void>;
+  exportGuildData: (guildId: string) => Promise<void>;
   renameActiveGuild: (name: string) => void;
   deleteActiveGuild: () => void;
+  deleteGuildById: (id: string) => Promise<void>;
+  
+  // Admin Actions
+  changeAdminPassword: (oldP: string, newP: string) => Promise<void>;
+  resetGuildPassword: (guildId: string, newP: string) => Promise<void>;
+
+  // Actions
   addMember: (name: string) => void;
   updateMember: (id: string, updates: Partial<Member>) => void;
   removeMember: (id: string) => void;
@@ -64,9 +81,9 @@ interface GuildContextType extends GuildState {
 
 const GuildContext = createContext<GuildContextType | undefined>(undefined);
 
-const INITIAL_GUILD = (name: string): GuildState => ({
-  id: crypto.randomUUID(),
-  guildName: name,
+const EMPTY_GUILD: GuildState = {
+  id: '',
+  guildName: '',
   wallet: { TC: 0, TS: 0, TO: 0, LO: 0 },
   items: [],
   bases: [],
@@ -74,66 +91,45 @@ const INITIAL_GUILD = (name: string): GuildState => ({
   npcs: [],
   logs: [],
   members: [],
+};
+
+const INITIAL_GUILD_FACTORY = (name: string): GuildState => ({
+  ...EMPTY_GUILD,
+  id: crypto.randomUUID(),
+  guildName: name,
 });
 
 export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeGuildId, setActiveGuildIdState] = useState<string>('');
-  const [guilds, setGuilds] = useState<GuildState[]>([]);
+  const [activeGuild, setActiveGuild] = useState<GuildState>(EMPTY_GUILD);
+  const [guildList, setGuildList] = useState<GuildSummary[]>([]);
+  const [password, setPassword] = useState<string>('');
+  const [adminPassword, setAdminPassword] = useState<string>('');
+  
   const [feedback, setFeedback] = useState<FeedbackMessage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const notify = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
     setFeedback({ text, type });
     setTimeout(() => setFeedback(null), 4000);
   };
 
-  // Initialize DB & Migrate Legacy Data
   useEffect(() => {
     const init = async () => {
       try {
-        const storedGuilds = await dbService.getAllGuilds();
-        
-        if (storedGuilds.length > 0) {
-           const storedActiveId = await dbService.getActiveGuildId();
-           setGuilds(storedGuilds);
-           setActiveGuildIdState(storedActiveId && storedGuilds.find(g => g.id === storedActiveId) ? storedActiveId : storedGuilds[0].id);
-        } else {
-           // Tenta migrar do LocalStorage antigo
-           const legacyData = localStorage.getItem('grimoire_fortuna_v1');
-           let migrated = false;
+        const list = await dbService.getAllGuilds();
+        setGuildList(list);
 
-           if (legacyData) {
-               try {
-                   const parsed = JSON.parse(legacyData);
-                   if (parsed.guilds && Array.isArray(parsed.guilds) && parsed.guilds.length > 0) {
-                       console.log("Migrando dados do LocalStorage para IndexedDB...");
-                       for (const g of parsed.guilds) {
-                           await dbService.saveGuild(g);
-                       }
-                       const initialId = parsed.activeGuildId || parsed.guilds[0].id;
-                       await dbService.setActiveGuildId(initialId);
-                       
-                       setGuilds(parsed.guilds);
-                       setActiveGuildIdState(initialId);
-                       migrated = true;
-                       notify("Dados antigos migrados com sucesso para o novo banco!", "success");
-                   }
-               } catch (e) {
-                   console.error("Erro na migração:", e);
-               }
-           }
-
-           if (!migrated) {
-               const first = INITIAL_GUILD('Ordem do Cálice');
-               await dbService.saveGuild(first);
-               await dbService.setActiveGuildId(first.id);
-               setGuilds([first]);
-               setActiveGuildIdState(first.id);
-           }
+        const session = await dbService.getSession();
+        if (session) {
+            await loginToGuild(session.id, session.key);
         }
       } catch (error) {
-        console.error("Failed to load from DB", error);
-        notify("Erro ao carregar dados do grimório.", "error");
+        console.error("Init Error", error);
+        // Não notificamos erro no init para não assustar se for apenas 404 local
       } finally {
         setIsLoading(false);
       }
@@ -141,67 +137,176 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     init();
   }, []);
 
-  const setActiveGuild = async (id: string) => {
-    setActiveGuildIdState(id);
-    await dbService.setActiveGuildId(id);
+  const refreshGuildList = async () => {
+      try {
+        const list = await dbService.getAllGuilds();
+        setGuildList(list);
+      } catch (e) {
+        console.error("Failed to refresh list", e);
+      }
   };
 
-  // Helper to update active guild and persist
-  const updateActiveGuild = useCallback((updates: Partial<GuildState>) => {
-    setGuilds(prevGuilds => {
-      const newGuilds = prevGuilds.map(g => {
-        if (g.id === activeGuildId) {
-          const updated = { ...g, ...updates };
-          dbService.saveGuild(updated); // Fire and forget persistence
-          return updated;
+  // --- AUTH ---
+
+  const loginToGuild = async (id: string, key: string): Promise<boolean> => {
+      setIsLoading(true);
+      try {
+          const guild = await dbService.getGuild(id, key);
+          if (guild) {
+              setActiveGuild(guild);
+              setPassword(key);
+              setIsAuthenticated(true);
+              dbService.setSession(id, key);
+              return true;
+          }
+          return false;
+      } catch (e) {
+          notify("Acesso negado: Senha incorreta ou erro de servidor.", "error");
+          return false;
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const loginAsAdmin = async (pwd: string): Promise<boolean> => {
+      setIsLoading(true);
+      try {
+          await dbService.loginAdmin(pwd);
+          setIsAdmin(true);
+          setAdminPassword(pwd);
+          notify("Modo Administrador Ativado", "info");
+          return true;
+      } catch (e) {
+          notify("Senha de Administrador Incorreta", "error");
+          return false;
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const logout = () => {
+      setActiveGuild(EMPTY_GUILD);
+      setPassword('');
+      setIsAuthenticated(false);
+      dbService.setSession('', '');
+      refreshGuildList();
+  };
+
+  // --- ADMIN ACTIONS ---
+
+  const changeAdminPassword = async (oldP: string, newP: string) => {
+      try {
+          await dbService.changeAdminPassword(oldP, newP);
+          setAdminPassword(newP);
+          notify("Senha de Administrador alterada.");
+      } catch (e) {
+          notify("Falha ao alterar senha de admin.", "error");
+      }
+  };
+
+  const resetGuildPassword = async (guildId: string, newP: string) => {
+      if(!isAdmin) return;
+      try {
+          await dbService.resetGuildPassword(adminPassword, guildId, newP);
+          notify("Senha da guilda redefinida.");
+      } catch (e) {
+          notify("Erro ao redefinir senha.", "error");
+      }
+  };
+
+  // --- SAVE ---
+
+  const triggerSave = useCallback((newState: GuildState) => {
+      setActiveGuild(newState);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+      saveTimeoutRef.current = setTimeout(() => {
+          if (password && newState.id) {
+              dbService.saveGuild(newState, password).catch(err => {
+                  console.error(err);
+                  notify("Falha ao salvar automaticamente (Verifique conexão).", "error");
+              });
+          }
+      }, 2000);
+  }, [password]);
+
+  // --- GUILD MANAGEMENT ---
+
+  const createNewGuild = async (name: string, pwd: string) => {
+    setIsLoading(true);
+    try {
+        const g = INITIAL_GUILD_FACTORY(name);
+        await dbService.saveGuild(g, pwd);
+        await refreshGuildList();
+        if(!isAdmin) {
+            await loginToGuild(g.id, pwd);
         }
-        return g;
-      });
-      return newGuilds;
-    });
-  }, [activeGuildId]);
-
-  const activeGuild = guilds.find(g => g.id === activeGuildId) || (guilds[0] ?? INITIAL_GUILD('Loading...'));
-
-  const createNewGuild = async (name: string) => {
-    const g = INITIAL_GUILD(name);
-    await dbService.saveGuild(g);
-    await dbService.setActiveGuildId(g.id);
-    setGuilds(prev => [...prev, g]);
-    setActiveGuildIdState(g.id);
-    notify(`Grimório "${name}" iniciado.`);
+        notify(`Grimório "${name}" forjado.`);
+    } catch(e) {
+        notify("Erro ao criar guilda. Servidor indisponível?", "error");
+    } finally {
+        setIsLoading(false);
+    }
   };
-
-  const renameActiveGuild = (name: string) => updateActiveGuild({ guildName: name });
 
   const deleteActiveGuild = async () => {
-    if (guilds.length <= 1) return notify("O último grimório não pode ser queimado.", "error");
-    
-    await dbService.deleteGuild(activeGuildId);
-    
-    const remaining = guilds.filter(g => g.id !== activeGuildId);
-    const nextId = remaining[0].id;
-    
-    await dbService.setActiveGuildId(nextId);
-    setGuilds(remaining);
-    setActiveGuildIdState(nextId);
-    notify("Crônicas removidas com sucesso.");
+    if (!isAuthenticated) return;
+    try {
+        await dbService.deleteGuild(activeGuild.id, password);
+        notify("Grimório queimado e esquecido.");
+        logout();
+    } catch (e) {
+        notify("Erro ao deletar.", "error");
+    }
   };
 
-  const importGuild = async (json: string) => {
+  const deleteGuildById = async (id: string) => {
+      if(!isAdmin) return;
+      try {
+          await dbService.deleteGuild(id, adminPassword);
+          notify("Guilda removida pelo administrador.");
+          refreshGuildList();
+      } catch (e) {
+          notify("Erro ao deletar guilda.", "error");
+      }
+  };
+
+  const importGuild = async (json: string, pwd: string) => {
     try {
       const g = JSON.parse(json) as GuildState;
       if (!g.guildName) throw new Error();
-      g.id = crypto.randomUUID();
+      g.id = crypto.randomUUID(); 
       
-      await dbService.saveGuild(g);
-      await dbService.setActiveGuildId(g.id);
+      await dbService.saveGuild(g, pwd);
+      await refreshGuildList();
       
-      setGuilds(prev => [...prev, g]);
-      setActiveGuildIdState(g.id);
-      notify("Conhecimento importado com sucesso.");
-    } catch { notify("Pergaminho corrompido ou inválido.", "error"); }
+      notify("Backup restaurado com sucesso.");
+    } catch { notify("Arquivo inválido ou erro de servidor.", "error"); }
   };
+
+  const exportGuildData = async (guildId: string) => {
+      setIsLoading(true);
+      try {
+          const pwd = isAdmin ? adminPassword : password;
+          const data = await dbService.getGuild(guildId, pwd);
+          
+          if(data) {
+              const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+              const node = document.createElement('a');
+              node.setAttribute("href", jsonString);
+              node.setAttribute("download", `BACKUP_${data.guildName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`);
+              node.click();
+              notify("Backup gerado.");
+          }
+      } catch (e) {
+          notify("Erro ao gerar backup.", "error");
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  // --- ACTIONS WRAPPERS (Identical logic) ---
+  const renameActiveGuild = (name: string) => triggerSave({ ...activeGuild, guildName: name });
 
   const internalAddLog = (currentGuild: GuildState, category: LogCategory, details: string, value: number, mId: string): LogEntry[] => {
     const mName = currentGuild.members.find(m => m.id === mId)?.name || 'Sistema';
@@ -210,28 +315,28 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addMember = (name: string) => {
     const newMember: Member = { id: crypto.randomUUID(), name, status: 'Ativo' };
-    const members = [...activeGuild.members, newMember];
-    updateActiveGuild({ members, logs: internalAddLog(activeGuild, 'Sistema', `Membro ${name} alistado.`, 0, 'SYSTEM') });
+    triggerSave({ ...activeGuild, members: [...activeGuild.members, newMember], logs: internalAddLog(activeGuild, 'Sistema', `Membro ${name} alistado.`, 0, 'SYSTEM') });
     notify(`Membro ${name} registrado.`);
   };
 
   const updateMember = (id: string, updates: Partial<Member>) => {
-    updateActiveGuild({ members: activeGuild.members.map(m => m.id === id ? { ...m, ...updates } : m) });
+    triggerSave({ ...activeGuild, members: activeGuild.members.map(m => m.id === id ? { ...m, ...updates } : m) });
   };
 
   const removeMember = (id: string) => {
     const memberName = activeGuild.members.find(m => m.id === id)?.name || 'Desconhecido';
-    const members = activeGuild.members.filter(m => m.id !== id);
-    updateActiveGuild({ 
-      members,
+    triggerSave({ 
+      ...activeGuild,
+      members: activeGuild.members.filter(m => m.id !== id),
       logs: internalAddLog(activeGuild, 'Sistema', `Baixa de Membro: ${memberName}`, 0, 'SYSTEM')
     });
-    notify("Membro removido do grimório.");
+    notify("Membro removido.");
   };
 
   const deposit = (mId: string, val: number, cur: CurrencyType, reason: string) => {
-    if (!mId) return notify("Selecione um membro responsável.", "error");
-    updateActiveGuild({
+    if (!mId) return notify("Selecione um membro.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] + val },
       logs: internalAddLog(activeGuild, 'Deposito', `+${val} ${cur}: ${reason}`, val * RATES[cur], mId)
     });
@@ -239,146 +344,99 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const withdraw = (mId: string, val: number, cur: CurrencyType, reason: string) => {
-    if (!mId) return notify("Selecione um membro responsável.", "error");
-    if (activeGuild.wallet[cur] < val) return notify("Cofre insuficiente para este saque.", "error");
-    updateActiveGuild({
+    if (!mId) return notify("Selecione um membro.", "error");
+    if (activeGuild.wallet[cur] < val) return notify("Cofre insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] - val },
       logs: internalAddLog(activeGuild, 'Saque', `-${val} ${cur}: ${reason}`, -(val * RATES[cur]), mId)
     });
-    notify("Saque realizado com sucesso.");
+    notify("Saque realizado.");
   };
 
   const convertWallet = (amt: number, from: CurrencyType, to: CurrencyType) => {
-    if (activeGuild.wallet[from] < amt) return notify("Quantidade insuficiente para câmbio.", "error");
-    
+    if (activeGuild.wallet[from] < amt) return notify("Saldo insuficiente.", "error");
     const conv = Math.floor((amt * RATES[from]) / RATES[to]);
-    if (conv === 0) return notify(`Quantidade insuficiente para gerar pelo menos 1 ${to}. Aumente a oferta.`, "error");
-
+    if (conv === 0) return notify(`Quantidade insuficiente para gerar 1 ${to}.`, "error");
     const realCost = (conv * RATES[to]) / RATES[from];
     const remainder = amt - realCost;
-    const details = remainder > 0 
-        ? `Câmbio: ${realCost} ${from} (de ${amt}) por ${conv} ${to}. Troco: ${remainder} ${from}`
-        : `Câmbio Direto: ${amt} ${from} por ${conv} ${to}`;
-
-    updateActiveGuild({
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, [from]: activeGuild.wallet[from] - realCost, [to]: activeGuild.wallet[to] + conv },
-      logs: internalAddLog(activeGuild, 'Conversao', details, 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Conversao', `Câmbio: ${realCost} ${from} -> ${conv} ${to}. Troco: ${remainder}`, 0, 'SYSTEM')
     });
-    notify("Troca autorizada pela Casa de Câmbio.");
+    notify("Troca autorizada.");
   };
 
   const addItem = (item: Omit<Item, 'id'>) => {
-    if (item.quantity <= 0) return notify("A quantidade deve ser maior que zero.", "error");
-    if (item.value < 0) return notify("O valor não pode ser negativo.", "error");
-    updateActiveGuild({ items: [...activeGuild.items, { ...item, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'Estoque', `Item Registrado: ${item.name} (${item.rarity})`, 0, 'SYSTEM') });
-    notify("Item catalogado no arsenal.");
+    triggerSave({ ...activeGuild, items: [...activeGuild.items, { ...item, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'Estoque', `Item: ${item.name}`, 0, 'SYSTEM') });
+    notify("Item catalogado.");
   };
 
   const updateItem = (id: string, up: Partial<Item>) => {
-    if (up.quantity !== undefined && up.quantity < 0) return notify("Quantidade inválida.", "error");
-    if (up.value !== undefined && up.value < 0) return notify("Valor inválido.", "error");
-    updateActiveGuild({ items: activeGuild.items.map(i => i.id === id ? { ...i, ...up } : i) });
+    triggerSave({ ...activeGuild, items: activeGuild.items.map(i => i.id === id ? { ...i, ...up } : i) });
   };
 
   const sellItem = (id: string, qty: number, sId: string, p: number) => {
     const item = activeGuild.items.find(i => i.id === id);
     if (!item || item.quantity < qty) return notify("Estoque insuficiente.", "error");
-    if (item.isNonNegotiable) return notify("Este item é inalienável e não pode ser comercializado.", "error");
-    
     const val = Math.floor(((item.value * qty) * (p / 100)));
-    updateActiveGuild({
+    triggerSave({
+      ...activeGuild,
       items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0),
       wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + val },
       logs: internalAddLog(activeGuild, 'Venda', `Venda ${qty}x ${item.name} (${p}%)`, val, sId)
     });
-    notify("Venda processada. Tibares de Prata adicionados.");
+    notify("Venda processada.");
   };
 
   const sellBatchItems = (itemIds: string[], sellerId: string, percentage: number) => {
     let totalValue = 0;
     const newLogs: LogEntry[] = [];
     const sellerName = activeGuild.members.find(m => m.id === sellerId)?.name || 'Desconhecido';
-
     const itemsToProcess = activeGuild.items.filter(i => itemIds.includes(i.id) && !i.isNonNegotiable);
-    
-    if (itemsToProcess.length === 0) return notify("Nenhum item válido para venda selecionado.", "error");
+    if (itemsToProcess.length === 0) return notify("Nenhum item válido.", "error");
 
     itemsToProcess.forEach(item => {
         const sellValue = Math.floor((item.value * item.quantity) * (percentage / 100));
         totalValue += sellValue;
-        newLogs.push({
-            id: crypto.randomUUID(),
-            date: new Date().toISOString(),
-            category: 'Venda',
-            details: `Venda Lote: ${item.quantity}x ${item.name} (${percentage}%)`,
-            value: sellValue,
-            memberId: sellerId,
-            memberName: sellerName
-        });
+        newLogs.push({ id: crypto.randomUUID(), date: new Date().toISOString(), category: 'Venda', details: `Venda Lote: ${item.quantity}x ${item.name}`, value: sellValue, memberId: sellerId, memberName: sellerName });
     });
-
     const itemsToKeep = activeGuild.items.filter(i => !itemsToProcess.find(p => p.id === i.id));
-
-    updateActiveGuild({
-        items: itemsToKeep,
-        wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + totalValue },
-        logs: [...newLogs, ...activeGuild.logs]
-    });
-    notify(`Lote vendido. T$ ${totalValue.toLocaleString()} adicionados.`);
+    triggerSave({ ...activeGuild, items: itemsToKeep, wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + totalValue }, logs: [...newLogs, ...activeGuild.logs] });
+    notify(`Lote vendido: T$ ${totalValue}.`);
   };
 
   const deleteBatchItems = (itemIds: string[]) => {
-      const itemsToDelete = activeGuild.items.filter(i => itemIds.includes(i.id));
-      if (itemsToDelete.length === 0) return;
-
-      const newLogs: LogEntry[] = [];
-      itemsToDelete.forEach(item => {
-          newLogs.push({
-              id: crypto.randomUUID(),
-              date: new Date().toISOString(),
-              category: 'Estoque',
-              details: `Descarte Lote: ${item.name} (x${item.quantity})`,
-              value: 0,
-              memberId: 'SYSTEM',
-              memberName: 'Sistema'
-          });
-      });
-
       const itemsToKeep = activeGuild.items.filter(i => !itemIds.includes(i.id));
-
-      updateActiveGuild({
-          items: itemsToKeep,
-          logs: [...newLogs, ...activeGuild.logs]
-      });
-      notify(`${itemsToDelete.length} itens removidos do arsenal.`);
+      triggerSave({ ...activeGuild, items: itemsToKeep });
+      notify("Itens descartados.");
   };
 
   const withdrawItem = (id: string, mId: string, r: string, qty: number) => {
     const item = activeGuild.items.find(i => i.id === id);
-    if (!item || item.quantity < qty) return notify("Item não disponível na quantidade desejada.", "error");
-    updateActiveGuild({
+    if (!item || item.quantity < qty) return notify("Erro estoque.", "error");
+    triggerSave({
+      ...activeGuild,
       items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0),
       logs: internalAddLog(activeGuild, 'Estoque', `Retirada ${qty}x ${item.name}: ${r}`, 0, mId)
     });
-    notify("Item retirado do arsenal.");
+    notify("Item retirado.");
   };
 
   const deleteItem = (id: string, qty: number) => {
-    const item = activeGuild.items.find(i => i.id === id);
-    updateActiveGuild({ 
-      items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: Math.max(0, i.quantity - qty) } : i).filter(i => i.quantity > 0),
-      logs: internalAddLog(activeGuild, 'Estoque', `Descarte: ${item?.name || 'Item'} (x${qty})`, 0, 'SYSTEM')
-    });
-    notify("Registro de item removido.");
+    triggerSave({ ...activeGuild, items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: Math.max(0, i.quantity - qty) } : i).filter(i => i.quantity > 0) });
+    notify("Item removido.");
   };
 
   const addBase = (name: string, porte: BasePorte, type: BaseType, paid: boolean) => {
     const cost = PORTE_DATA[porte].cost;
-    if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente no cofre central.", "error");
-    updateActiveGuild({
-      bases: [...activeGuild.bases, { id: crypto.randomUUID(), name, porte, type, rooms: [], history: [`Fundada como ${porte} em ${new Date().toLocaleDateString()}`] }],
+    if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
+      bases: [...activeGuild.bases, { id: crypto.randomUUID(), name, porte, type, rooms: [], history: [`Fundada em ${new Date().toLocaleDateString()}`] }],
       wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
-      logs: internalAddLog(activeGuild, 'Base', `Fundação de Base: ${name}`, paid ? -cost : 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Base', `Fundação: ${name}`, paid ? -cost : 0, 'SYSTEM')
     });
     notify("Base estabelecida!");
   };
@@ -386,220 +444,172 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const upgradeBase = (baseId: string, newPorte: BasePorte) => {
     const b = activeGuild.bases.find(x => x.id === baseId);
     if (!b) return;
+    const cost = PORTE_DATA[newPorte].cost - PORTE_DATA[b.porte].cost;
+    if (cost > 0 && activeGuild.wallet.TS < cost) return notify("Saldo insuficiente.", "error");
     
-    const currentCost = PORTE_DATA[b.porte].cost;
-    const newCost = PORTE_DATA[newPorte].cost;
-    const diff = newCost - currentCost;
-
-    if (diff < 0) {
-        if (b.rooms.length > PORTE_DATA[newPorte].slots) {
-            return notify(`Impossível reduzir: A base possui ${b.rooms.length} cômodos, mas o porte ${PORTE_DATA[newPorte].label} suporta apenas ${PORTE_DATA[newPorte].slots}. Remova cômodos antes.`, "error");
-        }
-        updateActiveGuild({
-            bases: activeGuild.bases.map(x => x.id === baseId ? { ...x, porte: newPorte, history: [...x.history, `Reduzida para ${newPorte} em ${new Date().toLocaleDateString()}`] } : x),
-            logs: internalAddLog(activeGuild, 'Base', `Redução de Base: ${b.name} para ${newPorte}`, 0, 'SYSTEM')
-        });
-        notify("Base reestruturada (Redução de Porte).");
-    } else {
-        if (activeGuild.wallet.TS < diff) return notify("Saldo insuficiente para expansão.", "error");
-        updateActiveGuild({
-            bases: activeGuild.bases.map(x => x.id === baseId ? { ...x, porte: newPorte, history: [...x.history, `Expandida para ${newPorte} em ${new Date().toLocaleDateString()}`] } : x),
-            wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - diff },
-            logs: internalAddLog(activeGuild, 'Base', `Expansão de Base: ${b.name} para ${newPorte}`, -diff, 'SYSTEM')
-        });
-        notify("Propriedade expandida com sucesso.");
-    }
+    triggerSave({
+        ...activeGuild,
+        bases: activeGuild.bases.map(x => x.id === baseId ? { ...x, porte: newPorte } : x),
+        wallet: cost > 0 ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
+        logs: internalAddLog(activeGuild, 'Base', `Upgrade: ${b.name}`, -cost, 'SYSTEM')
+    });
+    notify("Base atualizada.");
   };
 
   const payBaseMaintenance = (id: string, type: 'Regular' | 'Extra', amt: number) => {
-    if (activeGuild.wallet.TS < amt) return notify("T$ insuficiente no cofre.", "error");
-    updateActiveGuild({
+    if (activeGuild.wallet.TS < amt) return notify("T$ insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - amt },
-      logs: internalAddLog(activeGuild, 'Manutencao', `${type}: ${activeGuild.bases.find(x => x.id === id)?.name}`, -amt, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Manutencao', `${type}: Base`, -amt, 'SYSTEM')
     });
-    notify("Obrigação financeira quitada.");
+    notify("Pago.");
   };
 
   const collectBaseIncome = (id: string, amt: number) => {
-    if (amt <= 0) return;
-    updateActiveGuild({ wallet: { ...activeGuild.wallet, TO: activeGuild.wallet.TO + amt }, logs: internalAddLog(activeGuild, 'Base', `Renda de Propriedade: +${amt} TO`, amt * RATES.TO, 'SYSTEM') });
-    notify("Renda coletada com sucesso.");
+    triggerSave({ ...activeGuild, wallet: { ...activeGuild.wallet, TO: activeGuild.wallet.TO + amt }, logs: internalAddLog(activeGuild, 'Base', `Lucros`, amt * RATES.TO, 'SYSTEM') });
+    notify("Lucros coletados.");
   };
 
   const demolishBase = (id: string) => {
-    const updatedNPCs = activeGuild.npcs.map(npc => 
-        npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Base Destruída)' } : npc
-    );
-
-    updateActiveGuild({ 
-        bases: activeGuild.bases.filter(b => b.id !== id), 
-        npcs: updatedNPCs,
-        logs: internalAddLog(activeGuild, 'Base', `Base Abandonada e Demolida`, 0, 'SYSTEM') 
-    });
-    notify("Propriedade removida. Funcionários realocados.");
+    triggerSave({ ...activeGuild, bases: activeGuild.bases.filter(b => b.id !== id), logs: internalAddLog(activeGuild, 'Base', `Demolição`, 0, 'SYSTEM') });
+    notify("Base demolida.");
   };
 
   const addNPC = (npc: Omit<NPC, 'id'>) => {
-    if (npc.monthlyCost < 0) return notify("Custo não pode ser negativo.", "error");
-    updateActiveGuild({ 
-      npcs: [...activeGuild.npcs, { ...npc, id: crypto.randomUUID() }],
-      logs: internalAddLog(activeGuild, 'NPC', `Contrato firmado: ${npc.name} (${npc.role})`, 0, 'SYSTEM')
-    });
-    notify(`${npc.name} contratado.`);
+    triggerSave({ ...activeGuild, npcs: [...activeGuild.npcs, { ...npc, id: crypto.randomUUID() }], logs: internalAddLog(activeGuild, 'NPC', `Contrato: ${npc.name}`, 0, 'SYSTEM') });
+    notify("NPC Adicionado.");
   };
 
   const updateNPC = (id: string, updates: Partial<NPC>) => {
-    if (updates.monthlyCost !== undefined && updates.monthlyCost < 0) return notify("Custo não pode ser negativo.", "error");
-    const old = activeGuild.npcs.find(n => n.id === id);
-    if (!old) return;
-
-    updateActiveGuild({ 
-      npcs: activeGuild.npcs.map(n => n.id === id ? { ...n, ...updates } : n),
-      logs: internalAddLog(activeGuild, 'NPC', `Renegociação de Contrato: ${old.name}`, 0, 'SYSTEM')
-    });
-    notify("Contrato renegociado.");
+    triggerSave({ ...activeGuild, npcs: activeGuild.npcs.map(n => n.id === id ? { ...n, ...updates } : n) });
+    notify("NPC Atualizado.");
   };
 
   const removeNPC = (id: string) => {
-    updateActiveGuild({ npcs: activeGuild.npcs.filter(n => n.id !== id) });
-    notify("Contrato encerrado.");
+    triggerSave({ ...activeGuild, npcs: activeGuild.npcs.filter(n => n.id !== id) });
+    notify("NPC Removido.");
   };
 
   const payAllNPCs = () => {
     const total = activeGuild.npcs.reduce((a, n) => a + n.monthlyCost, 0);
-    if (activeGuild.wallet.TS < total) return notify("T$ insuficiente para pagar todos os especialistas.", "error");
-    updateActiveGuild({
+    if (activeGuild.wallet.TS < total) return notify("T$ Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - total },
-      logs: internalAddLog(activeGuild, 'NPC', `Pagamento de Folha (${activeGuild.npcs.length} especialistas)`, -total, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'NPC', `Folha de Pagamento`, -total, 'SYSTEM')
     });
-    notify("Pagamentos realizados.");
+    notify("Folha paga.");
   };
 
   const paySingleNPC = (npcId: string) => {
     const npc = activeGuild.npcs.find(n => n.id === npcId);
     if (!npc) return;
-    
-    if (activeGuild.wallet.TS < npc.monthlyCost) return notify("Saldo insuficiente em Tibares de Prata.", "error");
-
-    updateActiveGuild({
+    if (activeGuild.wallet.TS < npc.monthlyCost) return notify("T$ Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS - npc.monthlyCost },
-      logs: internalAddLog(activeGuild, 'NPC', `Pagamento Individual: ${npc.name} (${npc.role})`, -npc.monthlyCost, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'NPC', `Pagamento: ${npc.name}`, -npc.monthlyCost, 'SYSTEM')
     });
-    notify(`Salário de ${npc.name} pago com sucesso.`);
+    notify("Pago.");
   };
 
   const addRoom = (id: string, name: string, cost: number, paid: boolean) => {
-    const b = activeGuild.bases.find(x => x.id === id);
-    if (!b) return;
-    if (b.rooms.length >= PORTE_DATA[b.porte].slots) return notify("Limite de cômodos atingido para este porte.", "error");
-    if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente para reforma.", "error");
-    
-    updateActiveGuild({
+    if (paid && activeGuild.wallet.TS < cost) return notify("Saldo insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
       bases: activeGuild.bases.map(b => b.id === id ? { ...b, rooms: [...b.rooms, { id: crypto.randomUUID(), name, furnitures: [] }] } : b),
-      logs: internalAddLog(activeGuild, 'Investimento', `Novo Cômodo em ${b.name}: ${name}`, paid ? -cost : 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Investimento', `Cômodo: ${name}`, paid ? -cost : 0, 'SYSTEM')
     });
-    notify("Obra finalizada.");
+    notify("Cômodo construído.");
   };
 
   const removeRoom = (bId: string, rId: string) => {
-    updateActiveGuild({ bases: activeGuild.bases.map(b => b.id === bId ? { ...b, rooms: b.rooms.filter(r => r.id !== rId) } : b) });
+    triggerSave({ ...activeGuild, bases: activeGuild.bases.map(b => b.id === bId ? { ...b, rooms: b.rooms.filter(r => r.id !== rId) } : b) });
     notify("Cômodo removido.");
   };
 
   const addFurniture = (bId: string, rId: string, name: string, cost: number, paid: boolean) => {
-    if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente para mobília.", "error");
-    updateActiveGuild({
+    if (paid && activeGuild.wallet.TS < cost) return notify("Saldo insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
       bases: activeGuild.bases.map(b => b.id === bId ? { ...b, rooms: b.rooms.map(r => r.id === rId ? { ...r, furnitures: [...r.furnitures, { id: crypto.randomUUID(), name, cost }] } : r) } : b),
-      logs: internalAddLog(activeGuild, 'Investimento', `Mobília Adquirida: ${name}`, paid ? -cost : 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Investimento', `Mobília: ${name}`, paid ? -cost : 0, 'SYSTEM')
     });
     notify("Mobília instalada.");
   };
 
   const removeFurniture = (bId: string, rId: string, fId: string) => {
-    updateActiveGuild({ bases: activeGuild.bases.map(b => b.id === bId ? { ...b, rooms: b.rooms.map(r => r.id === rId ? { ...r, furnitures: r.furnitures.filter(f => f.id !== fId) } : r) } : b) });
+    triggerSave({ ...activeGuild, bases: activeGuild.bases.map(b => b.id === bId ? { ...b, rooms: b.rooms.map(r => r.id === rId ? { ...r, furnitures: r.furnitures.filter(f => f.id !== fId) } : r) } : b) });
     notify("Mobília removida.");
   };
 
   const createDomain = (name: string, regent: string, terrain: string, paid: boolean) => {
-    const cost = 5000;
-    if (paid && activeGuild.wallet.TS < cost) return notify("T$ insuficiente para reivindicar domínio.", "error");
-    updateActiveGuild({
+    if (paid && activeGuild.wallet.TS < 5000) return notify("T$ insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       domains: [...activeGuild.domains, { id: crypto.randomUUID(), name, regent, level: 1, terrain, court: 'Inexistente', treasury: 0, popularity: 'Tolerado', fortification: 0, buildings: [], units: [] }],
-      wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - cost } : activeGuild.wallet,
-      logs: internalAddLog(activeGuild, 'Dominio', `Reivindicação de Território: ${name}`, paid ? -cost : 0, 'SYSTEM')
+      wallet: paid ? { ...activeGuild.wallet, TS: activeGuild.wallet.TS - 5000 } : activeGuild.wallet,
+      logs: internalAddLog(activeGuild, 'Dominio', `Novo Domínio: ${name}`, paid ? -5000 : 0, 'SYSTEM')
     });
-    notify("Território anexado ao grimório.");
+    notify("Domínio criado.");
   };
 
   const updateDomain = (id: string, up: Partial<Domain>) => {
-    let updatedNPCs = activeGuild.npcs;
-    if (up.name) {
-        updatedNPCs = activeGuild.npcs.map(npc => 
-            npc.locationId === id ? { ...npc, locationName: `Domínio: ${up.name}` } : npc
-        );
-    }
-    
-    updateActiveGuild({ 
-        domains: activeGuild.domains.map(d => d.id === id ? { ...d, ...up } : d),
-        npcs: updatedNPCs
-    });
-  };
-
-  const levelUpDomain = (id: string) => {
-    const d = activeGuild.domains.find(x => x.id === id);
-    if (!d || d.level >= 7) return;
-    const cost = d.level * 20;
-    if (d.treasury < cost) return notify("Tesouro Real (LO) insuficiente para expansão.", "error");
-    updateActiveGuild({
-      domains: activeGuild.domains.map(x => x.id === id ? { ...x, level: x.level + 1, treasury: x.treasury - cost } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Crescimento Territorial em ${d.name} (Nível ${d.level + 1})`, -cost * RATES.LO, 'SYSTEM')
-    });
-    notify("Fronteiras expandidas!");
+    triggerSave({ ...activeGuild, domains: activeGuild.domains.map(d => d.id === id ? { ...d, ...up } : d) });
   };
 
   const investDomain = (id: string, amt: number) => {
-    if (activeGuild.wallet.LO < amt) return notify("Não há Lingotes de Ouro suficientes no cofre central.", "error");
-    updateActiveGuild({
+    if (activeGuild.wallet.LO < amt) return notify("LO Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, LO: activeGuild.wallet.LO - amt },
       domains: activeGuild.domains.map(d => d.id === id ? { ...d, treasury: d.treasury + amt } : d),
-      logs: internalAddLog(activeGuild, 'Dominio', `Investimento no Tesouro Real: ${amt} LO em ${activeGuild.domains.find(x => x.id === id)?.name}`, -amt * RATES.LO, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Investimento`, -amt * RATES.LO, 'SYSTEM')
     });
-    notify("Transferência para o Tesouro Real concluída.");
+    notify("Investido.");
   };
 
   const withdrawDomain = (id: string, amt: number) => {
     const d = activeGuild.domains.find(x => x.id === id);
-    if (!d || d.treasury < amt) return notify("Tesouro real insuficiente para resgate.", "error");
-    updateActiveGuild({
+    if (!d || d.treasury < amt) return notify("Tesouro Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       wallet: { ...activeGuild.wallet, LO: activeGuild.wallet.LO + amt },
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: x.treasury - amt } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Resgate do Tesouro Real: ${amt} LO de ${d.name}`, amt * RATES.LO, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Resgate`, amt * RATES.LO, 'SYSTEM')
     });
-    notify("Riquezas transferidas ao cofre central.");
+    notify("Resgatado.");
   };
 
   const manageDomainTreasury = (id: string, amt: number, type: 'Income' | 'Expense', reason: string) => {
     const d = activeGuild.domains.find(x => x.id === id);
-    if (type === 'Expense' && (!d || d.treasury < amt)) return notify("Tesouro insuficiente para o ajuste.", "error");
-    updateActiveGuild({
+    if (type === 'Expense' && (!d || d.treasury < amt)) return notify("Tesouro Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: type === 'Income' ? x.treasury + amt : x.treasury - amt } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Ajuste de Tesouro (${reason}): ${type === 'Income' ? '+' : '-'}${amt} LO`, (type === 'Income' ? amt : -amt) * RATES.LO, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Tesouro: ${reason}`, (type === 'Income' ? amt : -amt) * RATES.LO, 'SYSTEM')
     });
   };
 
   const demolishDomain = (id: string) => {
-    const updatedNPCs = activeGuild.npcs.map(npc => 
-        npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Domínio Destruído)' } : npc
-    );
+    triggerSave({ ...activeGuild, domains: activeGuild.domains.filter(d => d.id !== id) });
+    notify("Domínio abandonado.");
+  };
 
-    updateActiveGuild({ 
-        domains: activeGuild.domains.filter(d => d.id !== id), 
-        npcs: updatedNPCs,
-        logs: internalAddLog(activeGuild, 'Dominio', `Abandono de Território`, 0, 'SYSTEM') 
+  const levelUpDomain = (id: string) => {
+    const d = activeGuild.domains.find(x => x.id === id);
+    if (!d) return;
+    const cost = d.level * 20;
+    if (d.treasury < cost) return notify("Tesouro Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
+      domains: activeGuild.domains.map(x => x.id === id ? { ...x, level: x.level + 1, treasury: x.treasury - cost } : x),
+      logs: internalAddLog(activeGuild, 'Dominio', `Level Up: ${d.name}`, -cost * RATES.LO, 'SYSTEM')
     });
-    notify("O território foi entregue ao destino. Funcionários realocados.");
+    notify("Nível aumentado.");
   };
 
   const governDomain = (id: string, roll: number): GovernResult | null => {
@@ -611,81 +621,63 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const finalRoll = roll - regentPenalty;
     const succ = finalRoll >= cd;
     
-    const details: string[] = [];
-    details.push(`Resultado: ${roll} ${!d.regent.trim() ? '(-5 Sem Regente)' : ''} vs CD ${cd}`);
-    
-    let inc = d.level; details.push(`Arrecadação Base: +${inc} LO`);
-    
+    let inc = d.level;
     d.buildings.forEach(b => {
-      if (b.name === 'Fazenda') { const v = Math.max(0, Math.floor(Math.random()*6+1)-2); if(v > 0) { inc+=v; details.push(`Fazenda: +${v} LO`); } }
-      else if (b.name === 'Feira') { const v = Math.floor(Math.random()*4+1); inc+=v; details.push(`Feira: +${v} LO`); }
-      else if (b.name === 'Mina') { const v = Math.floor(Math.random()*12+1); inc+=v; details.push(`Mina: +${v} LO`); }
+      if (b.name === 'Fazenda') { const v = Math.max(0, Math.floor(Math.random()*6+1)-2); if(v > 0) inc+=v; }
+      else if (b.name === 'Feira') inc += Math.floor(Math.random()*4+1);
+      else if (b.name === 'Mina') inc += Math.floor(Math.random()*12+1);
     });
 
-    if (!succ) { 
-        inc = Math.floor(inc/2); 
-        details.push(`FALHA NA GESTÃO: Arrecadação reduzida pela metade.`); 
-    } else { 
-        details.push(`SUCESSO NA GESTÃO`); 
-    }
+    if (!succ) inc = Math.floor(inc/2);
 
-    const courtMaint = COURT_DATA[d.court].maintenance; 
-    details.push(`Manutenção da Corte: -${courtMaint} LO`);
-    
-    const unitMaint = d.units.length; 
-    if (unitMaint > 0) details.push(`Manutenção de Tropas (${d.units.length}): -${unitMaint} LO`);
-
-    const totalMaint = courtMaint + unitMaint;
+    const totalMaint = COURT_DATA[d.court].maintenance + d.units.length;
     const net = inc - totalMaint;
     
     const popChange = succ ? 0 : -1;
     const currentPopIndex = POPULARITY_LEVELS.indexOf(d.popularity);
     const newPopIndex = Math.max(0, Math.min(POPULARITY_LEVELS.length - 1, currentPopIndex + popChange));
 
-    updateActiveGuild({
-      domains: activeGuild.domains.map(x => x.id === id ? { 
-        ...x, 
-        treasury: Math.max(0, x.treasury + net), 
-        popularity: POPULARITY_LEVELS[newPopIndex]
-      } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Governança em ${d.name}: ${succ ? 'Sucesso' : 'Falha'} (Líquido: ${net > 0 ? '+' : ''}${net} LO)`, net * RATES.LO, 'SYSTEM')
+    triggerSave({
+      ...activeGuild,
+      domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: Math.max(0, x.treasury + net), popularity: POPULARITY_LEVELS[newPopIndex] } : x),
+      logs: internalAddLog(activeGuild, 'Dominio', `Governo: ${succ ? 'Sucesso' : 'Falha'}`, net * RATES.LO, 'SYSTEM')
     });
 
-    notify(succ ? "Regência próspera." : "Gestão conturbada.", succ ? 'success' : 'error');
-    return { income: inc, maintenance: totalMaint, net, success: succ, popularityChange: popChange, details };
+    notify(succ ? "Gestão próspera." : "Tempos difíceis.", succ ? 'success' : 'error');
+    return { income: inc, maintenance: totalMaint, net, success: succ, popularityChange: popChange, details: [`Roll ${finalRoll} vs CD ${cd}`, `Renda: ${inc}`, `Custo: ${totalMaint}`] };
   };
 
   const addDomainBuilding = (id: string, b: Omit<DomainBuilding, 'id'>, paid: boolean) => {
     const d = activeGuild.domains.find(x => x.id === id);
     if (!d) return;
-    if (d.buildings.length >= d.level) return notify("Não há espaço para novas obras neste nível de domínio.", "error");
-    if (paid && d.treasury < b.costLO) return notify("Tesouro Real insuficiente para a obra.", "error");
-    
-    updateActiveGuild({
+    if (paid && d.treasury < b.costLO) return notify("Tesouro Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       domains: activeGuild.domains.map(x => x.id === id ? { ...x, treasury: paid ? x.treasury - b.costLO : x.treasury, buildings: [...x.buildings, { ...b, id: crypto.randomUUID() }] } : x),
-      logs: internalAddLog(activeGuild, 'Investimento', `Obra Realizada em ${d.name}: ${b.name}`, paid ? -b.costLO * RATES.LO : 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Investimento', `Obra: ${b.name}`, paid ? -b.costLO * RATES.LO : 0, 'SYSTEM')
     });
-    notify("Obra finalizada no domínio.");
+    notify("Construído.");
   };
 
   const removeDomainBuilding = (dId: string, bId: string) => {
-    updateActiveGuild({ domains: activeGuild.domains.map(d => d.id === dId ? { ...d, buildings: d.buildings.filter(b => b.id !== bId) } : d) });
-    notify("Construção demolida.");
+    triggerSave({ ...activeGuild, domains: activeGuild.domains.map(d => d.id === dId ? { ...d, buildings: d.buildings.filter(b => b.id !== bId) } : d) });
+    notify("Demolido.");
   };
 
   const addDomainUnit = (dId: string, u: Omit<DomainUnit, 'id'>, paid: boolean) => {
     const d = activeGuild.domains.find(x => x.id === dId);
-    if (paid && (!d || d.treasury < u.costLO)) return notify("Tesouro Real insuficiente para recrutamento.", "error");
-    updateActiveGuild({
+    if (paid && (!d || d.treasury < u.costLO)) return notify("Tesouro Insuficiente.", "error");
+    triggerSave({
+      ...activeGuild,
       domains: activeGuild.domains.map(x => x.id === dId ? { ...x, treasury: paid ? x.treasury - u.costLO : x.treasury, units: [...x.units, { ...u, id: crypto.randomUUID() }] } : x),
-      logs: internalAddLog(activeGuild, 'Dominio', `Recrutamento de Legião (${u.name}) em ${d?.name}`, paid ? -u.costLO * RATES.LO : 0, 'SYSTEM')
+      logs: internalAddLog(activeGuild, 'Dominio', `Tropa: ${u.name}`, paid ? -u.costLO * RATES.LO : 0, 'SYSTEM')
     });
-    notify("Legião alistada.");
+    notify("Recrutado.");
   };
 
   const removeDomainUnit = (dId: string, uId: string) => {
-    updateActiveGuild({ domains: activeGuild.domains.map(d => d.id === dId ? { ...d, units: d.units.filter(u => u.id !== uId) } : d) });
-    notify("Tropa desmobilizada.");
+    triggerSave({ ...activeGuild, domains: activeGuild.domains.map(d => d.id === dId ? { ...d, units: d.units.filter(u => u.id !== uId) } : d) });
+    notify("Dispensado.");
   };
 
   const exportLogs = () => {
@@ -694,13 +686,16 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     node.setAttribute("href", data);
     node.setAttribute("download", `${activeGuild.guildName}_logs.json`);
     node.click();
-    notify("Crônicas exportadas com sucesso.");
+    notify("Logs exportados.");
   };
 
   return (
     <GuildContext.Provider value={{
-      ...activeGuild, isLoading, feedback, guilds, activeGuildId,
-      setActiveGuild, createNewGuild, importGuild, renameActiveGuild, deleteActiveGuild,
+      ...activeGuild, isLoading, feedback,
+      guildList, isAuthenticated, isAdmin, guildPassword: password, refreshGuildList, loginToGuild, loginAsAdmin, logout,
+      activeGuildId: activeGuild.id,
+      createNewGuild, importGuild, exportGuildData, renameActiveGuild, deleteActiveGuild, deleteGuildById,
+      changeAdminPassword, resetGuildPassword,
       addMember, updateMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems,
       addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase,
       addNPC, updateNPC, removeNPC, payAllNPCs, paySingleNPC, addRoom, removeRoom, addFurniture, removeFurniture,
