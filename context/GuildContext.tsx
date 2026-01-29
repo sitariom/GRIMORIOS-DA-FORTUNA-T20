@@ -47,6 +47,11 @@ interface GuildContextType extends GuildState {
   transferGoldFromMember: (memberId: string, value: number, currency: CurrencyType) => void;
   convertWallet: (amount: number, from: CurrencyType, to: CurrencyType) => void; 
   
+  // Direct Member Management
+  createItemForMember: (memberId: string, item: Omit<Item, 'id'>) => void;
+  deleteItemFromMember: (memberId: string, itemId: string, qty: number) => void;
+  updateMemberWallet: (memberId: string, amount: number, currency: CurrencyType, operation: 'add' | 'remove') => void;
+
   addItem: (item: Omit<Item, 'id'>) => void;
   updateItem: (id: string, updates: Partial<Item>) => void;
   sellItem: (itemId: string, qty: number, sellerId: string, percentage: number) => void;
@@ -90,7 +95,10 @@ interface GuildContextType extends GuildState {
   
   // New Features
   advanceDate: (days: number) => void;
+  setGameDate: (day: number, month: number, year: number) => void;
+  toggleNimbDay: (isNimb: boolean) => void;
   addQuest: (quest: Omit<Quest, 'id' | 'status'>) => void;
+  updateQuest: (questId: string, updates: Partial<Quest>) => void;
   updateQuestStatus: (questId: string, newStatus: QuestStatus) => void;
   deleteQuest: (questId: string) => void;
 
@@ -110,7 +118,7 @@ const EMPTY_GUILD: GuildState = {
   npcs: [],
   logs: [],
   members: [],
-  calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0 },
+  calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
   quests: []
 };
 
@@ -176,8 +184,11 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               // Ensure new fields exist for old saves
               const sanitizedGuild = {
                   ...guild,
-                  calendar: guild.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0 },
-                  quests: guild.quests || [],
+                  calendar: guild.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
+                  quests: (guild.quests || []).map(q => ({
+                      ...q,
+                      rewardCurrency: q.rewardCurrency || 'TS'
+                  })),
                   members: guild.members.map(m => ({
                       ...m,
                       wallet: m.wallet || { TC: 0, TS: 0, TO: 0, LO: 0 },
@@ -308,8 +319,8 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!g.guildName) throw new Error();
       g.id = crypto.randomUUID(); 
       // Sanitize on import too
-      g.calendar = g.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0 };
-      g.quests = g.quests || [];
+      g.calendar = g.calendar || { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false };
+      g.quests = (g.quests || []).map(q => ({ ...q, rewardCurrency: q.rewardCurrency || 'TS' }));
       g.members = g.members.map(m => ({ ...m, wallet: m.wallet || {TC:0, TS:0, TO:0, LO:0}, inventory: m.inventory || [] }));
 
       await dbService.saveGuild(g, pwd);
@@ -368,25 +379,33 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     notify("Membro removido.");
   };
 
+  // --- INDEPENDENT GUILD DEPOSIT/WITHDRAW (Financial Bookkeeping) ---
+
   const deposit = (mId: string, val: number, cur: CurrencyType, reason: string) => {
-    if (!mId) return notify("Selecione um membro.", "error");
+    if (!mId) return notify("Selecione um membro para registro.", "error");
+    
+    // NÃO deduz da carteira do membro. Apenas adiciona ao cofre e registra quem trouxe.
+    
     triggerSave({
       ...activeGuild,
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] + val },
       logs: internalAddLog(activeGuild, 'Deposito', `+${val} ${cur}: ${reason}`, val * RATES[cur], mId)
     });
-    notify("Tibares depositados.");
+    notify("Entrada registrada no cofre.");
   };
 
   const withdraw = (mId: string, val: number, cur: CurrencyType, reason: string) => {
-    if (!mId) return notify("Selecione um membro.", "error");
+    if (!mId) return notify("Selecione um membro para registro.", "error");
     if (activeGuild.wallet[cur] < val) return notify("Cofre insuficiente.", "error");
+
+    // NÃO adiciona à carteira do membro. Apenas remove do cofre (gasto da guilda realizado pelo membro).
+
     triggerSave({
       ...activeGuild,
       wallet: { ...activeGuild.wallet, [cur]: activeGuild.wallet[cur] - val },
       logs: internalAddLog(activeGuild, 'Saque', `-${val} ${cur}: ${reason}`, -(val * RATES[cur]), mId)
     });
-    notify("Saque realizado.");
+    notify("Saída registrada no cofre.");
   };
 
   const convertWallet = (amt: number, from: CurrencyType, to: CurrencyType) => {
@@ -403,7 +422,62 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     notify("Troca autorizada.");
   };
 
-  // --- NEW: MEMBER WALLET & INVENTORY ---
+  // --- NEW: MEMBER WALLET & INVENTORY DIRECT MANAGEMENT ---
+
+  const createItemForMember = (memberId: string, item: Omit<Item, 'id'>) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return;
+
+      const newItem = { ...item, id: crypto.randomUUID() };
+      const updatedMembers = activeGuild.members.map(m => {
+          if(m.id === memberId) return { ...m, inventory: [...m.inventory, newItem] };
+          return m;
+      });
+
+      triggerSave({
+          ...activeGuild,
+          members: updatedMembers,
+          logs: internalAddLog(activeGuild, 'Estoque', `Item criado para ${member.name}: ${item.name}`, 0, memberId)
+      });
+      notify("Item criado no inventário do aventureiro.");
+  };
+
+  const deleteItemFromMember = (memberId: string, itemId: string, qty: number) => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return;
+      const item = member.inventory.find(i => i.id === itemId);
+      if(!item || item.quantity < qty) return notify("Erro", "error");
+
+      const newInventory = member.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
+      
+      triggerSave({
+          ...activeGuild,
+          members: activeGuild.members.map(m => m.id === memberId ? { ...m, inventory: newInventory } : m),
+          logs: internalAddLog(activeGuild, 'Estoque', `Descarte: ${qty}x ${item.name} por ${member.name}`, 0, memberId)
+      });
+      notify("Item removido do inventário.");
+  };
+
+  const updateMemberWallet = (memberId: string, amount: number, currency: CurrencyType, operation: 'add' | 'remove') => {
+      const member = activeGuild.members.find(m => m.id === memberId);
+      if(!member) return;
+
+      if(operation === 'remove' && member.wallet[currency] < amount) {
+          return notify("Aventureiro não possui fundos suficientes.", "error");
+      }
+
+      const newWallet = { ...member.wallet };
+      newWallet[currency] = operation === 'add' ? newWallet[currency] + amount : newWallet[currency] - amount;
+
+      triggerSave({
+          ...activeGuild,
+          members: activeGuild.members.map(m => m.id === memberId ? { ...m, wallet: newWallet } : m),
+          logs: internalAddLog(activeGuild, 'Membro', `Ajuste Carteira (${operation === 'add' ? '+' : '-'}${amount} ${currency}) - ${member.name}`, 0, memberId)
+      });
+      notify("Carteira do aventureiro atualizada.");
+  };
+
+  // --- TRANSFERS BETWEEN GUILD AND MEMBER ---
 
   const transferGoldToMember = (memberId: string, val: number, cur: CurrencyType) => {
       const member = activeGuild.members.find(m => m.id === memberId);
@@ -443,7 +517,10 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       notify(`Devolução de ${member.name} recebida.`);
   };
 
+  // --- ITEM TRANSFERS ---
+
   const transferItemToMember = (itemId: string, memberId: string, qty: number) => {
+      // Logic for moving Item Guild -> Member
       const member = activeGuild.members.find(m => m.id === memberId);
       const item = activeGuild.items.find(i => i.id === itemId);
       if(!member || !item || item.quantity < qty) return notify("Operação inválida", "error");
@@ -452,12 +529,17 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const updatedGuildItems = activeGuild.items.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
       
       // 2. Add to Member
-      const memberItem = member.inventory.find(i => i.name === item.name && i.rarity === item.rarity); // Match by name/rarity logic or ID? Usually create new instance or stack.
+      // Check if member already has this item (by name/rarity/type to stack)
+      const existingItemIndex = member.inventory.findIndex(i => i.name === item.name && i.rarity === item.rarity && i.type === item.type);
       let newInventory = [...member.inventory];
-      if (memberItem) {
-          newInventory = newInventory.map(i => i.id === memberItem.id ? { ...i, quantity: i.quantity + qty } : i);
+      
+      if (existingItemIndex > -1) {
+          const existingItem = newInventory[existingItemIndex];
+          newInventory[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + qty };
       } else {
-          newInventory.push({ ...item, id: crypto.randomUUID(), quantity: qty });
+          // Clone item, remove ID to generate new one for member instance
+          const { id, ...itemProps } = item;
+          newInventory.push({ ...itemProps, id: crypto.randomUUID(), quantity: qty });
       }
 
       triggerSave({
@@ -484,7 +566,8 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if(guildItem) {
           newGuildItems = newGuildItems.map(i => i.id === guildItem.id ? { ...i, quantity: i.quantity + qty } : i);
       } else {
-          newGuildItems.push({ ...item, id: crypto.randomUUID(), quantity: qty });
+          const { id, ...itemProps } = item;
+          newGuildItems.push({ ...itemProps, id: crypto.randomUUID(), quantity: qty });
       }
 
       triggerSave({
@@ -497,19 +580,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const memberDiscardItem = (itemId: string, memberId: string, qty: number) => {
-      const member = activeGuild.members.find(m => m.id === memberId);
-      if(!member) return;
-      const item = member.inventory.find(i => i.id === itemId);
-      if(!item || item.quantity < qty) return notify("Erro", "error");
-
-      const newInventory = member.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0);
-      
-      triggerSave({
-          ...activeGuild,
-          members: activeGuild.members.map(m => m.id === memberId ? { ...m, inventory: newInventory } : m),
-          logs: internalAddLog(activeGuild, 'Estoque', `Descarte: ${qty}x ${item.name} por ${member.name}`, 0, memberId)
-      });
-      notify("Item descartado pelo aventureiro.");
+      deleteItemFromMember(memberId, itemId, qty);
   };
 
   // --- EXISTING ITEMS ACTIONS ---
@@ -527,10 +598,14 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const item = activeGuild.items.find(i => i.id === id);
     if (!item || item.quantity < qty) return notify("Estoque insuficiente.", "error");
     const val = Math.floor(((item.value * qty) * (p / 100)));
+    
+    // Deposit revenue into guild wallet
+    const newWallet = { ...activeGuild.wallet, TS: activeGuild.wallet.TS + val };
+
     triggerSave({
       ...activeGuild,
       items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0),
-      wallet: { ...activeGuild.wallet, TS: activeGuild.wallet.TS + val },
+      wallet: newWallet,
       logs: internalAddLog(activeGuild, 'Venda', `Venda ${qty}x ${item.name} (${p}%)`, val, sId)
     });
     notify("Venda processada.");
@@ -560,14 +635,13 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const withdrawItem = (id: string, mId: string, r: string, qty: number) => {
-    const item = activeGuild.items.find(i => i.id === id);
-    if (!item || item.quantity < qty) return notify("Erro estoque.", "error");
-    triggerSave({
-      ...activeGuild,
-      items: activeGuild.items.map(i => i.id === id ? { ...i, quantity: i.quantity - qty } : i).filter(i => i.quantity > 0),
-      logs: internalAddLog(activeGuild, 'Estoque', `Retirada ${qty}x ${item.name}: ${r}`, 0, mId)
-    });
-    notify("Item retirado.");
+    // UPDATED: Now moves item to member inventory instead of just deleting
+    if (!mId) return notify("Selecione um portador.", "error");
+    
+    transferItemToMember(id, mId, qty); // Reuse transfer logic
+    
+    // Log the reasoning (optional, transfer already logs)
+    // We can add a specific log for "Withdrawal/Assignment" context if needed, but 'Entrega' covers it.
   };
 
   const deleteItem = (id: string, qty: number) => {
@@ -835,26 +909,41 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       let newMonth = month;
       let newYear = year;
       let newWeekDay = (dayOfWeek + days) % 7;
+      if (newWeekDay < 0) newWeekDay += 7; // Handle negative modulo for rewind
+
       let costDeducted = 0;
       let logMessages: string[] = [];
 
-      // Logic: 360 days (12 months x 30 days)
-      while (newDay > 30) {
-          newDay -= 30;
-          newMonth++;
-          
-          // Month Rollover Logic - Trigger Maintenance
-          const totalBaseMaint = activeGuild.bases.reduce((acc, b) => acc + PORTE_DATA[b.porte].maintenance, 0);
-          const totalNpcMaint = activeGuild.npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
-          const monthlyTotal = totalBaseMaint + totalNpcMaint;
+      // Forward Time Travel
+      if (days > 0) {
+          while (newDay > 30) {
+              newDay -= 30;
+              newMonth++;
+              
+              // Only charge maintenance when moving FORWARD into a new month
+              const totalBaseMaint = activeGuild.bases.reduce((acc, b) => acc + PORTE_DATA[b.porte].maintenance, 0);
+              const totalNpcMaint = activeGuild.npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
+              const monthlyTotal = totalBaseMaint + totalNpcMaint;
 
-          costDeducted += monthlyTotal;
-          logMessages.push(`Virada de Mês (${ARTON_MONTHS[newMonth-1] || 'Ano Novo'}): Manutenção -${monthlyTotal} T$`);
+              costDeducted += monthlyTotal;
+              logMessages.push(`Virada de Mês (${ARTON_MONTHS[newMonth-1] || 'Ano Novo'}): Manutenção -${monthlyTotal} T$`);
 
-          if (newMonth >= 12) {
-              newMonth = 0;
-              newYear++;
-              logMessages.push(`Ano Novo! Bem-vindo a ${newYear}.`);
+              if (newMonth >= 12) {
+                  newMonth = 0;
+                  newYear++;
+                  logMessages.push(`Ano Novo! Bem-vindo a ${newYear}.`);
+              }
+          }
+      } 
+      // Backward Time Travel
+      else {
+          while (newDay < 1) {
+              newDay += 30;
+              newMonth--;
+              if (newMonth < 0) {
+                  newMonth = 11;
+                  newYear--;
+              }
           }
       }
 
@@ -864,7 +953,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               newWallet.TS -= costDeducted;
           } else {
               logMessages.push("ALERTA: Cofre insuficiente para manutenção automática!");
-              // Optional: Deduct what is possible or go negative? Keeping it safe, just alerting for now in this MVP
           }
       }
 
@@ -878,14 +966,43 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           memberName: 'Tempo'
       }));
 
+      // Reset Nimb Day when changing dates significantly if currently active? 
+      // Actually, keep it simple: if you move dates, it's probably not Nimb anymore unless set.
+      const isNimb = days !== 0 ? false : activeGuild.calendar.isNimbDay;
+
       triggerSave({
           ...activeGuild,
-          calendar: { day: newDay, month: newMonth, year: newYear, dayOfWeek: newWeekDay },
+          calendar: { day: newDay, month: newMonth, year: newYear, dayOfWeek: newWeekDay, isNimbDay: isNimb },
           wallet: newWallet,
           logs: [...newLogs, ...activeGuild.logs]
       });
       
-      notify(`${days} dia(s) se passaram.`);
+      if (days !== 0) notify(days > 0 ? `${days} dia(s) se passaram.` : `${Math.abs(days)} dia(s) retrocedidos.`);
+  };
+
+  const setGameDate = (day: number, month: number, year: number) => {
+      // Basic validation
+      const safeDay = Math.max(1, Math.min(30, day));
+      const safeMonth = Math.max(0, Math.min(11, month));
+      const safeYear = Math.max(0, year);
+      // Rough approximation for weekday reset or keep current? Let's just keep current to avoid complex calc without reference date
+      const currentWeekday = activeGuild.calendar.dayOfWeek; 
+
+      triggerSave({
+          ...activeGuild,
+          calendar: { ...activeGuild.calendar, day: safeDay, month: safeMonth, year: safeYear, isNimbDay: false },
+          logs: internalAddLog(activeGuild, 'Calendario', `Data ajustada manualmente para ${safeDay}/${safeMonth+1}/${safeYear}`, 0, 'ADMIN')
+      });
+      notify("Data do mundo redefinida.");
+  };
+
+  const toggleNimbDay = (isNimb: boolean) => {
+      triggerSave({
+          ...activeGuild,
+          calendar: { ...activeGuild.calendar, isNimbDay: isNimb },
+          logs: internalAddLog(activeGuild, 'Calendario', isNimb ? "O Caos se instalou: Dia de Nimb!" : "A ordem retornou: Fim do Dia de Nimb.", 0, 'ADMIN')
+      });
+      notify(isNimb ? "Dia de Nimb ativado!" : "Dia normal restaurado.");
   };
 
   // --- QUESTS FEATURES ---
@@ -899,6 +1016,14 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       notify("Missão afixada no quadro.");
   };
 
+  const updateQuest = (questId: string, updates: Partial<Quest>) => {
+      triggerSave({
+          ...activeGuild,
+          quests: activeGuild.quests.map(q => q.id === questId ? { ...q, ...updates } : q)
+      });
+      notify("Missão atualizada.");
+  };
+
   const updateQuestStatus = (questId: string, newStatus: QuestStatus) => {
       const quest = activeGuild.quests.find(q => q.id === questId);
       if (!quest) return;
@@ -908,13 +1033,17 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (newStatus === 'Concluida' && quest.status !== 'Concluida') {
           // Auto reward distribution logic
-          newWallet = { ...newWallet, TS: newWallet.TS + quest.rewardGold };
+          const currency = quest.rewardCurrency || 'TS';
+          newWallet = { ...newWallet, [currency]: newWallet[currency] + quest.rewardGold };
+          
+          // Calculate value in TS for logging purposes if needed, but logging raw value is fine
+          // Just ensure the log category and value reflect the gain
           newLogs.push({
               id: crypto.randomUUID(), date: new Date().toISOString(), 
-              category: 'Quest' as LogCategory, details: `Recompensa Missão "${quest.title}"`, 
-              value: quest.rewardGold, memberId: 'SYSTEM', memberName: 'Guilda'
+              category: 'Quest' as LogCategory, details: `Recompensa Missão "${quest.title}" (${quest.rewardGold} ${currency})`, 
+              value: quest.rewardGold * RATES[currency], memberId: 'SYSTEM', memberName: 'Guilda'
           });
-          notify(`Missão Concluída! T$ ${quest.rewardGold} adicionados.`);
+          notify(`Missão Concluída! ${quest.rewardGold} ${currency} adicionados.`);
       }
 
       triggerSave({
@@ -949,6 +1078,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addMember, updateMember, removeMember, deposit, withdraw, convertWallet, 
       transferGoldToMember, transferGoldFromMember,
       
+      createItemForMember, deleteItemFromMember, updateMemberWallet,
       addItem, updateItem, sellItem, sellBatchItems, withdrawItem, 
       transferItemToMember, transferItemFromMember, memberDiscardItem,
       deleteItem, deleteBatchItems,
@@ -958,7 +1088,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createDomain, updateDomain, investDomain, withdrawDomain, manageDomainTreasury, demolishDomain, levelUpDomain, governDomain,
       addDomainBuilding, removeDomainBuilding, addDomainUnit, removeDomainUnit, 
       
-      advanceDate, addQuest, updateQuestStatus, deleteQuest,
+      advanceDate, setGameDate, toggleNimbDay, addQuest, updateQuest, updateQuestStatus, deleteQuest,
       
       exportLogs, notify
     }}>

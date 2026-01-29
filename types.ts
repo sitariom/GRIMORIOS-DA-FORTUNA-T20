@@ -133,6 +133,7 @@ export interface CalendarState {
   month: number; // 0-11 index based on ARTON_MONTHS
   year: number;
   dayOfWeek: number; // 0-6 index based on ARTON_WEEKDAYS
+  isNimbDay?: boolean;
 }
 
 export type QuestStatus = 'Disponivel' | 'Em Andamento' | 'Concluida' | 'Falha';
@@ -142,7 +143,8 @@ export interface Quest {
   title: string;
   description: string;
   status: QuestStatus;
-  rewardGold: number; // Valor em TS
+  rewardGold: number;
+  rewardCurrency: CurrencyType; // Nova propriedade
   rewardXP: string;
   assignedMemberIds: string[];
 }

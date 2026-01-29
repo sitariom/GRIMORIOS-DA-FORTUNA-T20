@@ -1,10 +1,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus } from 'lucide-react';
-import { MemberStatus, Member, CurrencyType } from '../types';
+import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings } from 'lucide-react';
+import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
-import { RARITY_CONFIG } from '../constants';
+import { RARITY_CONFIG, ITEM_TYPES } from '../constants';
 
 const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: string, bg: string, label: string }> = {
     'Ativo': { icon: Shield, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-700/10 dark:bg-emerald-400/10', label: 'Ativo' },
@@ -18,19 +18,29 @@ const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: stri
 const MembersPage: React.FC = () => {
   const { 
     members, logs, addMember, removeMember, updateMember, 
-    transferGoldToMember, transferGoldFromMember,
-    transferItemFromMember, memberDiscardItem
+    transferGoldToMember, transferGoldFromMember, updateMemberWallet,
+    transferItemFromMember, deleteItemFromMember, createItemForMember
   } = useGuild();
   const [newName, setNewName] = useState('');
   
   // States for Modals
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showAddItem, setShowAddItem] = useState(false);
 
   // States for Transfer inside Detail Modal
+  const [financeTab, setFinanceTab] = useState<'transfer' | 'manual'>('transfer');
   const [transAmount, setTransAmount] = useState(0);
   const [transType, setTransType] = useState<'Deposit' | 'Withdraw'>('Deposit'); // Deposit = Guild -> Member
   const [transCurrency, setTransCurrency] = useState<CurrencyType>('TS');
+  
+  // States for Manual Adjust
+  const [manualType, setManualType] = useState<'add' | 'remove'>('add');
+
+  // States for New Item
+  const [newItemData, setNewItemData] = useState<Partial<Item>>({
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
+  });
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,16 +59,28 @@ const MembersPage: React.FC = () => {
 
   const activeMember = members.find(m => m.id === detailMemberId);
 
-  const handleGoldTransfer = (e: React.FormEvent) => {
+  const handleGoldAction = (e: React.FormEvent) => {
       e.preventDefault();
       if (!activeMember || transAmount <= 0) return;
       
-      if (transType === 'Deposit') {
-          transferGoldToMember(activeMember.id, transAmount, transCurrency);
+      if (financeTab === 'transfer') {
+          if (transType === 'Deposit') {
+              transferGoldToMember(activeMember.id, transAmount, transCurrency);
+          } else {
+              transferGoldFromMember(activeMember.id, transAmount, transCurrency);
+          }
       } else {
-          transferGoldFromMember(activeMember.id, transAmount, transCurrency);
+          updateMemberWallet(activeMember.id, transAmount, transCurrency, manualType);
       }
       setTransAmount(0);
+  };
+
+  const handleCreateItem = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(!activeMember) return;
+      createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
+      setShowAddItem(false);
+      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
   };
 
   return (
@@ -185,25 +207,64 @@ const MembersPage: React.FC = () => {
 
                        <div className="bg-fantasy-wood/5 dark:bg-white/5 p-6 rounded-3xl border-2 border-dashed border-fantasy-wood/10 dark:border-white/10">
                            <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-4">
-                               <button onClick={() => setTransType('Deposit')} className={`flex-1 pb-2 border-b-2 transition-all ${transType === 'Deposit' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Guilda &rarr; Aventureiro</button>
-                               <button onClick={() => setTransType('Withdraw')} className={`flex-1 pb-2 border-b-2 transition-all ${transType === 'Withdraw' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Aventureiro &rarr; Guilda</button>
+                               <button onClick={() => setFinanceTab('transfer')} className={`flex-1 pb-2 border-b-2 transition-all ${financeTab === 'transfer' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Transferência</button>
+                               <button onClick={() => setFinanceTab('manual')} className={`flex-1 pb-2 border-b-2 transition-all ${financeTab === 'manual' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Ajuste Manual</button>
                            </div>
-                           <form onSubmit={handleGoldTransfer} className="space-y-4">
+                           
+                           <form onSubmit={handleGoldAction} className="space-y-4">
+                               {financeTab === 'transfer' ? (
+                                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 bg-black/10 rounded-lg p-1">
+                                       <button type="button" onClick={() => setTransType('Deposit')} className={`flex-1 py-1 rounded transition-colors ${transType === 'Deposit' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Guilda &rarr; Aventureiro</button>
+                                       <button type="button" onClick={() => setTransType('Withdraw')} className={`flex-1 py-1 rounded transition-colors ${transType === 'Withdraw' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Aventureiro &rarr; Guilda</button>
+                                   </div>
+                               ) : (
+                                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 bg-black/10 rounded-lg p-1">
+                                       <button type="button" onClick={() => setManualType('add')} className={`flex-1 py-1 rounded transition-colors ${manualType === 'add' ? 'bg-emerald-700 text-white' : 'opacity-60'}`}>Adicionar (Achado)</button>
+                                       <button type="button" onClick={() => setManualType('remove')} className={`flex-1 py-1 rounded transition-colors ${manualType === 'remove' ? 'bg-red-700 text-white' : 'opacity-60'}`}>Remover (Gasto)</button>
+                                   </div>
+                               )}
+
                                <div className="flex gap-4">
                                    <input type="number" min="1" className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval text-xl outline-none" value={transAmount} onChange={e => setTransAmount(Number(e.target.value))} placeholder="Qtd" />
-                                   <select className="bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval text-lg outline-none" value={transCurrency} onChange={e => setTransCurrency(e.target.value as CurrencyType)}>
+                                   <select className="bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval text-lg outline-none cursor-pointer" value={transCurrency} onChange={e => setTransCurrency(e.target.value as CurrencyType)}>
                                        {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c}>{c}</option>)}
                                    </select>
                                </div>
-                               <button type="submit" className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black py-3 rounded-xl font-medieval uppercase tracking-widest text-sm shadow-lg">Transferir Fundos</button>
+                               <button type="submit" className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black py-3 rounded-xl font-medieval uppercase tracking-widest text-sm shadow-lg">
+                                   {financeTab === 'transfer' ? 'Transferir Fundos' : 'Atualizar Saldo'}
+                               </button>
                            </form>
                        </div>
                    </div>
 
                    {/* Inventory Management */}
                    <div className="space-y-6">
-                       <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila de Equipamentos</h4>
+                       <div className="flex justify-between items-center">
+                           <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila</h4>
+                           <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors">
+                               <Plus size={18}/>
+                           </button>
+                       </div>
                        
+                       {showAddItem && (
+                           <form onSubmit={handleCreateItem} className="bg-fantasy-wood/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fade-in border border-fantasy-wood/10">
+                               <input className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval" required value={newItemData.name} onChange={e => setNewItemData({...newItemData, name: e.target.value})} placeholder="Nome do Item" />
+                               <div className="flex gap-2">
+                                   <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.type} onChange={e => setNewItemData({...newItemData, type: e.target.value as ItemType})}>
+                                       {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                   </select>
+                                   <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.rarity} onChange={e => setNewItemData({...newItemData, rarity: e.target.value as ItemRarity})}>
+                                       {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r}>{r}</option>)}
+                                   </select>
+                               </div>
+                               <div className="flex gap-2">
+                                   <input type="number" min="1" className="w-20 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-center" value={newItemData.quantity} onChange={e => setNewItemData({...newItemData, quantity: Number(e.target.value)})} placeholder="Qtd" />
+                                   <input type="number" min="0" className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2" value={newItemData.value} onChange={e => setNewItemData({...newItemData, value: Number(e.target.value)})} placeholder="Valor (T$)" />
+                               </div>
+                               <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest">Criar Item</button>
+                           </form>
+                       )}
+
                        <div className="bg-white/30 dark:bg-black/20 rounded-3xl p-4 min-h-[200px] max-h-[300px] overflow-y-auto custom-scrollbar border-2 border-fantasy-wood/10 dark:border-white/10 space-y-2">
                            {activeMember.inventory.length === 0 ? (
                                <p className="text-center py-10 opacity-40 font-serif italic">Mochila vazia.</p>
@@ -218,14 +279,14 @@ const MembersPage: React.FC = () => {
                                            </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                <button onClick={() => transferItemFromMember(item.id, activeMember.id, 1)} title="Devolver 1 ao Cofre" className="p-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-lg"><ArrowRight size={14}/></button>
-                                               <button onClick={() => memberDiscardItem(item.id, activeMember.id, 1)} title="Descartar 1" className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg"><PackageMinus size={14}/></button>
+                                               <button onClick={() => deleteItemFromMember(activeMember.id, item.id, 1)} title="Jogar fora 1 (Lixeira)" className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg"><Trash2 size={14}/></button>
                                            </div>
                                        </div>
                                    )
                                })
                            )}
                        </div>
-                       <p className="text-[10px] text-center opacity-50 italic">Para entregar itens a este aventureiro, utilize a aba "Arsenal e Bens".</p>
+                       <p className="text-[10px] text-center opacity-50 italic">Para entregar itens do cofre a este aventureiro, utilize a aba "Arsenal e Bens".</p>
                    </div>
                </div>
            </div>
