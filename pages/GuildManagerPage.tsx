@@ -1,5 +1,7 @@
+
 import React, { useState, useRef } from 'react';
 import { useGuild } from '../context/GuildContext';
+import { useNavigate } from 'react-router-dom';
 import { Users, Plus, Download, Upload, Trash2, Edit3, Check, X, ShieldCheck, ScrollText } from 'lucide-react';
 
 const GuildManagerPage: React.FC = () => {
@@ -8,6 +10,7 @@ const GuildManagerPage: React.FC = () => {
     renameActiveGuild, deleteActiveGuild, importGuild, guildName 
   } = useGuild();
   
+  const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [newGuildName, setNewGuildName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
@@ -21,7 +24,13 @@ const GuildManagerPage: React.FC = () => {
       createNewGuild(newGuildName);
       setShowCreate(false);
       setNewGuildName('');
+      navigate('/'); // Redireciona para o Dashboard
     }
+  };
+
+  const handleSelect = (id: string) => {
+      setActiveGuild(id);
+      navigate('/'); // Redireciona para o Dashboard
   };
 
   const handleExport = () => {
@@ -97,7 +106,7 @@ const GuildManagerPage: React.FC = () => {
 
                     <div className="space-y-3">
                         {!isActive ? (
-                            <button onClick={() => setActiveGuild(guild.id)} className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-lg hover:bg-[#3d2b1f] dark:hover:bg-fantasy-gold/80 transition-all">Empunhar Estandarte</button>
+                            <button onClick={() => handleSelect(guild.id)} className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-lg hover:bg-[#3d2b1f] dark:hover:bg-fantasy-gold/80 transition-all">Empunhar Estandarte</button>
                         ) : (
                             <div className="grid grid-cols-2 gap-3">
                                 <button onClick={handleExport} className="bg-fantasy-gold/20 dark:bg-fantasy-gold/10 hover:bg-fantasy-gold/30 text-fantasy-wood dark:text-fantasy-gold py-4 rounded-2xl font-medieval uppercase tracking-widest flex items-center justify-center gap-2 border border-fantasy-gold/30">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { CurrencyType } from '../types';
 import { RATES } from '../constants';
@@ -6,6 +7,7 @@ import { ArrowLeftRight, Scroll, Coins, AlertCircle, TrendingUp } from 'lucide-r
 
 const FinancialPage: React.FC = () => {
   const { wallet, members, deposit, withdraw, convertWallet, notify } = useGuild();
+  const exchangeSectionRef = useRef<HTMLDivElement>(null);
   
   const [opType, setOpType] = useState<'deposit' | 'withdraw'>('deposit');
   const [amount, setAmount] = useState<number>(0);
@@ -47,7 +49,7 @@ const FinancialPage: React.FC = () => {
   const handleCoinClick = (type: CurrencyType) => {
       setCurrency(type);
       setConvFrom(type);
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      exchangeSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const setMaxConversion = () => {
@@ -142,7 +144,7 @@ const FinancialPage: React.FC = () => {
         </div>
 
         {/* Exchange Form */}
-        <div className="parchment-card p-8 md:p-12 rounded-[60px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
+        <div ref={exchangeSectionRef} className="parchment-card p-8 md:p-12 rounded-[60px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
            <h3 className="font-medieval text-3xl md:text-4xl text-fantasy-wood dark:text-fantasy-parchment mb-8 border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-8 flex items-center gap-6">
             <ArrowLeftRight size={40} className="text-fantasy-gold"/> Casa de Câmbio
           </h3>
