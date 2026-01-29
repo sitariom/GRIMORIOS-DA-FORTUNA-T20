@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType, ItemRarity } from '../types';
@@ -140,7 +141,7 @@ const InventoryPage: React.FC = () => {
 
       <div className="parchment-card p-6 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row gap-6 shadow-xl">
           <div className="flex-1 relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-fantasy-wood/30 dark:text-fantasy-parchment/20" size={24} />
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-fantasy-wood/50 dark:text-fantasy-parchment/50" size={24} />
               <input type="text" placeholder="Buscar por nome..." className="w-full bg-white/20 dark:bg-black/30 border-2 border-fantasy-wood/10 dark:border-white/5 rounded-2xl pl-16 pr-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg focus:outline-none focus:border-fantasy-gold transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
@@ -162,7 +163,7 @@ const InventoryPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left font-serif">
                 <thead className="bg-fantasy-wood/5 dark:bg-black/20 border-b-2 border-fantasy-wood/20 dark:border-white/10">
-                  <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/40 tracking-[0.3em]">
+                  <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em]">
                     <th className="px-6 py-8 text-center w-16">
                         <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity">
                             {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}

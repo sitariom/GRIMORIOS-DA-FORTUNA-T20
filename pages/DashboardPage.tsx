@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { RATES, PORTE_DATA } from '../constants';
@@ -151,9 +152,9 @@ const DashboardPage: React.FC = () => {
                         </linearGradient>
                     </defs>
                     {/* Grid Lines */}
-                    <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" className="text-fantasy-wood/5 dark:text-white/5" strokeWidth="0.5" strokeDasharray="2"/>
-                    <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" className="text-fantasy-wood/5 dark:text-white/5" strokeWidth="0.5" strokeDasharray="2"/>
-                    <line x1="0" y1="75" x2="100" y2="75" stroke="currentColor" className="text-fantasy-wood/5 dark:text-white/5" strokeWidth="0.5" strokeDasharray="2"/>
+                    <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" className="text-fantasy-wood/10 dark:text-white/10" strokeWidth="0.5" strokeDasharray="2"/>
+                    <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" className="text-fantasy-wood/10 dark:text-white/10" strokeWidth="0.5" strokeDasharray="2"/>
+                    <line x1="0" y1="75" x2="100" y2="75" stroke="currentColor" className="text-fantasy-wood/10 dark:text-white/10" strokeWidth="0.5" strokeDasharray="2"/>
 
                     <polygon points={fillPath} fill="url(#chartGradient)" />
                     <polyline fill="none" stroke="#d4af37" strokeWidth="1.5" points={svgPoints} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />

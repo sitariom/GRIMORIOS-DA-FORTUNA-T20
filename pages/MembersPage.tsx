@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Trash2, UserPlus, Shield, User, Sparkles, History, Scroll, HeartPulse, Skull, Tent, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X } from 'lucide-react';
@@ -6,7 +7,7 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: string, bg: string, label: string }> = {
     'Ativo': { icon: Shield, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-700/10 dark:bg-emerald-400/10', label: 'Ativo' },
-    'Inativo': { icon: User, color: 'text-slate-500', bg: 'bg-slate-500/10', label: 'Inativo' },
+    'Inativo': { icon: User, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-500/10', label: 'Inativo' },
     'Ferido': { icon: HeartPulse, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-600/10 dark:bg-rose-400/10', label: 'Ferido' },
     'Morto': { icon: Skull, color: 'text-gray-900 dark:text-gray-400', bg: 'bg-gray-900/10 dark:bg-gray-400/10', label: 'Morto' },
     'Em Missao': { icon: ShieldAlert, color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-700/10 dark:bg-blue-400/10', label: 'Em Missão' },
