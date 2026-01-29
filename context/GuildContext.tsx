@@ -121,6 +121,24 @@ const initialGuildState: GuildState = {
     quests: []
 };
 
+// Helper para garantir compatibilidade com guildas antigas e prevenir crashes
+const sanitizeGuildData = (data: any): GuildState => {
+    return {
+        ...initialGuildState, // Carrega defaults primeiro
+        ...data,              // Sobrescreve com dados salvos
+        // Garante que arrays e objetos cruciais existam, mesmo se ausentes no save antigo
+        wallet: { ...initialGuildState.wallet, ...(data.wallet || {}) },
+        items: data.items || [],
+        bases: data.bases || [],
+        domains: data.domains || [],
+        npcs: data.npcs || [],
+        logs: data.logs || [],
+        members: data.members || [],
+        calendar: data.calendar || initialGuildState.calendar,
+        quests: data.quests || []
+    };
+};
+
 export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [activeGuild, setActiveGuild] = useState<GuildState>(initialGuildState);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -186,7 +204,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 try {
                     const guildData = await dbService.getGuild(session.id, session.key);
                     if (guildData) {
-                        setActiveGuild(guildData);
+                        const safeData = sanitizeGuildData(guildData);
+                        setActiveGuild(safeData);
                         setSessionKey(session.key);
                         setIsAuthenticated(true);
                     }
@@ -204,7 +223,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         try {
             const guildData = await dbService.getGuild(id, password);
             if (guildData) {
-                setActiveGuild(guildData);
+                const safeData = sanitizeGuildData(guildData);
+                setActiveGuild(safeData);
                 setSessionKey(password);
                 setIsAuthenticated(true);
                 await dbService.setSession(id, password);
@@ -271,7 +291,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         try {
             const parsed = JSON.parse(json);
             if (!parsed.id || !parsed.guildName) throw new Error("Formato inválido");
-            await dbService.saveGuild(parsed, password);
+            const safeData = sanitizeGuildData(parsed);
+            await dbService.saveGuild(safeData, password);
             await fetchGuilds();
             notify("Guilda importada com sucesso.");
         } catch (e) {
