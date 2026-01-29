@@ -21,7 +21,7 @@ let dbPromise: Promise<IDBPDatabase<GrimoireDB>> | null = null;
 const getDB = () => {
   if (!dbPromise) {
     dbPromise = openDB<GrimoireDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db: IDBPDatabase<GrimoireDB>) {
         if (!db.objectStoreNames.contains('guilds')) {
           db.createObjectStore('guilds', { keyPath: 'id' });
         }
