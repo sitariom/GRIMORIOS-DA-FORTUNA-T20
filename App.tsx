@@ -51,7 +51,7 @@ const LoadingScreen: React.FC = () => (
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { isLoading } = useGuild();
+  const { isLoading, isAuthenticated } = useGuild();
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('guild_theme') as 'light' | 'dark') || 'light';
   });
@@ -81,28 +81,34 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="flex h-screen overflow-hidden selection:bg-fantasy-gold selection:text-fantasy-wood transition-colors duration-500 bg-[#0d0d0d] dark:bg-black">
       <Toast />
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
-        theme={theme}
-        toggleTheme={toggleTheme}
-      />
+      
+      {/* Sidebar visível apenas se autenticado */}
+      {isAuthenticated && (
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      )}
       
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-[#1e140d] dark:bg-black p-4 flex items-center justify-between z-30 border-b-4 border-[#3d2b1f] shadow-2xl relative">
-           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10 pointer-events-none"></div>
-           
-           <button onClick={() => setIsSidebarOpen(true)} className="relative z-10 text-fantasy-gold p-2 hover:bg-white/5 rounded-lg transition-colors">
-             <Menu size={28}/>
-           </button>
-           
-           <div className="flex items-center gap-3 relative z-10">
-              <Logo size="xs" />
-           </div>
-           
-           <div className="w-10"></div> 
-        </div>
+        {/* Mobile Header - Apenas se autenticado */}
+        {isAuthenticated && (
+          <div className="md:hidden bg-[#1e140d] dark:bg-black p-4 flex items-center justify-between z-30 border-b-4 border-[#3d2b1f] shadow-2xl relative">
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10 pointer-events-none"></div>
+             
+             <button onClick={() => setIsSidebarOpen(true)} className="relative z-10 text-fantasy-gold p-2 hover:bg-white/5 rounded-lg transition-colors">
+               <Menu size={28}/>
+             </button>
+             
+             <div className="flex items-center gap-3 relative z-10">
+                <Logo size="xs" />
+             </div>
+             
+             <div className="w-10"></div> 
+          </div>
+        )}
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-[#0d0d0d] dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
           <div className="max-w-7xl mx-auto h-full">
@@ -115,22 +121,28 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AppRoutes: React.FC = () => {
+  const { isAuthenticated } = useGuild();
+
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
         <Route path="/guilds" element={<GuildManagerPage />} />
-        <Route path="/finance" element={<FinancialPage />} />
-        <Route path="/cashflow" element={<CashFlowPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/itemhistory" element={<ItemHistoryPage />} />
-        <Route path="/bases" element={<BasesPage />} />
-        <Route path="/domains" element={<DomainsPage />} />
-        <Route path="/npcs" element={<NPCsPage />} />
-        <Route path="/investments" element={<InvestmentsPage />} />
-        <Route path="/members" element={<MembersPage />} />
-        <Route path="/chronicles" element={<ChroniclesPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        
+        {/* Rotas Protegidas - Redirecionam para /guilds se não autenticado */}
+        <Route path="/" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/finance" element={isAuthenticated ? <FinancialPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/inventory" element={isAuthenticated ? <InventoryPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/itemhistory" element={isAuthenticated ? <ItemHistoryPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/bases" element={isAuthenticated ? <BasesPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/domains" element={isAuthenticated ? <DomainsPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/npcs" element={isAuthenticated ? <NPCsPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/investments" element={isAuthenticated ? <InvestmentsPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/members" element={isAuthenticated ? <MembersPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/chronicles" element={isAuthenticated ? <ChroniclesPage /> : <Navigate to="/guilds" replace />} />
+        
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/guilds"} replace />} />
       </Routes>
     </Layout>
   );
