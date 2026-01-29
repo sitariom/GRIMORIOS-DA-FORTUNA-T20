@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { GuildProvider, useGuild } from './context/GuildContext';
 import Sidebar from './components/Sidebar';
 import FinancialPage from './pages/FinancialPage';
@@ -14,7 +16,7 @@ import GuildManagerPage from './pages/GuildManagerPage';
 import NPCsPage from './pages/NPCsPage';
 import ChroniclesPage from './pages/ChroniclesPage';
 import Logo from './components/Logo';
-import { Menu, AlertTriangle, Scroll } from 'lucide-react';
+import { Menu, AlertTriangle, Scroll, Loader } from 'lucide-react';
 
 const Toast: React.FC = () => {
   const { feedback } = useGuild();
@@ -38,12 +40,31 @@ const Toast: React.FC = () => {
   );
 };
 
-const AppContent: React.FC = () => {
-  const [currentView, setCurrentView] = useState('dashboard');
+const LoadingScreen: React.FC = () => (
+  <div className="flex flex-col items-center justify-center h-full space-y-6 text-fantasy-gold animate-pulse">
+    <Logo size="lg" />
+    <div className="flex items-center gap-3 text-xl font-medieval">
+      <Loader className="animate-spin" /> Acessando os Arquivos...
+    </div>
+  </div>
+);
+
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isLoading } = useGuild();
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('guild_theme') as 'light' | 'dark') || 'light';
   });
+  
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  // Reset scroll on route change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -57,30 +78,10 @@ const AppContent: React.FC = () => {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  const renderView = () => {
-    switch(currentView) {
-      case 'dashboard': return <DashboardPage />;
-      case 'guilds': return <GuildManagerPage />;
-      case 'finance': return <FinancialPage />;
-      case 'cashflow': return <CashFlowPage />;
-      case 'inventory': return <InventoryPage />;
-      case 'itemhistory': return <ItemHistoryPage />;
-      case 'bases': return <BasesPage />;
-      case 'npcs': return <NPCsPage />;
-      case 'domains': return <DomainsPage />;
-      case 'investments': return <InvestmentsPage />;
-      case 'members': return <MembersPage />;
-      case 'chronicles': return <ChroniclesPage />;
-      default: return <DashboardPage />;
-    }
-  };
-
   return (
     <div className="flex h-screen overflow-hidden selection:bg-fantasy-gold selection:text-fantasy-wood transition-colors duration-500 bg-[#0d0d0d] dark:bg-black">
       <Toast />
       <Sidebar 
-        currentView={currentView} 
-        setView={setCurrentView} 
         isOpen={isSidebarOpen} 
         toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
         theme={theme}
@@ -90,24 +91,22 @@ const AppContent: React.FC = () => {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Mobile Header */}
         <div className="md:hidden bg-[#1e140d] dark:bg-black p-4 flex items-center justify-between z-30 border-b-4 border-[#3d2b1f] shadow-2xl relative">
-           {/* Background Texture for Header */}
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10 pointer-events-none"></div>
            
            <button onClick={() => setIsSidebarOpen(true)} className="relative z-10 text-fantasy-gold p-2 hover:bg-white/5 rounded-lg transition-colors">
              <Menu size={28}/>
            </button>
            
-           {/* Scaled down Logo Component for Branding */}
            <div className="flex items-center gap-3 relative z-10">
               <Logo size="xs" />
            </div>
            
-           <div className="w-10"></div> {/* Spacer for centering */}
+           <div className="w-10"></div> 
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-[#0d0d0d] dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500">
-          <div className="max-w-7xl mx-auto">
-            {renderView()}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-[#0d0d0d] dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
+          <div className="max-w-7xl mx-auto h-full">
+            {isLoading ? <LoadingScreen /> : children}
           </div>
         </div>
       </main>
@@ -115,11 +114,35 @@ const AppContent: React.FC = () => {
   );
 };
 
+const AppRoutes: React.FC = () => {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/guilds" element={<GuildManagerPage />} />
+        <Route path="/finance" element={<FinancialPage />} />
+        <Route path="/cashflow" element={<CashFlowPage />} />
+        <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/itemhistory" element={<ItemHistoryPage />} />
+        <Route path="/bases" element={<BasesPage />} />
+        <Route path="/domains" element={<DomainsPage />} />
+        <Route path="/npcs" element={<NPCsPage />} />
+        <Route path="/investments" element={<InvestmentsPage />} />
+        <Route path="/members" element={<MembersPage />} />
+        <Route path="/chronicles" element={<ChroniclesPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  );
+};
+
 const App: React.FC = () => {
   return (
-    <GuildProvider>
-      <AppContent />
-    </GuildProvider>
+    <BrowserRouter>
+      <GuildProvider>
+        <AppRoutes />
+      </GuildProvider>
+    </BrowserRouter>
   );
 };
 

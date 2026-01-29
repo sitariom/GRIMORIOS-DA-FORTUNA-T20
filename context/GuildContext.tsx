@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { GuildState, MultiGuildState, Wallet, Item, Base, Domain, LogEntry, Member, CurrencyType, LogCategory, BasePorte, BaseType, DomainBuilding, DomainUnit, PopularityType, NPC, NPCLocationType, GovernResult } from '../types';
 import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS } from '../constants';
+import { dbService } from '../services/db';
 
 interface FeedbackMessage {
   type: 'success' | 'error' | 'info';
@@ -8,6 +10,7 @@ interface FeedbackMessage {
 }
 
 interface GuildContextType extends GuildState {
+  isLoading: boolean;
   feedback: FeedbackMessage | null;
   guilds: GuildState[];
   activeGuildId: string;
@@ -74,65 +77,135 @@ const INITIAL_GUILD = (name: string): GuildState => ({
 });
 
 export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [multiState, setMultiState] = useState<MultiGuildState>(() => {
-    const saved = localStorage.getItem('grimoire_fortuna_v1');
-    if (saved) return JSON.parse(saved);
-    const first = INITIAL_GUILD('Ordem do Cálice');
-    return { activeGuildId: first.id, guilds: [first] };
-  });
-
+  const [activeGuildId, setActiveGuildIdState] = useState<string>('');
+  const [guilds, setGuilds] = useState<GuildState[]>([]);
   const [feedback, setFeedback] = useState<FeedbackMessage | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem('grimoire_fortuna_v1', JSON.stringify(multiState));
-  }, [multiState]);
-
-  const activeGuild = multiState.guilds.find(g => g.id === multiState.activeGuildId) || multiState.guilds[0];
+  const [isLoading, setIsLoading] = useState(true);
 
   const notify = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
     setFeedback({ text, type });
     setTimeout(() => setFeedback(null), 4000);
   };
 
-  const updateActiveGuild = (updates: Partial<GuildState>) => {
-    setMultiState(prev => ({
-      ...prev,
-      guilds: prev.guilds.map(g => g.id === prev.activeGuildId ? { ...g, ...updates } : g)
-    }));
+  // Initialize DB & Migrate Legacy Data
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const storedGuilds = await dbService.getAllGuilds();
+        
+        if (storedGuilds.length > 0) {
+           const storedActiveId = await dbService.getActiveGuildId();
+           setGuilds(storedGuilds);
+           setActiveGuildIdState(storedActiveId && storedGuilds.find(g => g.id === storedActiveId) ? storedActiveId : storedGuilds[0].id);
+        } else {
+           // Tenta migrar do LocalStorage antigo
+           const legacyData = localStorage.getItem('grimoire_fortuna_v1');
+           let migrated = false;
+
+           if (legacyData) {
+               try {
+                   const parsed = JSON.parse(legacyData);
+                   if (parsed.guilds && Array.isArray(parsed.guilds) && parsed.guilds.length > 0) {
+                       console.log("Migrando dados do LocalStorage para IndexedDB...");
+                       for (const g of parsed.guilds) {
+                           await dbService.saveGuild(g);
+                       }
+                       const initialId = parsed.activeGuildId || parsed.guilds[0].id;
+                       await dbService.setActiveGuildId(initialId);
+                       
+                       setGuilds(parsed.guilds);
+                       setActiveGuildIdState(initialId);
+                       migrated = true;
+                       notify("Dados antigos migrados com sucesso para o novo banco!", "success");
+                   }
+               } catch (e) {
+                   console.error("Erro na migração:", e);
+               }
+           }
+
+           if (!migrated) {
+               const first = INITIAL_GUILD('Ordem do Cálice');
+               await dbService.saveGuild(first);
+               await dbService.setActiveGuildId(first.id);
+               setGuilds([first]);
+               setActiveGuildIdState(first.id);
+           }
+        }
+      } catch (error) {
+        console.error("Failed to load from DB", error);
+        notify("Erro ao carregar dados do grimório.", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  const setActiveGuild = async (id: string) => {
+    setActiveGuildIdState(id);
+    await dbService.setActiveGuildId(id);
   };
 
-  const setActiveGuild = (id: string) => setMultiState(prev => ({ ...prev, activeGuildId: id }));
-  
-  const createNewGuild = (name: string) => {
+  // Helper to update active guild and persist
+  const updateActiveGuild = useCallback((updates: Partial<GuildState>) => {
+    setGuilds(prevGuilds => {
+      const newGuilds = prevGuilds.map(g => {
+        if (g.id === activeGuildId) {
+          const updated = { ...g, ...updates };
+          dbService.saveGuild(updated); // Fire and forget persistence
+          return updated;
+        }
+        return g;
+      });
+      return newGuilds;
+    });
+  }, [activeGuildId]);
+
+  const activeGuild = guilds.find(g => g.id === activeGuildId) || (guilds[0] ?? INITIAL_GUILD('Loading...'));
+
+  const createNewGuild = async (name: string) => {
     const g = INITIAL_GUILD(name);
-    setMultiState(prev => ({ activeGuildId: g.id, guilds: [...prev.guilds, g] }));
+    await dbService.saveGuild(g);
+    await dbService.setActiveGuildId(g.id);
+    setGuilds(prev => [...prev, g]);
+    setActiveGuildIdState(g.id);
     notify(`Grimório "${name}" iniciado.`);
   };
 
   const renameActiveGuild = (name: string) => updateActiveGuild({ guildName: name });
 
-  const deleteActiveGuild = () => {
-    if (multiState.guilds.length <= 1) return notify("O último grimório não pode ser queimado.", "error");
-    setMultiState(prev => {
-      const remaining = prev.guilds.filter(g => g.id !== prev.activeGuildId);
-      return { activeGuildId: remaining[0].id, guilds: remaining };
-    });
+  const deleteActiveGuild = async () => {
+    if (guilds.length <= 1) return notify("O último grimório não pode ser queimado.", "error");
+    
+    await dbService.deleteGuild(activeGuildId);
+    
+    const remaining = guilds.filter(g => g.id !== activeGuildId);
+    const nextId = remaining[0].id;
+    
+    await dbService.setActiveGuildId(nextId);
+    setGuilds(remaining);
+    setActiveGuildIdState(nextId);
     notify("Crônicas removidas com sucesso.");
   };
 
-  const importGuild = (json: string) => {
+  const importGuild = async (json: string) => {
     try {
       const g = JSON.parse(json) as GuildState;
       if (!g.guildName) throw new Error();
       g.id = crypto.randomUUID();
-      setMultiState(prev => ({ activeGuildId: g.id, guilds: [...prev.guilds, g] }));
+      
+      await dbService.saveGuild(g);
+      await dbService.setActiveGuildId(g.id);
+      
+      setGuilds(prev => [...prev, g]);
+      setActiveGuildIdState(g.id);
       notify("Conhecimento importado com sucesso.");
     } catch { notify("Pergaminho corrompido ou inválido.", "error"); }
   };
 
-  const internalAddLog = (g: GuildState, category: LogCategory, details: string, value: number, mId: string): LogEntry[] => {
-    const mName = g.members.find(m => m.id === mId)?.name || 'Sistema';
-    return [{ id: crypto.randomUUID(), date: new Date().toISOString(), category, details, value, memberId: mId, memberName: mName }, ...g.logs];
+  const internalAddLog = (currentGuild: GuildState, category: LogCategory, details: string, value: number, mId: string): LogEntry[] => {
+    const mName = currentGuild.members.find(m => m.id === mId)?.name || 'Sistema';
+    return [{ id: crypto.randomUUID(), date: new Date().toISOString(), category, details, value, memberId: mId, memberName: mName }, ...currentGuild.logs];
   };
 
   const addMember = (name: string) => {
@@ -178,13 +251,10 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const convertWallet = (amt: number, from: CurrencyType, to: CurrencyType) => {
     if (activeGuild.wallet[from] < amt) return notify("Quantidade insuficiente para câmbio.", "error");
     
-    // Cálculo do ganho exato
     const conv = Math.floor((amt * RATES[from]) / RATES[to]);
     if (conv === 0) return notify(`Quantidade insuficiente para gerar pelo menos 1 ${to}. Aumente a oferta.`, "error");
 
-    // Cálculo do custo real (Troco automático)
     const realCost = (conv * RATES[to]) / RATES[from];
-
     const remainder = amt - realCost;
     const details = remainder > 0 
         ? `Câmbio: ${realCost} ${from} (de ${amt}) por ${conv} ${to}. Troco: ${remainder} ${from}`
@@ -236,7 +306,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     itemsToProcess.forEach(item => {
         const sellValue = Math.floor((item.value * item.quantity) * (percentage / 100));
         totalValue += sellValue;
-        
         newLogs.push({
             id: crypto.randomUUID(),
             date: new Date().toISOString(),
@@ -248,7 +317,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
     });
 
-    // Remove os itens vendidos (assumindo venda total do estoque no lote)
     const itemsToKeep = activeGuild.items.filter(i => !itemsToProcess.find(p => p.id === i.id));
 
     updateActiveGuild({
@@ -359,7 +427,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const demolishBase = (id: string) => {
-    // Atualizar NPCs que estavam nesta base para "Grupo"
     const updatedNPCs = activeGuild.npcs.map(npc => 
         npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Base Destruída)' } : npc
     );
@@ -467,7 +534,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateDomain = (id: string, up: Partial<Domain>) => {
-    // Se o nome do domínio mudar, atualizar NPCs alocados
     let updatedNPCs = activeGuild.npcs;
     if (up.name) {
         updatedNPCs = activeGuild.npcs.map(npc => 
@@ -524,7 +590,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const demolishDomain = (id: string) => {
-    // Atualizar NPCs que estavam neste domínio para "Grupo"
     const updatedNPCs = activeGuild.npcs.map(npc => 
         npc.locationId === id ? { ...npc, locationType: 'Grupo' as NPCLocationType, locationId: '', locationName: 'Sem Teto (Domínio Destruído)' } : npc
     );
@@ -541,7 +606,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const d = activeGuild.domains.find(x => x.id === id);
     if (!d) return null;
     
-    // Penalidade por ausência de regente
     const regentPenalty = d.regent.trim() ? 0 : 5;
     const cd = 15 + (d.level * 2);
     const finalRoll = roll - regentPenalty;
@@ -568,7 +632,6 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const courtMaint = COURT_DATA[d.court].maintenance; 
     details.push(`Manutenção da Corte: -${courtMaint} LO`);
     
-    // Custos de Unidades (1 LO por unidade para simplificação e balanceamento)
     const unitMaint = d.units.length; 
     if (unitMaint > 0) details.push(`Manutenção de Tropas (${d.units.length}): -${unitMaint} LO`);
 
@@ -636,7 +699,7 @@ export const GuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <GuildContext.Provider value={{
-      ...activeGuild, feedback, guilds: multiState.guilds, activeGuildId: multiState.activeGuildId,
+      ...activeGuild, isLoading, feedback, guilds, activeGuildId,
       setActiveGuild, createNewGuild, importGuild, renameActiveGuild, deleteActiveGuild,
       addMember, updateMember, removeMember, deposit, withdraw, convertWallet, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems,
       addBase, upgradeBase, payBaseMaintenance, collectBaseIncome, demolishBase,
