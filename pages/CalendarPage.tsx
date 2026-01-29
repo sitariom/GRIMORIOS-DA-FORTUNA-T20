@@ -5,7 +5,7 @@ import { ARTON_MONTHS, ARTON_WEEKDAYS } from '../constants';
 import { Moon, Sun, ChevronRight, ChevronsRight, Clock, ChevronLeft, ChevronsLeft, Edit, Dices, X } from 'lucide-react';
 
 const CalendarPage: React.FC = () => {
-  const { calendar, advanceDate, setGameDate, toggleNimbDay, isAdmin } = useGuild();
+  const { calendar = { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false }, advanceDate, setGameDate, toggleNimbDay, isAdmin } = useGuild();
   const { day, month, year, dayOfWeek, isNimbDay } = calendar;
 
   const [showEditModal, setShowEditModal] = useState(false);

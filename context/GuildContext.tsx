@@ -123,20 +123,28 @@ const initialGuildState: GuildState = {
 
 // Helper para garantir compatibilidade com guildas antigas e prevenir crashes
 const sanitizeGuildData = (data: any): GuildState => {
-    return {
-        ...initialGuildState, // Carrega defaults primeiro
-        ...data,              // Sobrescreve com dados salvos
-        // Garante que arrays e objetos cruciais existam, mesmo se ausentes no save antigo
-        wallet: { ...initialGuildState.wallet, ...(data.wallet || {}) },
-        items: data.items || [],
-        bases: data.bases || [],
-        domains: data.domains || [],
-        npcs: data.npcs || [],
-        logs: data.logs || [],
-        members: data.members || [],
-        calendar: data.calendar || initialGuildState.calendar,
-        quests: data.quests || []
-    };
+    const safeData = { ...initialGuildState, ...data };
+    
+    // Fallback profundo para objetos principais
+    safeData.wallet = { ...initialGuildState.wallet, ...(safeData.wallet || {}) };
+    safeData.calendar = { ...initialGuildState.calendar, ...(safeData.calendar || {}) };
+
+    // Força tipos corretos para arrays e faz sanitização profunda dos items internos
+    safeData.items = Array.isArray(safeData.items) ? safeData.items : [];
+    safeData.bases = Array.isArray(safeData.bases) ? safeData.bases : [];
+    safeData.domains = Array.isArray(safeData.domains) ? safeData.domains : [];
+    safeData.npcs = Array.isArray(safeData.npcs) ? safeData.npcs : [];
+    safeData.logs = Array.isArray(safeData.logs) ? safeData.logs : [];
+    safeData.quests = Array.isArray(safeData.quests) ? safeData.quests : [];
+    
+    // Sanitização profunda de Membros para garantir que wallet e inventory existam
+    safeData.members = (Array.isArray(safeData.members) ? safeData.members : []).map((m: any) => ({
+        ...m,
+        wallet: { TC: 0, TS: 0, TO: 0, LO: 0, ...(m.wallet || {}) },
+        inventory: Array.isArray(m.inventory) ? m.inventory : []
+    }));
+
+    return safeData;
 };
 
 export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -1069,7 +1077,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const addQuest = (quest: Omit<Quest, 'id'>) => {
         triggerSave({
             ...activeGuild,
-            quests: [...activeGuild.quests, { ...quest, id: crypto.randomUUID(), status: 'Disponivel' }]
+            quests: [...(activeGuild.quests || []), { ...quest, id: crypto.randomUUID(), status: 'Disponivel' }]
         });
         notify("Missão publicada.");
     };
@@ -1077,7 +1085,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const updateQuest = (id: string, data: Partial<Quest>) => {
         triggerSave({
             ...activeGuild,
-            quests: activeGuild.quests.map(q => q.id === id ? { ...q, ...data } : q)
+            quests: (activeGuild.quests || []).map(q => q.id === id ? { ...q, ...data } : q)
         });
         notify("Missão atualizada.");
     };
@@ -1085,14 +1093,14 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const updateQuestStatus = (id: string, status: any) => {
         triggerSave({
             ...activeGuild,
-            quests: activeGuild.quests.map(q => q.id === id ? { ...q, status } : q)
+            quests: (activeGuild.quests || []).map(q => q.id === id ? { ...q, status } : q)
         });
     };
 
     const deleteQuest = (id: string) => {
         triggerSave({
             ...activeGuild,
-            quests: activeGuild.quests.filter(q => q.id !== id)
+            quests: (activeGuild.quests || []).filter(q => q.id !== id)
         });
         notify("Missão removida.");
     };
@@ -1102,14 +1110,14 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             activeGuildId: activeGuild.id,
             guildName: activeGuild.guildName,
             wallet: activeGuild.wallet,
-            members: activeGuild.members,
-            items: activeGuild.items,
-            bases: activeGuild.bases,
-            domains: activeGuild.domains,
-            npcs: activeGuild.npcs,
-            logs: activeGuild.logs,
-            calendar: activeGuild.calendar,
-            quests: activeGuild.quests,
+            members: activeGuild.members || [],
+            items: activeGuild.items || [],
+            bases: activeGuild.bases || [],
+            domains: activeGuild.domains || [],
+            npcs: activeGuild.npcs || [],
+            logs: activeGuild.logs || [],
+            calendar: activeGuild.calendar || initialGuildState.calendar,
+            quests: activeGuild.quests || [],
             isAuthenticated,
             isLoading,
             isAdmin,
