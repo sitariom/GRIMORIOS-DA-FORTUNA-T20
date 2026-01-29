@@ -217,7 +217,7 @@ const MembersPage: React.FC = () => {
                            {['TC', 'TS', 'TO', 'LO'].map((curr) => (
                                <div key={curr} className="bg-black/5 dark:bg-black/20 p-2 rounded-xl text-center border border-fantasy-wood/10 dark:border-white/10">
                                    <div className="text-[10px] font-black uppercase opacity-50">{curr}</div>
-                                   <div className="font-medieval text-lg">{activeMember.wallet[curr as CurrencyType]}</div>
+                                   <div className="font-medieval text-lg">{activeMember.wallet?.[curr as CurrencyType] ?? 0}</div>
                                </div>
                            ))}
                        </div>
@@ -313,10 +313,10 @@ const MembersPage: React.FC = () => {
                        )}
 
                        <div className="bg-white/30 dark:bg-black/20 rounded-3xl p-4 min-h-[200px] max-h-[300px] overflow-y-auto custom-scrollbar border-2 border-fantasy-wood/10 dark:border-white/10 space-y-2">
-                           {activeMember.inventory.length === 0 ? (
+                           {(activeMember.inventory?.length || 0) === 0 ? (
                                <p className="text-center py-10 opacity-40 font-serif italic">Mochila vazia.</p>
                            ) : (
-                               activeMember.inventory.map((item, i) => {
+                               activeMember.inventory?.map((item, i) => {
                                    const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
                                    return (
                                        <div key={`${item.id}-${i}`} className="bg-white/50 dark:bg-black/40 p-3 rounded-xl flex justify-between items-center group">
