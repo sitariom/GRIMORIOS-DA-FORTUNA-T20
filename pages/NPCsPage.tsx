@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Contact, Trash2, Plus, Coins, MapPin, X, Filter, UserSearch, Briefcase, SortAsc, SortDesc, Edit, Handshake, Heart, Award, UserPlus } from 'lucide-react';
@@ -147,7 +148,7 @@ const NPCsPage: React.FC = () => {
       {/* Control Bar: Search, Filter, Sort */}
       <div className="parchment-card p-6 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col xl:flex-row gap-6 shadow-xl items-center">
           <div className="flex-1 relative w-full">
-              <UserSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-fantasy-wood/30 dark:text-fantasy-parchment/20" size={24} />
+              <UserSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-fantasy-wood/50 dark:text-fantasy-parchment/50" size={24} />
               <input type="text" placeholder="Buscar por nome ou função..." className="w-full bg-white/20 dark:bg-black/30 border-2 border-fantasy-wood/10 dark:border-white/5 rounded-2xl pl-16 pr-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg focus:outline-none focus:border-fantasy-gold transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           

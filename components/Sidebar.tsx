@@ -82,11 +82,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
                 className={`w-full flex items-center gap-4 px-6 py-4 rounded-lg transition-all relative group ${
                   isActive 
                     ? 'bg-fantasy-gold/15 text-fantasy-gold border border-fantasy-gold/30 shadow-lg' 
-                    : 'text-fantasy-parchment/40 hover:text-fantasy-parchment hover:bg-white/5'
+                    : 'text-fantasy-parchment/60 hover:text-fantasy-parchment hover:bg-white/5'
                 }`}
               >
                 {isActive && <div className="absolute left-0 w-1.5 h-8 bg-fantasy-gold rounded-full shadow-[0_0_10px_#d4af37]"></div>}
-                <Icon size={20} className={isActive ? 'text-fantasy-gold' : 'opacity-40 group-hover:opacity-100 transition-opacity'} />
+                <Icon size={20} className={isActive ? 'text-fantasy-gold' : 'opacity-60 group-hover:opacity-100 transition-opacity'} />
                 <span className="font-medieval uppercase text-xs tracking-[0.15em] text-left leading-none">{item.label}</span>
               </Link>
             );

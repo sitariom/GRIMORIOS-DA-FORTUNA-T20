@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { LogCategory } from '../types';
@@ -52,7 +53,7 @@ const ChroniclesPage: React.FC = () => {
       <div className="parchment-card p-8 rounded-[40px] border-2 border-[#1a0f08]/10 dark:border-white/10 flex flex-col gap-8 shadow-2xl">
           <div className="flex flex-col xl:flex-row gap-6">
               <div className="flex-1 relative">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#1a0f08]/30 dark:text-fantasy-parchment/20" size={24} />
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#1a0f08]/50 dark:text-fantasy-parchment/50" size={24} />
                   <input 
                     type="text" 
                     placeholder="Escavar nos anais do tempo..." 

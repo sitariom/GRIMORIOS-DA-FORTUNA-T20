@@ -22,7 +22,7 @@ export const TYPE_DATA: Record<BaseType, { label: string; bonus: string }> = {
 export const ITEM_TYPES = ['Consumivel', 'Equipamento', 'Tesouro', 'Arma', 'Riqueza'];
 
 export const RARITY_CONFIG: Record<ItemRarity, { label: string, color: string, bg: string, border: string }> = {
-  Comum: { label: 'Comum', color: 'text-fantasy-wood/70 dark:text-fantasy-parchment/70', bg: '', border: 'border-fantasy-wood/10 dark:border-white/5' },
+  Comum: { label: 'Comum', color: 'text-fantasy-wood/80 dark:text-fantasy-parchment', bg: '', border: 'border-fantasy-wood/10 dark:border-white/20' },
   Superior: { label: 'Superior', color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-900/5 dark:bg-emerald-400/5', border: 'border-emerald-700/20' },
   Magico: { label: 'Mágico', color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-900/5 dark:bg-blue-400/5', border: 'border-blue-700/20' },
   Liturgico: { label: 'Litúrgico', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-900/5 dark:bg-amber-400/5', border: 'border-amber-700/20' },
