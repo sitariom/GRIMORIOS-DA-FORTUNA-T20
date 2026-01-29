@@ -122,7 +122,7 @@ const DashboardPage: React.FC = () => {
                    <div className="wax-seal w-8 h-8 md:w-10 md:h-10 shadow-md"></div>
                 </div>
                 <div className="space-y-1">
-                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-fantasy-wood/50 dark:text-fantasy-parchment/50">{kpi.label}</p>
+                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-fantasy-wood/70 dark:text-fantasy-parchment/70">{kpi.label}</p>
                    <p className={`text-3xl md:text-4xl font-medieval ${kpi.color} drop-shadow-sm`}>{kpi.val}</p>
                 </div>
              </div>
@@ -137,7 +137,7 @@ const DashboardPage: React.FC = () => {
                 <div className="p-2 bg-emerald-800/10 dark:bg-emerald-400/10 rounded-lg"><Activity size={24} className="text-emerald-800 dark:text-emerald-400"/></div>
                 Fluxo de Caixa (Histórico)
              </h3>
-             <div className="text-[10px] font-black uppercase tracking-widest text-fantasy-wood/40 dark:text-fantasy-parchment/40 hidden sm:block">
+             <div className="text-[10px] font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60 hidden sm:block">
                  Últimas 30 Movimentações
              </div>
          </div>
@@ -171,7 +171,7 @@ const DashboardPage: React.FC = () => {
             
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 pb-2">
                 {chartData.filter((_, i) => i % Math.ceil(chartData.length/6) === 0).map((d, i) => (
-                    <span key={i} className="text-[9px] font-black text-fantasy-wood/40 dark:text-fantasy-parchment/40 uppercase">{d.date}</span>
+                    <span key={i} className="text-[9px] font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase">{d.date}</span>
                 ))}
             </div>
          </div>
@@ -206,7 +206,7 @@ const DashboardPage: React.FC = () => {
                       </div>
                       
                       <div className="space-y-3">
-                          <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest border-b border-fantasy-wood/5 pb-1">Equipe Alocada ({b.assignedNPCs.length})</div>
+                          <div className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest border-b border-fantasy-wood/5 pb-1">Equipe Alocada ({b.assignedNPCs.length})</div>
                           {b.assignedNPCs.length === 0 ? (
                               <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40">Instalação vazia.</p>
                           ) : (
@@ -250,7 +250,7 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="space-y-3">
-                          <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest border-b border-fantasy-wood/5 pb-1">Corte & Serviços ({d.assignedNPCs.length})</div>
+                          <div className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest border-b border-fantasy-wood/5 pb-1">Corte & Serviços ({d.assignedNPCs.length})</div>
                           {d.assignedNPCs.length === 0 ? (
                               <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40">Sem funcionários diretos.</p>
                           ) : (

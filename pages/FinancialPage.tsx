@@ -76,7 +76,7 @@ const FinancialPage: React.FC = () => {
               <div className={`p-5 ${coin.bg} rounded-3xl ${coin.color} group-hover:shadow-lg transition-shadow`}><Coins size={40}/></div>
               <div className="wax-seal w-10 h-10 group-hover:scale-110 transition-transform"></div>
             </div>
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-fantasy-wood dark:text-fantasy-parchment/40 mb-2">{coin.label}</div>
+            <div className="text-xs font-black uppercase tracking-[0.3em] text-fantasy-wood/70 dark:text-fantasy-parchment/60 mb-2">{coin.label}</div>
             <div className={`text-4xl font-medieval ${coin.color}`}>{coin.val.toLocaleString()}</div>
           </button>
         ))}

@@ -15,6 +15,8 @@ import DashboardPage from './pages/DashboardPage';
 import GuildManagerPage from './pages/GuildManagerPage';
 import NPCsPage from './pages/NPCsPage';
 import ChroniclesPage from './pages/ChroniclesPage';
+import QuestBoardPage from './pages/QuestBoardPage';
+import CalendarPage from './pages/CalendarPage';
 import Logo from './components/Logo';
 import { Menu, AlertTriangle, Scroll, Loader } from 'lucide-react';
 
@@ -128,20 +130,21 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/guilds" element={<GuildManagerPage />} />
         
-        {/* Rotas Protegidas - Redirecionam para /guilds se não autenticado */}
+        {/* Rotas Protegidas */}
         <Route path="/" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/quests" element={isAuthenticated ? <QuestBoardPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/calendar" element={isAuthenticated ? <CalendarPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/members" element={isAuthenticated ? <MembersPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/finance" element={isAuthenticated ? <FinancialPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/inventory" element={isAuthenticated ? <InventoryPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/itemhistory" element={isAuthenticated ? <ItemHistoryPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/bases" element={isAuthenticated ? <BasesPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/domains" element={isAuthenticated ? <DomainsPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/npcs" element={isAuthenticated ? <NPCsPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/investments" element={isAuthenticated ? <InvestmentsPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/members" element={isAuthenticated ? <MembersPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/chronicles" element={isAuthenticated ? <ChroniclesPage /> : <Navigate to="/guilds" replace />} />
         
-        {/* Catch all */}
         <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/guilds"} replace />} />
       </Routes>
     </Layout>
