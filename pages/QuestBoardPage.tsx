@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Quest, QuestStatus } from '../types';
-import { CheckSquare, Plus, Trash2, ArrowRight, ArrowLeft, Coins, Award, Users, AlertCircle, X } from 'lucide-react';
+import { Quest, QuestStatus, CurrencyType } from '../types';
+import { CheckSquare, Plus, Trash2, ArrowRight, ArrowLeft, Coins, Award, Users, AlertCircle, X, Edit } from 'lucide-react';
 
 const STATUS_COLUMNS: { id: QuestStatus; label: string; color: string }[] = [
     { id: 'Disponivel', label: 'Disponíveis', color: 'border-slate-500/30 bg-slate-500/10' },
@@ -12,35 +12,74 @@ const STATUS_COLUMNS: { id: QuestStatus; label: string; color: string }[] = [
 ];
 
 const QuestBoardPage: React.FC = () => {
-  const { quests, addQuest, updateQuestStatus, deleteQuest, members } = useGuild();
-  const [showAdd, setShowAdd] = useState(false);
+  const { quests, addQuest, updateQuest, updateQuestStatus, deleteQuest, members } = useGuild();
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
   
   // Form States
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newGold, setNewGold] = useState(0);
+  const [newCurrency, setNewCurrency] = useState<CurrencyType>('TS');
   const [newXP, setNewXP] = useState('');
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
-      addQuest({
-          title: newTitle,
-          description: newDesc,
-          rewardGold: newGold,
-          rewardXP: newXP,
-          assignedMemberIds: assignedIds
-      });
+      
+      if (modalMode === 'edit' && editingId) {
+          updateQuest(editingId, {
+              title: newTitle,
+              description: newDesc,
+              rewardGold: newGold,
+              rewardCurrency: newCurrency,
+              rewardXP: newXP,
+              assignedMemberIds: assignedIds
+          });
+      } else {
+          addQuest({
+              title: newTitle,
+              description: newDesc,
+              rewardGold: newGold,
+              rewardCurrency: newCurrency,
+              rewardXP: newXP,
+              assignedMemberIds: assignedIds
+          });
+      }
       closeModal();
   };
 
+  const openCreateModal = () => {
+      resetForm();
+      setModalMode('create');
+  };
+
+  const openEditModal = (q: Quest) => {
+      setEditingId(q.id);
+      setNewTitle(q.title);
+      setNewDesc(q.description);
+      setNewGold(q.rewardGold);
+      setNewCurrency(q.rewardCurrency || 'TS');
+      setNewXP(q.rewardXP);
+      setAssignedIds(q.assignedMemberIds || []);
+      setModalMode('edit');
+  };
+
+  const resetForm = () => {
+      setNewTitle(''); setNewDesc(''); setNewGold(0); setNewCurrency('TS'); setNewXP(''); setAssignedIds([]); setEditingId(null);
+  };
+
   const closeModal = () => {
-      setShowAdd(false); setNewTitle(''); setNewDesc(''); setNewGold(0); setNewXP(''); setAssignedIds([]);
+      setModalMode(null); 
+      resetForm();
   };
 
   const toggleMemberAssign = (id: string) => {
       setAssignedIds(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
   };
+
+  // Filter only active members for assignment
+  const activeMembers = members.filter(m => m.status === 'Ativo');
 
   return (
     <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
@@ -49,7 +88,7 @@ const QuestBoardPage: React.FC = () => {
           <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
+        <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
            <Plus size={24} /> Nova Missão
         </button>
       </header>
@@ -67,8 +106,11 @@ const QuestBoardPage: React.FC = () => {
                           {quests.filter(q => q.status === col.id).map(quest => (
                               <div key={quest.id} className="parchment-card p-5 rounded-3xl border-2 border-fantasy-wood/10 dark:border-white/10 shadow-md hover:border-fantasy-gold/50 transition-all group relative">
                                   <div className="flex justify-between items-start mb-2">
-                                      <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight">{quest.title}</h4>
-                                      <button onClick={() => deleteQuest(quest.id)} className="text-fantasy-wood/20 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>
+                                      <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight pr-6">{quest.title}</h4>
+                                      <div className="flex gap-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <button onClick={() => openEditModal(quest)} className="text-fantasy-wood/40 hover:text-fantasy-gold transition-colors"><Edit size={16}/></button>
+                                          <button onClick={() => deleteQuest(quest.id)} className="text-fantasy-wood/40 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                                      </div>
                                   </div>
                                   <p className="text-xs text-fantasy-wood/70 dark:text-fantasy-parchment/70 font-serif italic mb-4 line-clamp-3">{quest.description}</p>
                                   
@@ -76,7 +118,7 @@ const QuestBoardPage: React.FC = () => {
                                   <div className="flex gap-2 mb-4 flex-wrap">
                                       {quest.rewardGold > 0 && (
                                           <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-fantasy-gold/10 text-fantasy-gold px-2 py-1 rounded">
-                                              <Coins size={10}/> {quest.rewardGold} T$
+                                              <Coins size={10}/> {quest.rewardGold} {quest.rewardCurrency || 'TS'}
                                           </span>
                                       )}
                                       {quest.rewardXP && (
@@ -129,17 +171,17 @@ const QuestBoardPage: React.FC = () => {
           </div>
       </div>
 
-      {showAdd && (
+      {modalMode && (
           <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
               <div className="parchment-card p-10 rounded-[50px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                   <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
                   
                   <div className="text-center mb-8">
                       <div className="wax-seal w-20 h-20 mx-auto mb-4 flex items-center justify-center text-white"><CheckSquare size={40}/></div>
-                      <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Novo Contrato</h3>
+                      <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'edit' ? 'Editar Contrato' : 'Novo Contrato'}</h3>
                   </div>
 
-                  <form onSubmit={handleCreate} className="space-y-6">
+                  <form onSubmit={handleSave} className="space-y-6">
                       <div className="space-y-2">
                           <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Título da Missão</label>
                           <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" required value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: A Besta de Smokestone" />
@@ -152,7 +194,12 @@ const QuestBoardPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                               <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (Ouro)</label>
-                              <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
+                              <div className="flex gap-2">
+                                  <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
+                                  <select className="bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-4 py-4 font-medieval text-lg outline-none cursor-pointer" value={newCurrency} onChange={e => setNewCurrency(e.target.value as CurrencyType)}>
+                                      {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c} className="dark:bg-black">{c}</option>)}
+                                  </select>
+                              </div>
                           </div>
                           <div className="space-y-2">
                               <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (XP / Itens)</label>
@@ -161,9 +208,10 @@ const QuestBoardPage: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                          <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Membros Alocados</label>
+                          <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Membros Ativos Alocados</label>
                           <div className="flex flex-wrap gap-2 bg-black/5 dark:bg-black/20 p-4 rounded-[24px] border border-fantasy-wood/10 dark:border-white/10 max-h-40 overflow-y-auto">
-                              {members.map(m => (
+                              {activeMembers.length === 0 && <p className="text-xs text-fantasy-wood/40 italic px-2">Nenhum aventureiro ativo disponível.</p>}
+                              {activeMembers.map(m => (
                                   <button 
                                     key={m.id}
                                     type="button" 
@@ -177,7 +225,7 @@ const QuestBoardPage: React.FC = () => {
                       </div>
 
                       <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all">
-                          Publicar Missão
+                          {modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}
                       </button>
                   </form>
               </div>
