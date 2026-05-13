@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Coins, Package, Castle, LandPlot, Users, 
   X, History, Contact, ShieldCheck, Scroll, Hammer, BookOpen, 
-  NotebookPen, Sun, Moon, Calendar, Map, CheckSquare
+  NotebookPen, Sun, Moon, Calendar, Map, CheckSquare, Sparkles
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useGuild } from '../context/GuildContext';
@@ -30,12 +30,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
     { path: '/quests', label: 'Quadro de Missões', icon: CheckSquare },
     { path: '/calendar', label: 'Calendário Artoniano', icon: Calendar },
     { path: '/members', label: 'Aventureiros', icon: Users },
+    { path: '/divine-points', label: 'Pontos Divinos', icon: Sparkles },
     { path: '/finance', label: 'Finanças do grupo', icon: Coins },
     { path: '/inventory', label: 'Arsenal e bens', icon: Package },
     { path: '/bases', label: 'Bases', icon: Castle },
     { path: '/domains', label: 'Dominios', icon: LandPlot },
     { path: '/npcs', label: 'Funcionarios e serviços', icon: Contact },
     { path: '/investments', label: 'Investimentos', icon: Hammer },
+    { path: '/reputation', label: 'Reputação', icon: Scroll },
     { path: '/chronicles', label: 'Livro de Crônicas', icon: NotebookPen },
   ];
 

@@ -1,6 +1,6 @@
 # Grimório da Fortuna
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-1.1.0-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-1.2.0-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 

@@ -8,7 +8,8 @@ export interface GuildSummary {
 }
 
 const apiRequest = async (endpoint: string, options?: RequestInit) => {
-  const res = await fetch(`/api/${endpoint}`, options);
+  const url = `/api/${endpoint}`;
+  const res = await fetch(url, options);
   const text = await res.text();
   
   let data;

@@ -80,7 +80,10 @@ const QuestBoardPage: React.FC = () => {
   };
 
   // Filter only active members for assignment
-  const activeMembers = members.filter(m => m.status === 'Ativo');
+  const activeMembers = members.filter(m => {
+    const s = String(m.status || 'Ativo').trim().toLowerCase();
+    return s !== 'inativo' && s !== 'morto';
+  });
 
   return (
     <div className="space-y-12 pb-20 font-serif h-full flex flex-col">

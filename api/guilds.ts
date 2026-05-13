@@ -1,5 +1,6 @@
 
 import { db } from '@vercel/postgres';
+import { hashPassword, verifyAndMaybeUpgradePassword } from '../utils/password';
 
 export const config = {
   runtime: 'edge',
@@ -9,6 +10,17 @@ export default async function handler(request: Request) {
   const client = await db.connect();
 
   try {
+    // Garante que a tabela existe (Auto-migration)
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS guilds (
+        id UUID PRIMARY KEY,
+        guild_name TEXT NOT NULL,
+        password TEXT NOT NULL,
+        data JSONB,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     const url = new URL(request.url);
     const method = request.method;
     const id = url.searchParams.get('id');
@@ -23,29 +35,42 @@ export default async function handler(request: Request) {
           return new Response(JSON.stringify({ error: 'Senha necessária' }), { status: 401 });
         }
 
-        // Tenta buscar como usuário normal (senha da guilda)
-        let result = await client.sql`
-          SELECT data FROM guilds 
-          WHERE id = ${id} AND password = ${password}
-        `;
-
-        // Se falhar, verifica se a senha fornecida é a senha de ADMIN
-        if (result.rowCount === 0) {
-           const adminAuth = await client.sql`SELECT password FROM admin_auth WHERE key = 'master'`;
-           if (adminAuth.rowCount > 0 && adminAuth.rows[0].password === password) {
-              // É admin, libera o acesso aos dados da guilda mesmo sem a senha da guilda
-              result = await client.sql`SELECT data FROM guilds WHERE id = ${id}`;
-           }
-        }
-
-        if (result.rowCount === 0) {
+        const guild = await client.sql`SELECT password, data FROM guilds WHERE id = ${id}`;
+        if (guild.rowCount === 0) {
           return new Response(JSON.stringify({ error: 'Acesso negado ou Guilda não encontrada' }), { status: 403 });
         }
 
-        return new Response(JSON.stringify(result.rows[0].data), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        });
+        const storedGuild = guild.rows[0].password as string;
+        const v = await verifyAndMaybeUpgradePassword(storedGuild, password);
+        if (v.ok) {
+          if (v.upgraded) {
+            await client.sql`UPDATE guilds SET password = ${v.upgraded} WHERE id = ${id}`;
+          }
+          return new Response(JSON.stringify(guild.rows[0].data), {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+
+        const adminTableCheck = await client.sql`SELECT to_regclass('public.admin_auth')`;
+        if (adminTableCheck.rows[0].to_regclass) {
+          const adminAuth = await client.sql`SELECT password FROM admin_auth WHERE key = 'master'`;
+          if (adminAuth.rowCount > 0) {
+            const storedAdmin = adminAuth.rows[0].password as string;
+            const a = await verifyAndMaybeUpgradePassword(storedAdmin, password);
+            if (a.ok) {
+              if (a.upgraded) {
+                await client.sql`UPDATE admin_auth SET password = ${a.upgraded} WHERE key = 'master'`;
+              }
+              return new Response(JSON.stringify(guild.rows[0].data), {
+                status: 200,
+                headers: { 'content-type': 'application/json' }
+              });
+            }
+          }
+        }
+
+        return new Response(JSON.stringify({ error: 'Acesso negado ou Guilda não encontrada' }), { status: 403 });
       } else {
         // Listagem pública
         const result = await client.sql`
@@ -77,8 +102,8 @@ export default async function handler(request: Request) {
       if (existing.rowCount > 0) {
         const dbRow = existing.rows[0];
         
-        // 1. Validação de Senha
-        if (dbRow.password !== password) {
+        const v = await verifyAndMaybeUpgradePassword(dbRow.password as string, password);
+        if (!v.ok) {
            return new Response(JSON.stringify({ error: 'Senha incorreta para atualizar esta guilda.' }), { status: 403 });
         }
 
@@ -88,7 +113,7 @@ export default async function handler(request: Request) {
         const incomingVersion = version || 0;
 
         // Se a versão que chega é MENOR ou IGUAL a do banco, significa que o cliente está desatualizado
-        // Exceção: Se for 0 ou 1, pode ser migração inicial, então permitimos se a diferença for pequena, mas regra geral é travar.
+        // Exceção: Se for 0 ou 1, pode ser migração inicial ou reset, então permitimos se a diferença for pequena, mas regra geral é travar.
         if (incomingVersion <= dbVersion && incomingVersion !== 0) {
             return new Response(JSON.stringify({ 
                 error: 'Conflito de Edição: Os dados foram alterados por outro usuário. Atualize a página.',
@@ -99,13 +124,15 @@ export default async function handler(request: Request) {
 
       // Prepara o payload final
       const guildData = { id, guildName, version, ...rest };
+      const hashed = await hashPassword(password);
 
       await client.sql`
         INSERT INTO guilds (id, guild_name, password, data, updated_at)
-        VALUES (${id}, ${guildName}, ${password}, ${JSON.stringify(guildData)}, NOW())
+        VALUES (${id}, ${guildName}, ${hashed}, ${JSON.stringify(guildData)}, NOW())
         ON CONFLICT (id) 
         DO UPDATE SET 
           guild_name = ${guildName}, 
+          password = ${hashed},
           data = ${JSON.stringify(guildData)}, 
           updated_at = NOW();
       `;
@@ -122,13 +149,35 @@ export default async function handler(request: Request) {
 
       // Verifica se é a senha da guilda
       let canDelete = false;
-      const guildCheck = await client.sql`SELECT password FROM guilds WHERE id = ${id} AND password = ${password}`;
-      if (guildCheck.rowCount > 0) canDelete = true;
+      const guild = await client.sql`SELECT password FROM guilds WHERE id = ${id}`;
+      if (guild.rowCount > 0) {
+        const storedGuild = guild.rows[0].password as string;
+        const v = await verifyAndMaybeUpgradePassword(storedGuild, password);
+        if (v.ok) {
+          canDelete = true;
+          if (v.upgraded) {
+            await client.sql`UPDATE guilds SET password = ${v.upgraded} WHERE id = ${id}`;
+          }
+        }
+      }
 
       // Se não for, verifica se é admin
       if (!canDelete) {
-         const adminCheck = await client.sql`SELECT password FROM admin_auth WHERE key = 'master' AND password = ${password}`;
-         if (adminCheck.rowCount > 0) canDelete = true;
+         // Verifica tabela admin
+         const adminTableCheck = await client.sql`SELECT to_regclass('public.admin_auth')`;
+         if (adminTableCheck.rows[0].to_regclass) {
+             const adminAuth = await client.sql`SELECT password FROM admin_auth WHERE key = 'master'`;
+             if (adminAuth.rowCount > 0) {
+               const storedAdmin = adminAuth.rows[0].password as string;
+               const v = await verifyAndMaybeUpgradePassword(storedAdmin, password);
+               if (v.ok) {
+                 canDelete = true;
+                 if (v.upgraded) {
+                   await client.sql`UPDATE admin_auth SET password = ${v.upgraded} WHERE key = 'master'`;
+                 }
+               }
+             }
+         }
       }
 
       if (!canDelete) {
