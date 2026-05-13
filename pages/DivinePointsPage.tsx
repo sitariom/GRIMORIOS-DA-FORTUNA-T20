@@ -9,12 +9,12 @@ const DivinePointsPage: React.FC = () => {
   // Filter only active members based on requirements
   const activeMembers = members.filter(m => {
     const s = String(m.status || 'Ativo').trim().toLowerCase();
-    return s !== 'inativo' && s !== 'morto';
+    return s === 'ativo';
   });
 
   const isMemberActive = (m: (typeof members)[number]) => {
     const s = String(m.status || 'Ativo').trim().toLowerCase();
-    return s !== 'inativo' && s !== 'morto';
+    return s === 'ativo';
   };
 
   const handleUpdate = (id: string, currentAmount: number, change: number) => {
