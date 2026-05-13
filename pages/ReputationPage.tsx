@@ -425,7 +425,7 @@ const ReputationPage: React.FC = () => {
                          {/* Members */}
                          {members.filter(m => {
                            const s = String(m.status || 'Ativo').trim().toLowerCase();
-                           return s !== 'inativo' && s !== 'morto';
+                          return s === 'ativo';
                          }).map(m => {
                            const val = getTargetReputation(selectedPoiId, 'Membro', m.id)?.value || 0;
                            return (
