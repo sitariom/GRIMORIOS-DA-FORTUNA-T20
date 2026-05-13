@@ -52,6 +52,7 @@ interface GuildContextData {
    addMember: (name: string) => void;
    removeMember: (id: string) => void;
    updateMember: (id: string, data: Partial<Member>) => void;
+   bulkUpdateMembers: (updater: (members: Member[]) => Member[]) => void;
    transferGoldToMember: (memberId: string, amount: number, currency: CurrencyType) => void;
    transferGoldFromMember: (memberId: string, amount: number, currency: CurrencyType) => void;
    updateMemberWallet: (memberId: string, amount: number, currency: CurrencyType, type: 'add' | 'remove') => void;
@@ -176,6 +177,9 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [feedback, setFeedback] = useState<Feedback | null>(null);
     const [sessionKey, setSessionKey] = useState<string>('');
     const syncIntervalRef = useRef<number | null>(null);
+    const saveChainRef = useRef<Promise<void>>(Promise.resolve());
+    const saveEpochRef = useRef(0);
+    const versionRef = useRef(0);
 
     // --- Helpers ---
     const notify = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -229,30 +233,43 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
     }, [isAuthenticated, syncGuild]);
 
-    const triggerSave = useCallback(async (newState: GuildState) => {
-        // Incrementa versão localmente antes de enviar
-        const versionedState = { ...newState, version: (newState.version || 0) + 1 };
-        setActiveGuild(versionedState); // Otimistic UI update
+    useEffect(() => {
+        versionRef.current = activeGuild.version || 0;
+    }, [activeGuild.id, activeGuild.version]);
 
-        if (isAuthenticated && sessionKey) {
-            try {
+    const triggerSave = useCallback(async (newState: GuildState) => {
+        const baseVersion = versionRef.current || 0;
+        const versionedState = { ...newState, version: baseVersion + 1 };
+        versionRef.current = versionedState.version;
+        setActiveGuild(versionedState);
+
+        if (!isAuthenticated || !sessionKey) return;
+
+        const epoch = saveEpochRef.current;
+        saveChainRef.current = saveChainRef.current
+            .then(async () => {
+                if (saveEpochRef.current !== epoch) return;
                 await dbService.saveGuild(versionedState, sessionKey);
-            } catch (e: any) {
+            })
+            .catch(async (e: any) => {
+                if (saveEpochRef.current !== epoch) return;
                 console.error("Save failed", e);
-                
-                // Tratamento de Conflito (409)
+
                 if (e.status === 409) {
+                    saveEpochRef.current++;
+                    saveChainRef.current = Promise.resolve();
                     notify("Conflito de edição detectado! Sincronizando dados...", "error");
-                    // Força busca dos dados mais recentes do servidor, descartando a alteração conflituosa local
                     const freshData = await dbService.getGuild(versionedState.id, sessionKey);
                     if (freshData) {
-                        setActiveGuild(sanitizeGuildData(freshData));
+                        const safe = sanitizeGuildData(freshData);
+                        versionRef.current = safe.version || 0;
+                        setActiveGuild(safe);
                     }
-                } else {
-                    notify("Erro ao salvar automaticamente", "error");
+                    return;
                 }
-            }
-        }
+
+                notify("Erro ao salvar automaticamente", "error");
+            });
     }, [isAuthenticated, sessionKey, notify]);
 
     // --- Internal Helpers ---
@@ -508,6 +525,13 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         triggerSave({
             ...activeGuild,
             members: activeGuild.members.map(m => m.id === id ? { ...m, ...data } : m)
+        });
+    };
+
+    const bulkUpdateMembers = (updater: (members: Member[]) => Member[]) => {
+        triggerSave({
+            ...activeGuild,
+            members: updater(activeGuild.members)
         });
     };
 
@@ -1264,6 +1288,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             addMember,
             removeMember,
             updateMember,
+            bulkUpdateMembers,
             transferGoldToMember,
             transferGoldFromMember,
             updateMemberWallet,

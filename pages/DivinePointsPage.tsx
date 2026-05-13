@@ -3,7 +3,7 @@ import { useGuild } from '../context/GuildContext';
 import { Shield, Sparkles, Minus, Plus, RefreshCw, Info } from 'lucide-react';
 
 const DivinePointsPage: React.FC = () => {
-  const { members, updateMember, guildName } = useGuild();
+  const { members, updateMember, bulkUpdateMembers, guildName } = useGuild();
   const [showRules, setShowRules] = useState(false);
 
   // Filter only active members based on requirements
@@ -12,6 +12,11 @@ const DivinePointsPage: React.FC = () => {
     return s !== 'inativo' && s !== 'morto';
   });
 
+  const isMemberActive = (m: (typeof members)[number]) => {
+    const s = String(m.status || 'Ativo').trim().toLowerCase();
+    return s !== 'inativo' && s !== 'morto';
+  };
+
   const handleUpdate = (id: string, currentAmount: number, change: number) => {
     const newVal = Math.max(0, currentAmount + change);
     updateMember(id, { divinePoints: newVal });
@@ -19,17 +24,19 @@ const DivinePointsPage: React.FC = () => {
 
   const handleResetAll = () => {
     if (confirm('Tem certeza de que deseja zerar os Pontos Divinos de TODOS os aventureiros ativos? Use isso apenas se o Agrado ao Deus da masmorra não for atingido por ninguém.')) {
-      activeMembers.forEach(m => {
-        updateMember(m.id, { divinePoints: 0 });
-      });
+      bulkUpdateMembers(ms =>
+        ms.map(m => (isMemberActive(m) ? { ...m, divinePoints: 0 } : m))
+      );
     }
   };
 
   const handleAddAll = (amount: number) => {
     if (confirm(`Tem certeza de que deseja adicionar ${amount} Ponto(s) Divino(s) a TODOS os aventureiros ativos?`)) {
-      activeMembers.forEach(m => {
-        updateMember(m.id, { divinePoints: (m.divinePoints || 0) + amount });
-      });
+      bulkUpdateMembers(ms =>
+        ms.map(m =>
+          isMemberActive(m) ? { ...m, divinePoints: (m.divinePoints || 0) + amount } : m
+        )
+      );
     }
   };
 
