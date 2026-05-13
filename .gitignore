@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+.env
+.env.*
+!.env.example
+database.sqlite
+database.sqlite*
+*.sqlite
+*.sqlite3
+.vercel
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

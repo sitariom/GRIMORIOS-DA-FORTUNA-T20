@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { 
   GuildState, LogEntry, Wallet, Item, Base, Domain, NPC, Quest, CalendarState, Member, 
   CurrencyType, LogCategory, MemberStatus, ItemType, ItemRarity, BasePorte, BaseType, 
-  DomainBuilding, DomainUnit, GovernResult, CourtType, PopularityType, NPCRelationship, NPCLocationType 
+  DomainBuilding, DomainUnit, GovernResult, CourtType, PopularityType, NPCRelationship, NPCLocationType,
+  PointOfInterest, ReputationEntry, PointOfInterestType, ReputationTargetType
 } from '../types';
 import { RATES, PORTE_DATA, COURT_DATA } from '../constants';
 import { dbService, GuildSummary } from '../services/db';
@@ -25,6 +26,8 @@ interface GuildContextData {
    logs: LogEntry[];
    calendar: CalendarState;
    quests: Quest[];
+   pointsOfInterest: PointOfInterest[];
+   reputations: ReputationEntry[];
    isAuthenticated: boolean;
    isLoading: boolean;
    isAdmin: boolean;
@@ -102,6 +105,14 @@ interface GuildContextData {
    updateQuestStatus: (id: string, status: any) => void;
    deleteQuest: (id: string) => void;
 
+   addPointOfInterest: (poi: Omit<PointOfInterest, 'id'>) => void;
+   updatePointOfInterest: (id: string, data: Partial<PointOfInterest>) => void;
+   removePointOfInterest: (id: string) => void;
+
+   addReputation: (rep: Omit<ReputationEntry, 'id'>) => void;
+   updateReputation: (id: string, data: Partial<ReputationEntry>) => void;
+   removeReputation: (id: string) => void;
+
    notify: (text: string, type?: 'success' | 'error' | 'info') => void;
 }
 
@@ -119,7 +130,9 @@ const initialGuildState: GuildState = {
     logs: [],
     members: [],
     calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
-    quests: []
+    quests: [],
+    pointsOfInterest: [],
+    reputations: []
 };
 
 // Helper para garantir compatibilidade com guildas antigas e prevenir crashes
@@ -140,10 +153,13 @@ const sanitizeGuildData = (data: any): GuildState => {
     safeData.npcs = Array.isArray(safeData.npcs) ? safeData.npcs : [];
     safeData.logs = Array.isArray(safeData.logs) ? safeData.logs : [];
     safeData.quests = Array.isArray(safeData.quests) ? safeData.quests : [];
+    safeData.pointsOfInterest = Array.isArray(safeData.pointsOfInterest) ? safeData.pointsOfInterest : [];
+    safeData.reputations = Array.isArray(safeData.reputations) ? safeData.reputations : [];
     
     // Sanitização profunda de Membros para garantir que wallet e inventory existam
     safeData.members = (Array.isArray(safeData.members) ? safeData.members : []).map((m: any) => ({
         ...m,
+        status: m.status || 'Ativo',
         wallet: { TC: 0, TS: 0, TO: 0, LO: 0, ...(m.wallet || {}) },
         inventory: Array.isArray(m.inventory) ? m.inventory : []
     }));
@@ -1162,6 +1178,56 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         notify("Missão removida.");
     };
 
+    // --- Reputation Actions ---
+
+    const addPointOfInterest = (poi: Omit<PointOfInterest, 'id'>) => {
+        triggerSave({
+            ...activeGuild,
+            pointsOfInterest: [...(activeGuild.pointsOfInterest || []), { ...poi, id: crypto.randomUUID() }]
+        });
+        notify("Ponto de interesse registrado.");
+    };
+
+    const updatePointOfInterest = (id: string, data: Partial<PointOfInterest>) => {
+        triggerSave({
+            ...activeGuild,
+            pointsOfInterest: (activeGuild.pointsOfInterest || []).map(p => p.id === id ? { ...p, ...data } : p)
+        });
+        notify("Ponto de interesse atualizado.");
+    };
+
+    const removePointOfInterest = (id: string) => {
+        triggerSave({
+            ...activeGuild,
+            pointsOfInterest: (activeGuild.pointsOfInterest || []).filter(p => p.id !== id),
+            reputations: (activeGuild.reputations || []).filter(r => r.pointOfInterestId !== id)
+        });
+        notify("Ponto de interesse removido.");
+    };
+
+    const addReputation = (rep: Omit<ReputationEntry, 'id'>) => {
+        triggerSave({
+            ...activeGuild,
+            reputations: [...(activeGuild.reputations || []), { ...rep, id: crypto.randomUUID() }]
+        });
+        notify("Registro de reputação criado.");
+    };
+
+    const updateReputation = (id: string, data: Partial<ReputationEntry>) => {
+        triggerSave({
+            ...activeGuild,
+            reputations: (activeGuild.reputations || []).map(r => r.id === id ? { ...r, ...data } : r)
+        });
+    };
+
+    const removeReputation = (id: string) => {
+        triggerSave({
+            ...activeGuild,
+            reputations: (activeGuild.reputations || []).filter(r => r.id !== id)
+        });
+        notify("Registro de reputação removido.");
+    };
+
     return (
         <GuildContext.Provider value={{
             activeGuildId: activeGuild.id,
@@ -1175,6 +1241,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             logs: activeGuild.logs || [],
             calendar: activeGuild.calendar || initialGuildState.calendar,
             quests: activeGuild.quests || [],
+            pointsOfInterest: activeGuild.pointsOfInterest || [],
+            reputations: activeGuild.reputations || [],
             isAuthenticated,
             isLoading,
             isAdmin,
@@ -1242,6 +1310,12 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             updateQuest,
             updateQuestStatus,
             deleteQuest,
+            addPointOfInterest,
+            updatePointOfInterest,
+            removePointOfInterest,
+            addReputation,
+            updateReputation,
+            removeReputation,
             notify
         }}>
             {children}

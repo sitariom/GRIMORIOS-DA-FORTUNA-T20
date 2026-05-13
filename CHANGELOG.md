@@ -3,6 +3,18 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.2.0] - 2024-05-24
+### Adicionado
+- **Pontos Divinos:** Nova tela para gestão e acompanhamento dos pontos divinos (ou pontos de ação) dos membros ativos.
+- **Resoluções de Avisos:** Configurados sinalizadores futuros do React Router v7 para `startTransition` e `relativeSplatPath`.
+
+### Corrigido
+- **Membros Ativos:** Reparado o sumiço de aventureiros com diferentes de "Ativo" (ex. "Viajando", "Ferido") nas páginas de Reputação e Quadro de Missões (agora apenas "Morto" e "Inativo" os excluem das seleções globais limitadas a ativos).
+- **Websocket:** Tratamento do Web Socket HMR no Vite minimizando erros nos logs durante o tempo de desenvolvimento em ambiente seguro.
+
+### Alterado
+- **Identidade Visual:** Seletor de Dropdown na aba de Reputação harmonizado visualmente com os campos de entrada, com transparência e estilo alinhado no modo Dark.
+
 ## [1.1.0] - 2024-05-20
 ### Adicionado
 - **Construções Personalizadas:** Agora é possível adicionar obras e infraestruturas com nomes, custos e benefícios manuais nos Domínios.

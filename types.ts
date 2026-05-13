@@ -126,6 +126,7 @@ export interface Member {
   status: MemberStatus;
   wallet: Wallet; // Carteira individual do aventureiro
   inventory: Item[]; // Inventário individual
+  divinePoints?: number; // Pontos divinos / de ação
 }
 
 export interface CalendarState {
@@ -149,6 +150,35 @@ export interface Quest {
   assignedMemberIds: string[];
 }
 
+export type PointOfInterestType = 'Ordem/Facção' | 'Organização' | 'NPC' | 'Estabelecimento' | 'Outro';
+
+export interface ReputationTier {
+  id: string;
+  name: string;
+  minPoints: number;
+  maxPoints: number;
+  description: string;    // benefits / penalties
+  colorStyle: string;     // e.g. text-emerald-500
+}
+
+export interface PointOfInterest {
+  id: string;
+  name: string;
+  type: PointOfInterestType;
+  description: string;
+  tiers?: ReputationTier[]; 
+}
+
+export type ReputationTargetType = 'Grupo' | 'Membro';
+
+export interface ReputationEntry {
+  id: string;
+  pointOfInterestId: string;
+  targetType: ReputationTargetType;
+  targetId: string; // 'guild' or member.id
+  value: number; 
+}
+
 export interface GuildState {
   id: string;
   guildName: string;
@@ -162,6 +192,8 @@ export interface GuildState {
   members: Member[];
   calendar: CalendarState;
   quests: Quest[];
+  pointsOfInterest: PointOfInterest[];
+  reputations: ReputationEntry[];
 }
 
 export interface MultiGuildState {
