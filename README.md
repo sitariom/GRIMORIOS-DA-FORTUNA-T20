@@ -4,7 +4,7 @@
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 ![Express](https://img.shields.io/badge/Express-5-green)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Vercel-336791)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791)
 
 Aplicação web full-stack para gestão de tesouraria, inventário, propriedades e logística de campanhas de RPG Tormenta20. O sistema oferece controle financeiro com conversão de moedas, gestão de bases (incluindo Negócios), domínios com governança completa, calendário de Arton, quadro de missões, membros, NPCs, reputação por facção, investimentos e crônicas.
 
@@ -46,7 +46,7 @@ Aplicação web full-stack para gestão de tesouraria, inventário, propriedades
 ### Infraestrutura
 - **Múltiplos Perfis:** Suporte a campanhas simultâneas com autenticação por senha (PBKDF2).
 - **Backup:** Exportação e importação de dados via JSON.
-- **Servidor Express:** API própria com suporte a SQLite (dev) e PostgreSQL (produção/Vercel).
+- **Servidor Express:** API própria com suporte a SQLite (dev) e PostgreSQL (produção/Neon via Vercel).
 
 ## Tecnologias
 
@@ -54,7 +54,7 @@ Aplicação web full-stack para gestão de tesouraria, inventário, propriedades
 - **Estilização:** Tailwind CSS (Dark/Light Mode)
 - **Ícones:** Lucide React
 - **Backend:** Express 5, esbuild, Vite 6
-- **Banco:** SQLite (local) / PostgreSQL (Vercel)
+- **Banco:** SQLite (local) / PostgreSQL (Neon via Vercel)
 - **Segurança:** Helmet, CORS, Rate Limit, PBKDF2
 - **CI:** GitHub Actions
 
@@ -125,7 +125,7 @@ A aplicação é dividida em duas camadas para deploy na Vercel:
 | Camada | Tecnologia | Como é deployada |
 |--------|-----------|------------------|
 | **Frontend** (SPA) | React + Vite | Build automático via `npm run build` |
-| **API** (serverless) | TypeScript + `@vercel/postgres` | Funções em `api/` detectadas automaticamente |
+| **API** (serverless) | TypeScript + `@vercel/postgres` (Neon) | Funções em `api/` detectadas automaticamente |
 
 ### Passo a passo
 
@@ -142,7 +142,7 @@ No painel do projeto na Vercel, vá em **Settings → Environment Variables** e 
 
 | Variável | Obrigatória | Descrição |
 |----------|-------------|-----------|
-| `POSTGRES_URL` | Não | URL de conexão PostgreSQL (Vercel Postgres, Neon, Supabase). Sem ela, o app **não funciona em produção** — use o provedor Postgres da Vercel. |
+| `POSTGRES_URL` | Não | URL de conexão PostgreSQL (Neon). Sem ela, o app **não funciona em produção** — crie um banco Neon em https://neon.com. |
 | `ADMIN_PASSWORD` | Não | Senha inicial do administrador mestre (definida uma vez na primeira execução). |
 | `NODE_ENV` | Não | `production` (padrão na Vercel). |
 
@@ -157,21 +157,20 @@ A Vercel detecta automaticamente:
 
 Clique em **Deploy**. O primeiro deploy pode levar alguns minutos.
 
-#### 4. Configure o banco de dados (PostgreSQL)
+#### 4. Configure o banco de dados (Neon PostgreSQL)
 
-Recomendado: use [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) — o link cria automaticamente o banco e fornece a `POSTGRES_URL`.
+O Vercel Postgres foi descontinuado e migrado para [Neon](https://neon.com). Crie um banco Neon:
 
-Se usar provedor externo (Neon, Supabase, Railway):
-
-1. Crie um banco PostgreSQL 15+.
-2. Copie a connection string para `POSTGRES_URL` nas variáveis de ambiente da Vercel.
+1. Acesse https://neon.com e crie uma conta / projeto.
+2. Copie a connection string fornecida (começa com `postgres://...`).
+3. Adicione como `POSTGRES_URL` nas variáveis de ambiente da Vercel.
 3. As tabelas (`guilds`, `admin_auth`) são criadas automaticamente na primeira requisição (auto-migration).
 
 ### Verificação pós-deploy
 
 1. Acesse a URL gerada pela Vercel.
 2. Crie uma nova guilda — a tela de **Gerenciar Campanhas** solicitará uma senha.
-3. Os dados serão persistidos no PostgreSQL via API serverless.
+3. Os dados serão persistidos no PostgreSQL (Neon) via API serverless.
 
 ---
 
@@ -179,7 +178,7 @@ Se usar provedor externo (Neon, Supabase, Railway):
 
 | Variável | Obrigatória | Local | Vercel | Descrição |
 |----------|:-----------:|:-----:|:------:|-----------|
-| `POSTGRES_URL` | Não | ❌ | ✅ | URL de conexão PostgreSQL. Sem ela, usa SQLite local. |
+| `POSTGRES_URL` | Sim | ❌ | ✅ | URL de conexão PostgreSQL (Neon). Sem ela, usa SQLite local. |
 | `ADMIN_PASSWORD` | Não | ❌ | ✅ | Senha do admin mestre (definida na primeira execução). |
 | `GEMINI_API_KEY` | Não | ❌ | ❌ | Chave da API Gemini (funcionalidade descontinuada). |
 | `NODE_ENV` | Não | ❌ | ❌ | `development`, `production` ou `test`. |
