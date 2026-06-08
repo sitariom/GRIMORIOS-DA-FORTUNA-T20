@@ -1,16 +1,79 @@
-
 import React, { useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { RATES, PORTE_DATA } from '../constants';
-import { TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, Map as MapIcon, Shield, Activity, Home, Crown, Tent, User } from 'lucide-react';
-import { CurrencyType } from '../types';
+import { Link } from 'react-router-dom';
+import { RATES, PORTE_DATA, ARTON_MONTHS, ARTON_WEEKDAYS } from '../constants';
+import { DEFAULT_TIERS } from './ReputationPage';
+import { 
+  TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, Shield, 
+  Activity, Home, Crown, Tent, User, Calendar, Plus, Hammer, Heart, 
+  AlertTriangle, ChevronRight, Edit2, Package, Star
+} from 'lucide-react';
+import { CurrencyType, ReputationTier } from '../types';
+
+const getBadgeStyle = (colorStyle: string) => {
+  switch (colorStyle) {
+    case 'text-red-700':
+      return 'bg-red-500/10 text-red-500 border-red-500/20';
+    case 'text-orange-500':
+      return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+    case 'text-blue-500':
+      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    case 'text-emerald-500':
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    case 'text-purple-500':
+      return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    case 'text-fantasy-gold':
+      return 'bg-fantasy-gold/10 text-fantasy-gold border-fantasy-gold/20';
+    case 'text-gray-500':
+    case 'text-fantasy-wood':
+    default:
+      return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+  }
+};
+
+const getReputationData = (value: number, customTiers?: ReputationTier[]) => {
+  const tiersToUse = customTiers && customTiers.length > 0 ? customTiers : DEFAULT_TIERS as ReputationTier[];
+  const sortedTiers = [...tiersToUse].sort((a,b) => a.minPoints - b.minPoints);
+  
+  let currentTier = sortedTiers[0] || DEFAULT_TIERS[0];
+  let accumulatedDescs: { name: string; desc: string; color: string }[] = [];
+
+  for (const tier of sortedTiers) {
+    if (value >= tier.minPoints && value <= tier.maxPoints) {
+      currentTier = tier;
+      break;
+    }
+  }
+  if (value < (sortedTiers[0]?.minPoints || 0)) {
+     currentTier = sortedTiers[0] || DEFAULT_TIERS[0];
+  } else if (value > (sortedTiers[sortedTiers.length - 1]?.maxPoints || 0)) {
+     currentTier = sortedTiers[sortedTiers.length - 1] || DEFAULT_TIERS[DEFAULT_TIERS.length - 1];
+  }
+
+  if (value >= 0) {
+    const achieved = sortedTiers.filter(t => t.maxPoints >= 0 && t.minPoints <= value);
+    accumulatedDescs = achieved.map(t => ({ name: t.name, desc: t.description, color: t.colorStyle }));
+  } else {
+    const achieved = sortedTiers.filter(t => t.maxPoints < 0 && t.maxPoints >= value).sort((a,b) => b.maxPoints - a.maxPoints);
+    accumulatedDescs = achieved.map(t => ({ name: t.name, desc: t.description, color: t.colorStyle }));
+  }
+
+  return { name: currentTier.name, color: currentTier.colorStyle, accumulated: accumulatedDescs };
+};
 
 const DashboardPage: React.FC = () => {
-  const { wallet, domains, guildName, npcs, members, logs, bases } = useGuild();
+  const { 
+    wallet, domains, guildName, npcs, members, logs, bases, calendar, quests, pointsOfInterest, reputations,
+    advanceDate, toggleNimbDay
+  } = useGuild();
   
   // 1. Cálculos Gerais
   const totalTS = (wallet.TC * RATES.TC) + (wallet.TS * RATES.TS) + (wallet.TO * RATES.TO) + (wallet.LO * RATES.LO);
-  const totalNPCCost = npcs.reduce((acc, n) => acc + n.monthlyCost, 0);
+  
+  // Contar salário apenas para contratados ativos
+  const totalNPCCost = npcs
+    .filter(n => n.relationship === 'Contratado' && n.status === 'Ativo')
+    .reduce((acc, n) => acc + (n.monthlyCost || 0), 0);
 
   // 2. Lógica do Gráfico de Fluxo de Caixa (Retroativo)
   const chartData = useMemo(() => {
@@ -47,26 +110,25 @@ const DashboardPage: React.FC = () => {
   const svgPoints = chartData.map((d, i) => `${getX(i)},${getY(d.value)}`).join(' ');
   const fillPath = `${svgPoints} 100,120 0,120`;
 
-  // 3. Agrupamento de Relações (The Ecosystem Logic)
+  // 3. Resumos & Previews de Outras Seções
+  const activeQuests = useMemo(() => quests.filter(q => q.status === 'Em Andamento'), [quests]);
+  const availableQuests = useMemo(() => quests.filter(q => q.status === 'Disponivel'), [quests]);
+
+  const damagedRoomsCount = useMemo(() => bases.reduce((acc, b) => acc + b.rooms.filter(r => r.isDamaged).length, 0), [bases]);
   
-  // Grupo A: Bases e seus habitantes
-  const basesRelation = useMemo(() => bases.map(b => ({
-      ...b,
-      assignedNPCs: npcs.filter(n => n.locationId === b.id),
-      meta: PORTE_DATA[b.porte]
-  })), [bases, npcs]);
+  const domainsRemainingActions = useMemo(() => domains.reduce((acc, d) => acc + (d.actionsRemaining || 0), 0), [domains]);
+  const domainsInRevolt = useMemo(() => domains.filter(d => d.revolt).length, [domains]);
 
-  // Grupo B: Domínios e seus habitantes
-  const domainsRelation = useMemo(() => domains.map(d => ({
-      ...d,
-      assignedNPCs: npcs.filter(n => n.locationId === d.id)
-  })), [domains, npcs]);
+  const contractedNPCs = useMemo(() => npcs.filter(n => n.relationship === 'Contratado'), [npcs]);
+  const activeContractedNPCs = useMemo(() => contractedNPCs.filter(n => n.status === 'Ativo'), [npcs]);
+  const alliesNPCs = useMemo(() => npcs.filter(n => n.relationship === 'Aliado' || n.relationship === 'Parceiro' || n.relationship === 'Recrutado'), [npcs]);
 
-  // Grupo C: Comitiva (NPCs 'Grupo') e Aventureiros (Membros)
-  const roamingNPCs = useMemo(() => npcs.filter(n => n.locationType === 'Grupo'), [npcs]);
+  const questItems = useMemo(() => (useGuild().items || []).filter(item => item.isQuestItem), [useGuild().items]);
+  const totalItemsCount = useMemo(() => (useGuild().items || []).reduce((acc, item) => acc + item.quantity, 0), [useGuild().items]);
+  const totalInventoryValue = useMemo(() => (useGuild().items || []).reduce((acc, item) => acc + (item.value * item.quantity), 0), [useGuild().items]);
 
   return (
-    <div className="space-y-10 pb-20 font-serif">
+    <div className="space-y-12 pb-20 font-serif">
       {/* Hero Section */}
       <div className="relative w-full rounded-[32px] md:rounded-[60px] overflow-hidden border-4 border-[#3d2b1f] shadow-2xl group isolate">
           <div className="absolute inset-0 bg-[#1a0f08]">
@@ -106,9 +168,9 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {[
           { label: 'Cofre da Ordem', val: `T$ ${totalTS.toLocaleString()}`, icon: Coins, color: 'text-amber-900 dark:text-fantasy-gold', border: 'border-amber-900/30' },
-          { label: 'Folha de Pagamento', val: `T$ ${totalNPCCost.toLocaleString()}`, icon: TrendingUp, color: 'text-red-900 dark:text-red-400', border: 'border-red-900/30' },
-          { label: 'Domínios Reais', val: domains.length, icon: Crown, color: 'text-indigo-900 dark:text-indigo-400', border: 'border-indigo-900/30' },
-          { label: 'População Ativa', val: members.length + npcs.length, icon: Users, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
+          { label: 'Custos da Comitiva', val: `T$ ${totalNPCCost.toLocaleString()}`, icon: TrendingUp, color: 'text-red-900 dark:text-red-400', border: 'border-red-900/30' },
+          { label: 'Dia da Campanha', val: `Dia ${calendar.day}`, icon: Calendar, color: 'text-indigo-900 dark:text-indigo-400', border: 'border-indigo-900/30' },
+          { label: 'Missões Ativas', val: activeQuests.length, icon: Sword, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
         ].map((kpi, i) => (
           <div key={i} className={`parchment-card p-6 md:p-8 rounded-[32px] animate-slide-up relative overflow-hidden group border-b-[6px] ${kpi.border}`} style={{ animationDelay: `${i * 100}ms` }}>
              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -177,153 +239,429 @@ const DashboardPage: React.FC = () => {
          </div>
       </div>
 
-      {/* ECOLOGIA DA GUILDA: BASES, DOMINIOS, PESSOAL */}
+      {/* DASHBOARD INTEGRADO: CONTROLES E PREVIEWS */}
       <h3 className="font-medieval text-3xl md:text-4xl text-center text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter pt-8">
-        Mapeamento de Influência e Pessoal
+        Ecosystem de Campanha
       </h3>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           
-          {/* COLUNA 1: INFRAESTRUTURA (BASES) */}
-          <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                  <div className="p-2 bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black rounded-lg"><Castle size={20}/></div>
-                  <h4 className="font-medieval text-xl uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment">Infraestrutura</h4>
-              </div>
+          {/* COLUNA ESQUERDA: INFRAESTRUTURA, MISSÕES E TEMPO */}
+          <div className="space-y-10">
               
-              {basesRelation.length === 0 && (
-                  <div className="parchment-card p-8 rounded-3xl opacity-60 text-center text-sm italic">Nenhuma base estabelecida.</div>
-              )}
-
-              {basesRelation.map(b => (
-                  <div key={b.id} className="parchment-card p-6 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 hover:border-fantasy-gold/50 transition-colors shadow-lg">
-                      <div className="flex justify-between items-start mb-4">
+              {/* 1. Calendário e Tempo (Interactive Card) */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Calendar size={20} className="text-fantasy-gold" />
+                          Calendário e Tempo
+                      </h4>
+                      <Link to="/calendar" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Ver Completo <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-black/10 dark:bg-black/35 p-4 rounded-2xl border border-fantasy-wood/5">
                           <div>
-                              <h5 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold">{b.name}</h5>
-                              <span className="text-[9px] font-black uppercase bg-black/5 dark:bg-white/10 px-2 py-1 rounded text-fantasy-wood/60 dark:text-fantasy-parchment/60">{b.porte}</span>
-                          </div>
-                          <Home size={20} className="text-fantasy-wood/30 dark:text-fantasy-parchment/20"/>
-                      </div>
-                      
-                      <div className="space-y-3">
-                          <div className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest border-b border-fantasy-wood/5 pb-1">Equipe Alocada ({b.assignedNPCs.length})</div>
-                          {b.assignedNPCs.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40">Instalação vazia.</p>
-                          ) : (
-                              <ul className="space-y-2">
-                                  {b.assignedNPCs.map(npc => (
-                                      <li key={npc.id} className="flex justify-between items-center text-xs">
-                                          <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80">{npc.name}</span>
-                                          <span className="text-[9px] uppercase tracking-wider opacity-60">{npc.role}</span>
-                                      </li>
-                                  ))}
-                              </ul>
-                          )}
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-fantasy-wood/10 dark:border-white/5 flex justify-between text-xs font-bold text-red-900/60 dark:text-red-400/60">
-                          <span>Manutenção:</span>
-                          <span>T$ {b.meta.maintenance + b.assignedNPCs.reduce((a,n)=>a+n.monthlyCost,0)}</span>
-                      </div>
-                  </div>
-              ))}
-          </div>
-
-          {/* COLUNA 2: SOBERANIA (DOMÍNIOS) */}
-          <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                  <div className="p-2 bg-indigo-900 text-white rounded-lg"><Crown size={20}/></div>
-                  <h4 className="font-medieval text-xl uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment">Soberania</h4>
-              </div>
-
-              {domainsRelation.length === 0 && (
-                  <div className="parchment-card p-8 rounded-3xl opacity-60 text-center text-sm italic">Nenhum domínio reivindicado.</div>
-              )}
-
-              {domainsRelation.map(d => (
-                  <div key={d.id} className="parchment-card p-6 rounded-[32px] border-2 border-indigo-900/10 dark:border-indigo-400/10 hover:border-indigo-500/50 transition-colors shadow-lg">
-                      <div className="flex justify-between items-start mb-4">
-                          <div>
-                              <h5 className="font-medieval text-xl text-indigo-900 dark:text-indigo-400">{d.name}</h5>
-                              <span className="text-[9px] font-black uppercase bg-indigo-900/5 dark:bg-indigo-400/10 px-2 py-1 rounded text-indigo-900/60 dark:text-indigo-400/60">Nível {d.level}</span>
-                          </div>
-                          <LandPlot size={20} className="text-indigo-900/30 dark:text-indigo-400/20"/>
-                      </div>
-
-                      <div className="space-y-3">
-                          <div className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest border-b border-fantasy-wood/5 pb-1">Corte & Serviços ({d.assignedNPCs.length})</div>
-                          {d.assignedNPCs.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40">Sem funcionários diretos.</p>
-                          ) : (
-                              <ul className="space-y-2">
-                                  {d.assignedNPCs.map(npc => (
-                                      <li key={npc.id} className="flex justify-between items-center text-xs">
-                                          <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80">{npc.name}</span>
-                                          <span className="text-[9px] uppercase tracking-wider opacity-60">{npc.role}</span>
-                                      </li>
-                                  ))}
-                              </ul>
-                          )}
-                          <div className="pt-2 text-[10px] uppercase font-black text-fantasy-wood/50 flex gap-3">
-                             <span className="flex items-center gap-1"><Castle size={10}/> {d.buildings.length} Obras</span>
-                             <span className="flex items-center gap-1"><Sword size={10}/> {d.units.length} Tropas</span>
-                          </div>
-                      </div>
-                  </div>
-              ))}
-          </div>
-
-          {/* COLUNA 3: PESSOAL & COMITIVA */}
-          <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                  <div className="p-2 bg-emerald-800 text-white rounded-lg"><Users size={20}/></div>
-                  <h4 className="font-medieval text-xl uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment">Pessoal Ativo</h4>
-              </div>
-
-              {/* Aventureiros */}
-              <div className="parchment-card p-6 rounded-[32px] border-2 border-emerald-900/10 dark:border-emerald-400/10 shadow-lg">
-                  <div className="flex items-center gap-2 mb-4 border-b border-fantasy-wood/10 pb-2">
-                      <User size={16} className="text-emerald-800 dark:text-emerald-400"/>
-                      <h5 className="font-medieval text-lg text-emerald-900 dark:text-emerald-400 uppercase">Aventureiros (Membros)</h5>
-                  </div>
-                  {members.length === 0 ? (
-                      <p className="text-xs italic text-fantasy-wood/40">Nenhum herói registrado.</p>
-                  ) : (
-                      <div className="flex flex-wrap gap-2">
-                          {members.map(m => (
-                              <span key={m.id} className="px-3 py-1 bg-white/40 dark:bg-black/20 rounded-full text-xs font-bold text-fantasy-wood dark:text-fantasy-parchment border border-fantasy-wood/5">
-                                  {m.name}
+                              <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block">Data Artoniana</span>
+                              <span className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-parchment leading-tight block">
+                                  Dia {calendar.day} de {ARTON_MONTHS[calendar.month] || 'Mês'} de {calendar.year}
                               </span>
-                          ))}
+                              <span className="block text-xs font-serif text-fantasy-wood/60 dark:text-fantasy-parchment/65 mt-1">
+                                  Dia da semana: {ARTON_WEEKDAYS[calendar.dayOfWeek] || 'Desconhecido'}
+                              </span>
+                          </div>
+                          {calendar.isNimbDay && (
+                              <span className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.25)]">
+                                  🎲 Dia de Nimb
+                              </span>
+                          )}
                       </div>
-                  )}
+                      <div className="flex gap-2">
+                          <button 
+                              onClick={() => advanceDate(1)} 
+                              className="flex-1 py-3 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 border-yellow-800"
+                          >
+                              Avançar Dia (+1 Dia)
+                          </button>
+                          <button 
+                              onClick={() => toggleNimbDay(!calendar.isNimbDay)} 
+                              className={`flex-1 py-3 rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 ${
+                                  calendar.isNimbDay 
+                                      ? 'bg-red-800 text-white border-red-950 hover:bg-red-700' 
+                                      : 'bg-black/25 hover:bg-black/40 text-fantasy-gold border-fantasy-gold/20'
+                              }`}
+                          >
+                              {calendar.isNimbDay ? 'Instabilizar Nimb' : 'Ativar Dia de Nimb'}
+                          </button>
+                      </div>
+                  </div>
               </div>
 
-              {/* Comitiva / Parceiros */}
-              <div className="parchment-card p-6 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-lg">
-                  <div className="flex items-center gap-2 mb-4 border-b border-fantasy-wood/10 pb-2">
-                      <Tent size={16} className="text-fantasy-wood dark:text-fantasy-parchment"/>
-                      <h5 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment uppercase">Comitiva & Aliados (Grupo)</h5>
+              {/* 2. Missões e Contratos */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Sword size={20} className="text-fantasy-gold" />
+                          Missões e Contratos
+                      </h4>
+                      <Link to="/quests" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Quadro de Missões <ChevronRight size={14}/>
+                      </Link>
                   </div>
-                  {roamingNPCs.length === 0 ? (
-                      <p className="text-xs italic text-fantasy-wood/40">Nenhum aliado viajando com o grupo.</p>
-                  ) : (
-                      <ul className="space-y-3">
-                          {roamingNPCs.map(npc => (
-                              <li key={npc.id} className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-2 rounded-xl">
-                                  <div>
-                                      <div className="text-xs font-bold text-fantasy-wood dark:text-fantasy-parchment">{npc.name}</div>
-                                      <div className="text-[9px] uppercase tracking-widest opacity-60">{npc.role}</div>
-                                  </div>
-                                  <div className="text-xs font-mono font-bold text-red-900/60 dark:text-red-400/60">
-                                      T$ {npc.monthlyCost}
-                                  </div>
-                              </li>
-                          ))}
-                      </ul>
-                  )}
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Em Andamento</span>
+                              <span className="font-medieval text-3xl text-fantasy-gold">{activeQuests.length}</span>
+                          </div>
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Disponíveis</span>
+                              <span className="font-medieval text-3xl text-fantasy-parchment">{availableQuests.length}</span>
+                          </div>
+                      </div>
+
+                      <div className="space-y-2 mt-4">
+                          <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1">Últimas Missões Ativas</span>
+                          {activeQuests.length === 0 ? (
+                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhuma missão em andamento no momento.</p>
+                          ) : (
+                              <div className="space-y-2">
+                                  {activeQuests.slice(0, 3).map(q => {
+                                      const assignedMembers = members.filter(m => q.assignedMemberIds.includes(m.id));
+                                      return (
+                                          <div key={q.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-3.5 rounded-xl flex justify-between items-center">
+                                              <div>
+                                                  <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{q.title}</span>
+                                                  <span className="text-[9px] uppercase tracking-wider text-fantasy-gold">Recompensa: {q.rewardGold} {q.rewardCurrency}</span>
+                                              </div>
+                                              <div className="text-right">
+                                                  <div className="flex gap-1">
+                                                      {assignedMembers.length === 0 ? (
+                                                          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-md text-[8px] font-black uppercase tracking-wider">Sem Heróis</span>
+                                                      ) : (
+                                                          assignedMembers.map(am => (
+                                                              <span key={am.id} className="px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 rounded-md text-[8px] font-bold" title={am.name}>
+                                                                  {am.name.split(' ')[0]}
+                                                              </span>
+                                                          ))
+                                                      )}
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      )
+                                  })}
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              </div>
+
+              {/* 3. Infraestrutura & Bases */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Castle size={20} className="text-fantasy-gold" />
+                          Infraestrutura & Bases
+                      </h4>
+                      <Link to="/bases" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Gerenciar Bases <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Bases Cadastradas</span>
+                              <span className="font-medieval text-3xl text-fantasy-parchment">{bases.length}</span>
+                          </div>
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Cômodos Danificados</span>
+                              <span className={`font-medieval text-3xl ${damagedRoomsCount > 0 ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`}>{damagedRoomsCount}</span>
+                          </div>
+                      </div>
+
+                      {bases.length === 0 ? (
+                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhuma base estabelecida pela guilda.</p>
+                      ) : (
+                          <div className="space-y-3 mt-4">
+                              {bases.slice(0, 2).map(b => {
+                                  const assignedNPCs = npcs.filter(n => n.locationId === b.id);
+                                  const damagedRooms = b.rooms.filter(r => r.isDamaged);
+                                  const meta = PORTE_DATA[b.porte] || { maintenance: 0 };
+                                  return (
+                                      <div key={b.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl">
+                                          <div className="flex justify-between items-start mb-2">
+                                              <div>
+                                                  <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-gold block leading-none mb-1">{b.name}</span>
+                                                  <span className="text-[8px] font-black uppercase bg-white/10 px-2 py-0.5 rounded text-fantasy-parchment/50 tracking-wider">{b.porte} ({b.type})</span>
+                                              </div>
+                                              {damagedRooms.length > 0 && (
+                                                  <span className="px-2.5 py-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full text-[8px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0 animate-pulse">
+                                                      ⚠️ Reparo Exigido
+                                                  </span>
+                                              )}
+                                          </div>
+                                          <div className="text-xs font-serif text-fantasy-wood/80 dark:text-fantasy-parchment/80 flex justify-between mt-2">
+                                              <span>Cômodos/Equipe:</span>
+                                              <span>{b.rooms.length} cômodos | {assignedNPCs.length} NPCs alocados</span>
+                                          </div>
+                                          <div className="text-xs font-serif text-red-900/60 dark:text-red-400/60 flex justify-between mt-1 font-bold">
+                                              <span>Manutenção Total:</span>
+                                              <span>T$ {meta.maintenance + assignedNPCs.reduce((a, n) => a + n.monthlyCost, 0)}/mês</span>
+                                          </div>
+                                      </div>
+                                  )
+                              })}
+                          </div>
+                      )}
+                  </div>
+              </div>
+
+              {/* 4. Soberania e Domínios */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Crown size={20} className="text-fantasy-gold" />
+                          Soberania & Domínios
+                      </h4>
+                      <Link to="/domains" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Administrar Domínios <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Ações Disponíveis</span>
+                              <span className={`font-medieval text-3xl ${domainsRemainingActions > 0 ? 'text-fantasy-gold animate-bounce' : 'text-fantasy-parchment/50'}`}>{domainsRemainingActions}</span>
+                          </div>
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Em Revolta</span>
+                              <span className={`font-medieval text-3xl ${domainsInRevolt > 0 ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`}>{domainsInRevolt}</span>
+                          </div>
+                      </div>
+
+                      {domains.length === 0 ? (
+                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum domínio sob o controle da guilda.</p>
+                      ) : (
+                          <div className="space-y-3 mt-4">
+                              {domains.slice(0, 2).map(d => {
+                                  return (
+                                      <div key={d.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl">
+                                          <div className="flex justify-between items-start mb-2">
+                                              <div>
+                                                  <span className="font-medieval text-lg text-indigo-900 dark:text-indigo-400 block leading-none mb-1">{d.name}</span>
+                                                  <span className="text-[8px] font-black uppercase bg-indigo-900/5 dark:bg-indigo-400/10 px-2 py-0.5 rounded text-indigo-900/60 dark:text-indigo-400/60 tracking-wider">Nível {d.level} ({d.terrain})</span>
+                                              </div>
+                                              <div className="flex gap-1">
+                                                  {d.revolt && (
+                                                      <span className="px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-md text-[8px] font-black uppercase tracking-wider animate-pulse">Revolta</span>
+                                                  )}
+                                                  {(d.actionsRemaining || 0) > 0 && (
+                                                      <span className="px-2 py-0.5 bg-fantasy-gold/15 text-fantasy-gold border border-fantasy-gold/30 rounded-md text-[8px] font-black uppercase tracking-wider animate-pulse">{d.actionsRemaining} Ações</span>
+                                                  )}
+                                              </div>
+                                          </div>
+                                          <div className="text-xs font-serif text-fantasy-wood/80 dark:text-fantasy-parchment/80 flex justify-between mt-2">
+                                              <span>Tesouro (LO) / Modificadores:</span>
+                                              <span>LO {d.treasury} | Modificador Ação: {d.actionModifier || 0}</span>
+                                          </div>
+                                          <div className="text-xs font-serif text-fantasy-wood/80 dark:text-fantasy-parchment/80 flex justify-between mt-1">
+                                              <span>Obras / Tropas / Conselheiros:</span>
+                                              <span>{d.buildings.length} Obras | {d.units.length} Tropas | {d.advisors.length} Conselheiros</span>
+                                          </div>
+                                      </div>
+                                  )
+                              })}
+                          </div>
+                      )}
+                  </div>
               </div>
           </div>
+          
+          {/* COLUNA DIREITA: MEMBROS, COMITIVA, ARSENAL E REPUTAÇÃO */}
+          <div className="space-y-10">
+              
+              {/* 5. Aventureiros (Membros) */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <User size={20} className="text-fantasy-gold" />
+                          Aventureiros (Membros)
+                      </h4>
+                      <Link to="/members" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Aventureiros <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      {members.length === 0 ? (
+                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum aventureiro cadastrado na guilda.</p>
+                      ) : (
+                          <div className="space-y-3">
+                              {members.slice(0, 3).map(m => {
+                                  const activeNpc = npcs.find(n => n.id === m.activeAffinityNpcId);
+                                  return (
+                                      <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between">
+                                          <div className="flex justify-between items-center">
+                                              <div>
+                                                  <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{m.name}</span>
+                                                  <span className="text-[9px] uppercase tracking-wider opacity-60 font-serif">Status: {m.status}</span>
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                  <span className="px-2 py-0.5 bg-fantasy-gold/10 text-fantasy-gold border border-fantasy-gold/20 rounded-md text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5">
+                                                      <Sparkles size={8}/> {m.divinePoints || 0} PD
+                                                  </span>
+                                              </div>
+                                          </div>
+                                          {activeNpc && (
+                                              <div className="mt-2.5 p-2 bg-fantasy-gold/5 border border-fantasy-gold/20 rounded-xl flex items-center gap-2 text-[10px]">
+                                                  <Crown size={12} className="text-fantasy-gold shrink-0"/>
+                                                  <span className="text-fantasy-wood/80 dark:text-fantasy-parchment/80 font-serif">
+                                                      Afinidade Ativa: <strong>{activeNpc.name}</strong> ({activeNpc.allyType})
+                                                  </span>
+                                              </div>
+                                          )}
+                                      </div>
+                                  )
+                              })}
+                          </div>
+                      )}
+                  </div>
+              </div>
 
+              {/* 6. Comitiva & Aliados (NPCs) */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Tent size={20} className="text-fantasy-gold" />
+                          Comitiva & Aliados
+                      </h4>
+                      <Link to="/npcs" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Aliados e Comitiva <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Aliados / Parceiros</span>
+                              <span className="font-medieval text-3xl text-fantasy-parchment">{alliesNPCs.length}</span>
+                          </div>
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Contratados Ativos</span>
+                              <span className="font-medieval text-3xl text-fantasy-gold">{activeContractedNPCs.length}</span>
+                          </div>
+                      </div>
+
+                      <div className="space-y-2 mt-4 border-t border-fantasy-wood/5 dark:border-white/5 pt-3">
+                          <div className="flex justify-between text-xs font-serif text-fantasy-wood/80 dark:text-fantasy-parchment/80">
+                              <span>Manutenção Mensal (Equipe):</span>
+                              <span className="font-bold text-red-900/60 dark:text-red-400/60">T$ {totalNPCCost}</span>
+                          </div>
+                          <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Afinidades Recentes</span>
+                          {npcs.length === 0 ? (
+                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum contato na comitiva.</p>
+                          ) : (
+                              <div className="space-y-2">
+                                  {npcs.slice(0, 2).map(n => {
+                                      const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
+                                      return (
+                                          <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
+                                              <div>
+                                                  <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
+                                                  <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
+                                              </div>
+                                              <div className="text-right">
+                                                  <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
+                                              </div>
+                                          </div>
+                                      )
+                                  })}
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              </div>
+
+              {/* 7. Arsenal e Riquezas (Inventory) */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Package size={20} className="text-fantasy-gold" />
+                          Arsenal & Riquezas
+                      </h4>
+                      <Link to="/inventory" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Acessar Arsenal <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Total de Itens</span>
+                              <span className="font-medieval text-3xl text-fantasy-parchment">{totalItemsCount}</span>
+                          </div>
+                          <div className="bg-black/5 dark:bg-black/25 p-3 rounded-xl border border-fantasy-wood/5 text-center">
+                              <span className="text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider block">Valor de Estoque</span>
+                              <span className="font-medieval text-xl text-fantasy-gold mt-1.5 block">T$ {totalInventoryValue.toLocaleString('pt-BR')}</span>
+                          </div>
+                      </div>
+
+                      <div className="space-y-2 mt-4">
+                          <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1">Itens de Missão Guardados</span>
+                          {questItems.length === 0 ? (
+                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Sem itens de missão em estoque.</p>
+                          ) : (
+                              <div className="space-y-2">
+                                  {questItems.slice(0, 2).map(item => (
+                                      <div key={item.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3 py-2 rounded-xl flex justify-between items-center text-xs">
+                                          <span className="font-serif font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80">{item.name}</span>
+                                          <span className="px-2 py-0.5 bg-fantasy-gold/10 text-fantasy-gold border border-fantasy-gold/20 rounded-md text-[8px] font-black uppercase tracking-wider shrink-0">Qtd: {item.quantity}</span>
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              </div>
+
+              {/* 8. Influência e Reputação */}
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+                  <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
+                      <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
+                          <Scroll size={20} className="text-fantasy-gold" />
+                          Influência & Reputação
+                      </h4>
+                      <Link to="/reputation" className="text-xs font-bold text-fantasy-gold hover:underline flex items-center gap-1">
+                          Fações e POIs <ChevronRight size={14}/>
+                      </Link>
+                  </div>
+                  <div className="space-y-4">
+                      {pointsOfInterest.length === 0 ? (
+                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum ponto de interesse cadastrado.</p>
+                      ) : (
+                          <div className="space-y-3">
+                              {pointsOfInterest.slice(0, 3).map(poi => {
+                                  const repEntry = reputations.find(r => r.pointOfInterestId === poi.id && r.targetType === 'Grupo');
+                                  const repValue = repEntry ? repEntry.value : 0;
+                                  const cat = getReputationData(repValue, poi.tiers);
+                                  return (
+                                      <div key={poi.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex justify-between items-center text-xs">
+                                          <div>
+                                              <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{poi.name}</span>
+                                              <span className="text-[8px] uppercase tracking-wider opacity-60 font-serif">{poi.type}</span>
+                                          </div>
+                                          <div className="text-right flex flex-col items-end gap-1">
+                                              <span className="font-medieval text-sm text-fantasy-gold">Pontos: {repValue}</span>
+                                              <span className={`text-[8px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full border ${getBadgeStyle(cat.color)}`}>
+                                                  {cat.name}
+                                              </span>
+                                          </div>
+                                      </div>
+                                  )
+                              })}
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
       </div>
     </div>
   );

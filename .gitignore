@@ -21,6 +21,15 @@ database.sqlite*
 *.sqlite3
 .vercel
 
+# AI Agent configuration (tooling, not project code)
+.trae/
+AGENTS.md
+CLAUDE.md
+ai-agency-blueprint/
+setup-agency.ps1
+tasks/
+docs/memory/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
