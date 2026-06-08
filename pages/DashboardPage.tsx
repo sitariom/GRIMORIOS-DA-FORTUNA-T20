@@ -493,11 +493,15 @@ const DashboardPage: React.FC = () => {
                       </Link>
                   </div>
                   <div className="space-y-4">
-                      {members.length === 0 ? (
-                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum aventureiro cadastrado na guilda.</p>
-                      ) : (
-                          <div className="space-y-3">
-                              {members.slice(0, 3).map(m => {
+                      {(() => {
+                          const activeMembers = members.filter(m => m.status === 'Ativo');
+                          return activeMembers.length === 0 ? (
+                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
+                                  {members.length === 0 ? 'Nenhum aventureiro cadastrado na guilda.' : 'Nenhum aventureiro ativo no momento.'}
+                              </p>
+                          ) : (
+                              <div className="space-y-3">
+                                  {activeMembers.map(m => {
                                   const activeNpc = npcs.find(n => n.id === m.activeAffinityNpcId);
                                   return (
                                       <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between">
@@ -524,11 +528,12 @@ const DashboardPage: React.FC = () => {
                                   )
                               })}
                           </div>
-                      )}
-                  </div>
+                      );
+                   })()}
               </div>
+          </div>
 
-              {/* 6. Comitiva & Aliados (NPCs) */}
+          {/* 6. Comitiva & Aliados (NPCs) */}
               <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
@@ -556,27 +561,30 @@ const DashboardPage: React.FC = () => {
                               <span>Manutenção Mensal (Equipe):</span>
                               <span className="font-bold text-red-900/60 dark:text-red-400/60">T$ {totalNPCCost}</span>
                           </div>
-                          <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Afinidades Recentes</span>
-                          {npcs.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum contato na comitiva.</p>
-                          ) : (
-                              <div className="space-y-2">
-                                  {npcs.slice(0, 2).map(n => {
-                                      const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
-                                      return (
-                                          <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
-                                              <div>
-                                                  <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
-                                                  <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
+                          <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Acompanhando o Grupo</span>
+                          {(() => {
+                              const acompanhando = npcs.filter(n => n.locationType === 'Grupo' || n.locationType === 'Membro' || n.locationType === 'Livre');
+                              return acompanhando.length === 0 ? (
+                                  <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
+                              ) : (
+                                  <div className="space-y-2">
+                                      {acompanhando.map(n => {
+                                          const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
+                                          return (
+                                              <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
+                                                  <div>
+                                                      <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
+                                                      <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
+                                                  </div>
+                                                  <div className="text-right">
+                                                      <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
+                                                  </div>
                                               </div>
-                                              <div className="text-right">
-                                                  <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
-                                              </div>
-                                          </div>
-                                      )
-                                  })}
-                              </div>
-                          )}
+                                          )
+                                      })}
+                                  </div>
+                              );
+                          })()}
                       </div>
                   </div>
               </div>
