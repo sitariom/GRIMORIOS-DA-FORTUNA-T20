@@ -116,7 +116,7 @@ const DashboardPage: React.FC = () => {
 
   const damagedRoomsCount = useMemo(() => bases.reduce((acc, b) => acc + b.rooms.filter(r => r.isDamaged).length, 0), [bases]);
   
-  const domainsRemainingActions = useMemo(() => domains.reduce((acc, d) => acc + (d.actionsRemaining || 0), 0), [domains]);
+  const domainsRemainingActions = useMemo(() => domains.reduce((acc, d) => acc + (d.actionsRemaining ?? (d.court === 'Rica' ? 3 : 2)), 0), [domains]);
   const domainsInRevolt = useMemo(() => domains.filter(d => d.revolt).length, [domains]);
 
   const contractedNPCs = useMemo(() => npcs.filter(n => n.relationship === 'Contratado'), [npcs]);
@@ -465,7 +465,7 @@ const DashboardPage: React.FC = () => {
                                                   {d.revolt && (
                                                       <span className="px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-md text-[8px] font-black uppercase tracking-wider animate-pulse">Revolta</span>
                                                   )}
-                                                  {(d.actionsRemaining || 0) > 0 && (
+                                                  {(d.actionsRemaining ?? (d.court === 'Rica' ? 3 : 2)) > 0 && (
                                                       <span className="px-2 py-0.5 bg-fantasy-gold/15 text-fantasy-gold border border-fantasy-gold/30 rounded-md text-[8px] font-black uppercase tracking-wider animate-pulse">{d.actionsRemaining} Ações</span>
                                                   )}
                                               </div>
