@@ -64,7 +64,7 @@ const getReputationData = (value: number, customTiers?: ReputationTier[]) => {
 const DashboardPage: React.FC = () => {
   const { 
     wallet, domains, guildName, npcs, members, logs, bases, calendar, quests, pointsOfInterest, reputations,
-    advanceDate, toggleNimbDay
+    advanceDate, toggleNimbDay, isAdmin
   } = useGuild();
   
   // 1. Cálculos Gerais
@@ -241,7 +241,7 @@ const DashboardPage: React.FC = () => {
 
       {/* DASHBOARD INTEGRADO: CONTROLES E PREVIEWS */}
       <h3 className="font-medieval text-3xl md:text-4xl text-center text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter pt-8">
-        Ecosystem de Campanha
+        Panorama da Guilda
       </h3>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
@@ -277,24 +277,30 @@ const DashboardPage: React.FC = () => {
                               </span>
                           )}
                       </div>
-                      <div className="flex gap-2">
-                          <button 
-                              onClick={() => advanceDate(1)} 
-                              className="flex-1 py-3 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 border-yellow-800"
-                          >
-                              Avançar Dia (+1 Dia)
-                          </button>
-                          <button 
-                              onClick={() => toggleNimbDay(!calendar.isNimbDay)} 
-                              className={`flex-1 py-3 rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 ${
-                                  calendar.isNimbDay 
-                                      ? 'bg-red-800 text-white border-red-950 hover:bg-red-700' 
-                                      : 'bg-black/25 hover:bg-black/40 text-fantasy-gold border-fantasy-gold/20'
-                              }`}
-                          >
-                              {calendar.isNimbDay ? 'Instabilizar Nimb' : 'Ativar Dia de Nimb'}
-                          </button>
-                      </div>
+                      {isAdmin ? (
+                          <div className="flex gap-2">
+                              <button 
+                                  onClick={() => advanceDate(1)} 
+                                  className="flex-1 py-3 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 border-yellow-800"
+                              >
+                                  Avançar Dia (+1 Dia)
+                              </button>
+                              <button 
+                                  onClick={() => toggleNimbDay(!calendar.isNimbDay)} 
+                                  className={`flex-1 py-3 rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 ${
+                                      calendar.isNimbDay 
+                                          ? 'bg-red-800 text-white border-red-950 hover:bg-red-700' 
+                                          : 'bg-black/25 hover:bg-black/40 text-fantasy-gold border-fantasy-gold/20'
+                                  }`}
+                              >
+                                  {calendar.isNimbDay ? 'Instabilizar Nimb' : 'Ativar Dia de Nimb'}
+                              </button>
+                          </div>
+                      ) : (
+                          <div className="flex items-center justify-center gap-2 py-3 bg-black/10 dark:bg-black/30 rounded-xl border border-dashed border-fantasy-gold/20 text-fantasy-gold/60 text-xs font-medium">
+                              <Clock size={14} /> Apenas o administrador pode alterar o fluxo do tempo.
+                          </div>
+                      )}
                   </div>
               </div>
 
@@ -563,7 +569,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Acompanhando o Grupo</span>
                           {(() => {
-                              const acompanhando = npcs.filter(n => n.locationType === 'Grupo' || n.locationType === 'Membro' || n.locationType === 'Livre');
+                              const acompanhando = npcs.filter(n => n.locationType === 'Membro');
                               return acompanhando.length === 0 ? (
                                   <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
                               ) : (
