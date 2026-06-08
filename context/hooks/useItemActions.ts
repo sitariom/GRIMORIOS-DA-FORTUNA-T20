@@ -1,4 +1,5 @@
 import { GuildState, Item, LogCategory, LogEntry } from '../../types';
+import { calcCarryLimit } from '../../constants';
 
 interface ItemDeps {
   activeGuild: GuildState;
@@ -71,11 +72,22 @@ export const useItemActions = ({ activeGuild, triggerSave, notify, internalAddLo
     notify(`Lote vendido: +T$ ${totalValue}`);
   };
 
+  const calcMemberLoad = (member: { inventory: Item[] }) =>
+    member.inventory.reduce((total, i) => total + i.space * i.quantity, 0);
+
   const withdrawItem = (id: string, memberId: string, reason: string, qty: number) => {
     const item = activeGuild.items.find(i => i.id === id);
     if (!item || item.quantity < qty) return notify("Quantidade inválida.", "error");
 
     const member = activeGuild.members.find(m => m.id === memberId);
+    if (member) {
+      const limit = calcCarryLimit(member.strength);
+      const currentLoad = calcMemberLoad(member);
+      const addSpace = item.space * qty;
+      if (currentLoad + addSpace > limit * 2) {
+        return notify(`${member.name} não pode carregar tanto peso (limite ${limit} espaços, máximo ${limit * 2}).`, "error");
+      }
+    }
     let updatedMembers = activeGuild.members;
     if (member) {
       updatedMembers = activeGuild.members.map(m => {

@@ -1,10 +1,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check } from 'lucide-react';
+import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle } from 'lucide-react';
 import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
-import { RARITY_CONFIG, ITEM_TYPES } from '../constants';
+import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, calcCarryLimit } from '../constants';
 
 const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: string, bg: string, label: string }> = {
     'Ativo': { icon: Shield, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-700/10 dark:bg-emerald-400/10', label: 'Ativo' },
@@ -39,7 +39,7 @@ const MembersPage: React.FC = () => {
 
   // States for New Item
   const [newItemData, setNewItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
   });
 
   // State for Item Action (Transfer/Delete quantity)
@@ -84,7 +84,7 @@ const MembersPage: React.FC = () => {
       if(!activeMember) return;
       createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
       setShowAddItem(false);
-      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
+      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
   };
 
   const confirmItemAction = (e: React.FormEvent) => {
@@ -201,12 +201,27 @@ const MembersPage: React.FC = () => {
       {activeMember && (
         <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
            <div className="parchment-card p-8 md:p-12 rounded-[40px] w-full max-w-4xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col gap-10">
-               <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
-               
-               <div className="text-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
-                   <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
-                   <p className="text-xs font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-[0.3em]">Gestão Individual de Aventureiro</p>
-               </div>
+                <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+                
+                <div className="text-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
+                    <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
+                    <p className="text-xs font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-[0.3em]">Gestão Individual de Aventureiro</p>
+                    <div className="mt-4 flex items-center justify-center gap-4">
+                        <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 px-4 py-2 rounded-full">
+                            <Weight size={16} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50"/>
+                            <span className="text-xs font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60">Força</span>
+                            <select
+                                value={activeMember.strength}
+                                onChange={(e) => updateMember(activeMember.id, { strength: Number(e.target.value) })}
+                                className="bg-transparent font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment cursor-pointer outline-none appearance-none"
+                            >
+                                {Array.from({ length: 21 }, (_, i) => i - 5).map(s => (
+                                    <option key={s} value={s}>{s >= 0 ? '+' : ''}{s}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                    {/* Wallet Management */}
@@ -255,13 +270,43 @@ const MembersPage: React.FC = () => {
                    </div>
 
                    {/* Inventory Management */}
-                   <div className="space-y-6 relative">
-                       <div className="flex justify-between items-center">
-                           <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila</h4>
-                           <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors">
-                               <Plus size={18}/>
-                           </button>
-                       </div>
+                    <div className="space-y-6 relative">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila</h4>
+                            <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors">
+                                <Plus size={18}/>
+                            </button>
+                        </div>
+
+                        {/* Carry Capacity */}
+                        {(() => {
+                            const limit = calcCarryLimit(activeMember.strength);
+                            const max = limit * 2;
+                            const load = activeMember.inventory.reduce((t, i) => t + i.space * i.quantity, 0);
+                            const pct = Math.min(100, (load / max) * 100);
+                            const overloaded = load > limit;
+                            return (
+                                <div className={`p-3 rounded-2xl border-2 ${overloaded ? 'bg-red-900/10 border-red-700/30' : 'bg-black/5 dark:bg-white/5 border-fantasy-wood/10 dark:border-white/10'}`}>
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1">
+                                        <span className={overloaded ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}>
+                                            {overloaded && <AlertTriangle size={12} className="inline mr-1"/>}Carga
+                                        </span>
+                                        <span className={overloaded ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}>
+                                            {load} / {limit} esp{limit !== 1 ? 's' : ''}
+                                        </span>
+                                    </div>
+                                    <div className="h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                                        <div className={`h-full rounded-full transition-all ${overloaded ? 'bg-red-600' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }}/>
+                                    </div>
+                                    {load > max && (
+                                        <p className="text-[9px] text-red-600 dark:text-red-400 font-black uppercase tracking-widest mt-1">Sobrecarga total! Não pode carregar mais nada.</p>
+                                    )}
+                                    {overloaded && load <= max && (
+                                        <p className="text-[9px] text-red-600 dark:text-red-400 font-black uppercase tracking-widest mt-1">Sobrecarregado! Penalidade de armadura –5 e deslocamento –3m.</p>
+                                    )}
+                                </div>
+                            );
+                        })()}
                        
                        {/* Item Action Overlay */}
                        {itemAction && (
@@ -304,10 +349,15 @@ const MembersPage: React.FC = () => {
                                        {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r}>{r}</option>)}
                                    </select>
                                </div>
-                               <div className="flex gap-2">
-                                   <input type="number" min="1" className="w-20 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-center" value={newItemData.quantity} onChange={e => setNewItemData({...newItemData, quantity: Number(e.target.value)})} placeholder="Qtd" />
-                                   <input type="number" min="0" className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2" value={newItemData.value} onChange={e => setNewItemData({...newItemData, value: Number(e.target.value)})} placeholder="Valor (T$)" />
-                               </div>
+                                <div className="flex gap-2">
+                                    <input type="number" min="1" className="w-20 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-center" value={newItemData.quantity} onChange={e => setNewItemData({...newItemData, quantity: Number(e.target.value)})} placeholder="Qtd" />
+                                    <input type="number" min="0" className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2" value={newItemData.value} onChange={e => setNewItemData({...newItemData, value: Number(e.target.value)})} placeholder="Valor (T$)" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.space} onChange={e => setNewItemData({...newItemData, space: Number(e.target.value)})}>
+                                        {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                    </select>
+                                </div>
                                <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest">Criar Item</button>
                            </form>
                        )}
@@ -319,11 +369,11 @@ const MembersPage: React.FC = () => {
                                activeMember.inventory?.map((item, i) => {
                                    const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
                                    return (
-                                       <div key={`${item.id}-${i}`} className="bg-white/50 dark:bg-black/40 p-3 rounded-xl flex justify-between items-center group">
-                                           <div>
-                                               <div className={`font-medieval ${rarityStyle.color}`}>{item.name} <span className="text-xs opacity-60">x{item.quantity}</span></div>
-                                               <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity}</div>
-                                           </div>
+                                        <div key={`${item.id}-${i}`} className="bg-white/50 dark:bg-black/40 p-3 rounded-xl flex justify-between items-center group">
+                                            <div>
+                                                <div className={`font-medieval ${rarityStyle.color}`}>{item.name} <span className="text-xs opacity-60">x{item.quantity}</span></div>
+                                                <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}</div>
+                                            </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                <button 
                                                  onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'transfer', max: item.quantity, name: item.name }); }} 

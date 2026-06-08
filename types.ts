@@ -18,6 +18,7 @@ export interface Item {
   type: ItemType;
   rarity: ItemRarity;
   quantity: number;
+  space: number; // 0 | 0.5 | 1 | 2 | 5 | 10 — espaços que ocupa na mochila
   value: number;
   origin: string;
   encounter: string;
@@ -202,6 +203,7 @@ export interface Member {
   id: string;
   name: string;
   status: MemberStatus;
+  strength: number; // Atributo Força (base para limite de carga)
   wallet: Wallet; // Carteira individual do aventureiro
   inventory: Item[]; // Inventário individual
   divinePoints?: number; // Pontos divinos / de ação

@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType, ItemRarity } from '../types';
-import { ITEM_TYPES, RARITY_CONFIG } from '../constants';
+import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS } from '../constants';
 import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown } from 'lucide-react';
 
 const InventoryPage: React.FC = () => {
@@ -11,7 +11,7 @@ const InventoryPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'sell' | 'withdraw' | 'delete' | 'bulkSell' | 'bulkDelete' | null>(null);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [tempItemData, setTempItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
   });
   
   const [opQty, setOpQty] = useState(1);
@@ -30,7 +30,7 @@ const InventoryPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const openAdd = () => {
-      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
+      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
       setModalMode('add');
   };
 
@@ -175,6 +175,7 @@ const InventoryPage: React.FC = () => {
                     <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('type')}>
                         Essência <SortIcon field="type"/>
                     </th>
+                    <th className="px-6 py-8 text-center">Espaço</th>
                     <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('quantity')}>
                         Qtd <SortIcon field="quantity"/>
                     </th>
@@ -211,6 +212,10 @@ const InventoryPage: React.FC = () => {
                           {item.type === 'Arma' ? <Sword size={16}/> : item.type === 'Equipamento' ? <Shield size={16}/> : <Sparkles size={16}/>}
                           {item.type}
                         </span>
+                      </td>
+                      <td className="px-6 py-8 text-center font-medieval text-2xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">
+                        {item.space}{item.space === 0.5 ? '' : ''}
+                        <span className="text-[10px] ml-1 opacity-60">esp{item.space !== 1 ? 's' : ''}</span>
                       </td>
                       <td className="px-6 py-8 text-center font-medieval text-3xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">{item.quantity}</td>
                       <td className="px-6 py-8">
@@ -300,6 +305,13 @@ const InventoryPage: React.FC = () => {
                                   onChange={e => setTempItemData({...tempItemData, value: Number(e.target.value)})}
                                   onFocus={(e) => e.target.select()}
                                 />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Espaço na Mochila</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                                    value={tempItemData.space} onChange={e => setTempItemData({...tempItemData, space: Number(e.target.value)})}>
+                                    {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value} className="dark:bg-black">{s.label}</option>)}
+                                </select>
                             </div>
                         </div>
                         <div className="space-y-4 pt-4">

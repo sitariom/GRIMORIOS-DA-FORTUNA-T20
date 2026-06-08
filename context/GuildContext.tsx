@@ -224,6 +224,7 @@ const sanitizeGuildData = (data: any): GuildState => {
         type: item.type || 'Consumivel',
         rarity: item.rarity || 'Comum',
         quantity: typeof item.quantity === 'number' ? item.quantity : 1,
+        space: [0, 0.5, 1, 2, 5, 10].includes(item.space) ? item.space : 1,
         value: typeof item.value === 'number' ? item.value : 0,
         origin: item.origin || '',
         encounter: item.encounter || '',
@@ -279,6 +280,7 @@ const sanitizeGuildData = (data: any): GuildState => {
     safeData.members = (Array.isArray(safeData.members) ? safeData.members : []).map((m: any) => ({
         ...m,
         status: m.status || 'Ativo',
+        strength: typeof m.strength === 'number' ? m.strength : 0,
         wallet: {
             TC: typeof m.wallet?.TC === 'number' ? m.wallet.TC : 0,
             TS: typeof m.wallet?.TS === 'number' ? m.wallet.TS : 0,
