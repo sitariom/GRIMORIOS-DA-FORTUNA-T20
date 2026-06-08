@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
     { path: '/inventory', label: 'Arsenal e bens', icon: Package },
     { path: '/bases', label: 'Bases', icon: Castle },
     { path: '/domains', label: 'Dominios', icon: LandPlot },
-    { path: '/npcs', label: 'Funcionarios e serviços', icon: Contact },
+    { path: '/npcs', label: 'Aliados e Comitiva', icon: Contact },
     { path: '/investments', label: 'Investimentos', icon: Hammer },
     { path: '/reputation', label: 'Reputação', icon: Scroll },
     { path: '/chronicles', label: 'Livro de Crônicas', icon: NotebookPen },

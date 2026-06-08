@@ -42,7 +42,7 @@ const ChroniclesPage: React.FC = () => {
     <div className="space-y-12 pb-20 font-serif">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Livro de Crônicas</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Livro de Crônicas</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">A memória imutável das glórias e gastos de {guildName}.</p>
         </div>
         <button onClick={exportLogs} className="bg-fantasy-wood dark:bg-fantasy-gold hover:bg-[#3d2b1f] dark:hover:bg-fantasy-gold/80 text-fantasy-parchment dark:text-black px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl transition-all border-2 border-fantasy-gold/20">

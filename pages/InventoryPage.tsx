@@ -113,7 +113,7 @@ const InventoryPage: React.FC = () => {
     <div className="space-y-10 pb-20 font-serif relative">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Arsenal e Bens</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Arsenal e Bens</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Relíquias e espólios catalogados no Grimório.</p>
         </div>
         <div className="flex gap-4">

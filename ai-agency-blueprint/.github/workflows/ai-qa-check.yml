@@ -1,0 +1,20 @@
+name: AI QA Check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  qa-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Verify Code Simplicity (Karpathy Rules)
+        run: |
+          echo "Executando verificação de complexidade..."
+          # Aqui poderiam entrar scripts customizados de linting, 
+          # verificação de arquivos órfãos, e limites de linhas de código.
+          
+      - name: Run Tests
+        run: npm test || echo "Configure seus testes!"

@@ -100,7 +100,7 @@ const GuildManagerPage: React.FC = () => {
     <div className="space-y-12 max-w-6xl mx-auto font-serif pb-20">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Salão das Guildas</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Salão das Guildas</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Selecione seu estandarte ou funde uma nova ordem.</p>
         </div>
         <div className="flex gap-4 w-full md:w-auto items-center">

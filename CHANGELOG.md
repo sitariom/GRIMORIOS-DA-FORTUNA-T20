@@ -1,37 +1,78 @@
 
-# 📜 Changelog - Grimório da Fortuna
+# 📜 Changelog — Grimório da Fortuna T20
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
-## [1.2.0] - 2024-05-24
+## [2.3.0] — 2026-05-13
 ### Adicionado
-- **Pontos Divinos:** Nova tela para gestão e acompanhamento dos pontos divinos (ou pontos de ação) dos membros ativos.
-- **Resoluções de Avisos:** Configurados sinalizadores futuros do React Router v7 para `startTransition` e `relativeSplatPath`.
+- **Sistema de Negócios:** Novo tipo de base "Negócio" com 45 ativos oficiais T20, evolução por níveis (1-7), coleta de lucros mensais e interface dedicada.
+- **Fila de Salvamento:** Salvamento em lote para pontos divinos evitando perda de dados em edições múltiplas.
 
 ### Corrigido
-- **Membros Ativos:** Reparado o sumiço de aventureiros com diferentes de "Ativo" (ex. "Viajando", "Ferido") nas páginas de Reputação e Quadro de Missões (agora apenas "Morto" e "Inativo" os excluem das seleções globais limitadas a ativos).
-- **Websocket:** Tratamento do Web Socket HMR no Vite minimizando erros nos logs durante o tempo de desenvolvimento em ambiente seguro.
+- **Lista de Aventureiros:** Filtro de membros ativos agora considera apenas status "Ativo" (excluindo "Viajando", "Ferido", etc.) nas páginas de Reputação e Quadro de Missões.
+- **Hardening de Segurança:** Remoção de config do Vercel versionada, correções de dependências, headers de segurança aprimorados.
+
+## [2.2.0] — 2026-01-29
+### Adicionado
+- **Calendário de Arton:** Nova tela com sistema completo de datas (dia/mês/ano), dia da semana e detecção de Nimb Day.
+- **Quadro de Missões:** Gestão de quests com status, descrição e acompanhamento.
+- **Inventário Reformulado:** Interface aprimorada com filtros, histórico de itens e rastreamento de movimentações.
+- **Gestão de Campanhas:** Múltiplos perfis com autenticação por senha (PBKDF2), armazenamento isolado por campanha.
 
 ### Alterado
-- **Identidade Visual:** Seletor de Dropdown na aba de Reputação harmonizado visualmente com os campos de entrada, com transparência e estilo alinhado no modo Dark.
+- **Evolução de Telas:** Interface unificada para Inventário, Calendário e Missões com navegação consistente.
 
-## [1.1.0] - 2024-05-20
+## [2.1.0] — 2026-01-28
 ### Adicionado
-- **Construções Personalizadas:** Agora é possível adicionar obras e infraestruturas com nomes, custos e benefícios manuais nos Domínios.
-- **Unidades Mercenárias:** Sistema de criação manual de tropas com valores de Poder Bélico (PWR) e custos personalizados.
+- **Servidor Express:** Backend próprio com Vite middleware, helmet, CORS e rate limiting.
+- **API Serverless:** Endpoints para admin e guildas com deploy para Vercel.
+- **Banco de Dados:** Suporte a SQLite (desenvolvimento) e PostgreSQL (produção).
+- **Autenticação:** Sistema de login com hash PBKDF2 via WebCrypto, sessão por navegador.
+
+### Alterado
+- **Armazenamento:** Migração de LocalStorage puro para banco de dados com cache em memória.
+- **Segurança:** Implementação de boas práticas OWASP (helmet, CORS, rate-limit, sanitização).
+
+## [2.0.0] — 2025-12-19
+### Adicionado
+- **Refatoração completa da UI:** Novo layout responsivo com sidebar unificada e componentes redesenhados.
+- **Integração de IA:** Geração de arte de fundo no Dashboard com fallback e cache.
+- **Tipos Node:** Suporte a tipos Node/Express no TypeScript.
+
+### Alterado
+- **Dependências:** Atualização para React 19, Vite 6, Tailwind CSS 4, Express 5.
+- **Configuração:** Projeto migrado de Vite standalone para Vite + Express integrados.
+
+## [1.2.0] — 2025-12-18
+### Adicionado
+- **Pontos Divinos:** Tela para gestão e acompanhamento dos pontos divinos dos membros ativos.
+- **Construções Personalizadas:** Obras e infraestruturas com nomes, custos e benefícios manuais nos Domínios.
+- **Unidades Mercenárias:** Criação manual de tropas com Poder Bélico (PWR) e custos personalizados.
 - **Abas de Recrutamento:** Interface de modais dividida entre "Catálogo Oficial" e "Projetos Personalizados".
-- **Sistema de Backup:** Interface refinada na página de Gestão de Campanhas para exportação e importação de JSON.
+- **Sistema de Backup:** Exportação e importação de dados via JSON.
 
 ### Corrigido
-- **Botão Governar:** Fluxo corrigido para exibir o resultado detalhado do decreto (renda, manutenção e sucesso/falha) antes de fechar o modal.
-- **Recrutamento de NPCs:** O modal de adicionar funcionário estava ausente visualmente e foi reimplementado com seletores dinâmicos de alocação (Base/Domínio/Grupo).
-- **Cálculo de Popularidade:** Corrigido erro de índice que ocorria quando a popularidade atingia os limites (Odiado/Adorado) durante a governança.
+- **Botão Governar:** Exibição do resultado detalhado do decreto (renda, manutenção, sucesso/falha).
+- **Recrutamento de NPCs:** Modal reimplementado com seletores dinâmicos de alocação.
+- **Cálculo de Popularidade:** Erro de índice ao atingir limites (Odiado/Adorado).
+- **Websocket HMR:** Tratamento de erros no modo dev com ambiente seguro.
 
 ### Alterado
-- **Identidade Visual:** Melhoria no contraste do modo Dark para elementos de pergaminho.
-- **Logs do Sistema:** Descrições de logs de governança agora incluem o resultado do dado e o CD do teste.
+- **Identidade Visual:** Contraste do modo Dark, dropdowns harmonizados no modo escuro.
+- **Logs do Sistema:** Inclusão do resultado do dado e CD nos logs de governança.
 
-## [1.0.0] - 2024-05-15
+## [1.1.0] — 2025-12-18
+### Adicionado
+- **Investimentos:** Gestão de aplicações e rendimentos.
+- **Crônicas:** Registro narrativo da campanha.
+- **Reputação:** Sistema de rastreamento por facção com bônus.
+- **Agentes de IA:** Estrutura de agência com 5 personas (Orquestrador, PO, Dev, QA, Arquivista) e blueprint replicável.
+
+### Alterado
+- **Domínios:** Melhorias no sistema de governança, eventos aleatórios (crises) e conselheiros.
+- **Dashboard:** Visão geral refinada com indicadores de tesouraria, membros e propriedades.
+
+## [1.0.0] — 2025-12-18
 ### Lançamento Inicial
 - **Core:** Estrutura base com Context API para gestão global de estado.
 - **Finanças:** Sistema de quatro moedas (TC, TS, TO, LO) com câmbio integrado.
@@ -39,7 +80,7 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 - **Bases:** Gestão de propriedades, cômodos e mobílias.
 - **Domínios:** Sistema básico de territórios, regentes e tesouro real.
 - **Dashboard:** Visão geral com integração de IA para geração de arte de fundo.
-- **Temas:** Suporte completo a Modo Claro (Pergaminho de Luz) e Modo Escuro (Grimório de Sombras).
+- **Temas:** Suporte completo a Modo Claro e Modo Escuro.
 
 ---
 *Nota: Este projeto segue o versionamento semântico.*

@@ -54,7 +54,7 @@ const CashFlowPage: React.FC = () => {
   return (
     <div className="space-y-10 pb-20 font-serif">
       <header>
-        <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Registros tesouraria</h2>
+        <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Registros tesouraria</h2>
         <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O rastro de prata e ouro deixado pela guilda.</p>
       </header>
 

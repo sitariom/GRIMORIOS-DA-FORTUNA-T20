@@ -59,7 +59,7 @@ const FinancialPage: React.FC = () => {
   return (
     <div className="space-y-12 pb-20 font-serif">
       <header>
-        <h2 className="text-4xl md:text-6xl font-medieval text-white tracking-tighter uppercase leading-none mb-3">Finanças do grupo</h2>
+        <h2 className="text-4xl md:text-6xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-3">Finanças do grupo</h2>
         <p className="text-xs md:text-lg text-fantasy-gold font-bold uppercase tracking-[0.3em]">Gestão central de Tibares e Riquezas.</p>
       </header>
 
