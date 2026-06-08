@@ -215,7 +215,7 @@ const MembersPage: React.FC = () => {
                                 onChange={(e) => updateMember(activeMember.id, { strength: Number(e.target.value) })}
                                 className="bg-transparent font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment cursor-pointer outline-none appearance-none"
                             >
-                                {Array.from({ length: 21 }, (_, i) => i - 5).map(s => (
+                                {Array.from({ length: 31 }, (_, i) => i - 5).map(s => (
                                     <option key={s} value={s}>{s >= 0 ? '+' : ''}{s}</option>
                                 ))}
                             </select>

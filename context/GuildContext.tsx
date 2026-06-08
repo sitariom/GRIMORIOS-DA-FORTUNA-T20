@@ -224,7 +224,7 @@ const sanitizeGuildData = (data: any): GuildState => {
         type: item.type || 'Consumivel',
         rarity: item.rarity || 'Comum',
         quantity: typeof item.quantity === 'number' ? item.quantity : 1,
-        space: [0, 0.5, 1, 2, 5, 10].includes(item.space) ? item.space : 1,
+        space: [0, 0.5, 1, 2, 5, 10, 20, 100].includes(item.space) ? item.space : 1,
         value: typeof item.value === 'number' ? item.value : 0,
         origin: item.origin || '',
         encounter: item.encounter || '',

@@ -91,12 +91,14 @@ export const calcCarryLimit = (strength: number): number => Math.max(0, BASE_CAR
 export const calcMaxCarry = (strength: number): number => calcCarryLimit(strength) * MAX_OVERLOAD_MULTIPLIER;
 
 export const SPACE_OPTIONS = [
-  { value: 0, label: '0 (Livre)' },
-  { value: 0.5, label: '½ (Muito Leve)' },
-  { value: 1, label: '1 (Padrão)' },
-  { value: 2, label: '2 (Volumoso)' },
-  { value: 5, label: '5 (Pesado)' },
-  { value: 10, label: '10 (Extremo)' },
+  { value: 0, label: '0 — Item Ínfimo' },
+  { value: 0.5, label: '½ — Item Muito Pequeno' },
+  { value: 1, label: '1 — Item Comum' },
+  { value: 2, label: '2 — Item Volumoso' },
+  { value: 5, label: '5 — Item Muito Pesado' },
+  { value: 10, label: '10 — Item Extremo' },
+  { value: 20, label: '20 — Acima de uma Pessoa' },
+  { value: 100, label: '100 — Requer Veículo' },
 ];
 
 export const RARITY_CONFIG: Record<ItemRarity, { label: string, color: string, bg: string, border: string }> = {
