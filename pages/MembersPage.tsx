@@ -4,7 +4,7 @@ import { useGuild } from '../context/GuildContext';
 import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle } from 'lucide-react';
 import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
-import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, calcCarryLimit } from '../constants';
+import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, calcTotalCarryLimit, calcCarryBonus } from '../constants';
 
 const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: string, bg: string, label: string }> = {
     'Ativo': { icon: Shield, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-700/10 dark:bg-emerald-400/10', label: 'Ativo' },
@@ -39,7 +39,7 @@ const MembersPage: React.FC = () => {
 
   // States for New Item
   const [newItemData, setNewItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined
   });
 
   // State for Item Action (Transfer/Delete quantity)
@@ -84,7 +84,7 @@ const MembersPage: React.FC = () => {
       if(!activeMember) return;
       createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
       setShowAddItem(false);
-      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
+      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined });
   };
 
   const confirmItemAction = (e: React.FormEvent) => {
@@ -280,7 +280,8 @@ const MembersPage: React.FC = () => {
 
                         {/* Carry Capacity */}
                         {(() => {
-                            const limit = calcCarryLimit(activeMember.strength);
+                            const bonus = calcCarryBonus(activeMember.inventory);
+                            const limit = calcTotalCarryLimit(activeMember.strength, activeMember.inventory);
                             const max = limit * 2;
                             const load = activeMember.inventory.reduce((t, i) => t + i.space * i.quantity, 0);
                             const pct = Math.min(100, (load / max) * 100);
@@ -293,11 +294,17 @@ const MembersPage: React.FC = () => {
                                         </span>
                                         <span className={overloaded ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}>
                                             {load} / {limit} esp{limit !== 1 ? 's' : ''}
+                                            {bonus > 0 ? <span className="ml-1 text-cyan-600 dark:text-cyan-400">(+{bonus})</span> : null}
                                         </span>
                                     </div>
                                     <div className="h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
                                         <div className={`h-full rounded-full transition-all ${overloaded ? 'bg-red-600' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }}/>
                                     </div>
+                                    {bonus > 0 && (
+                                        <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-black uppercase tracking-widest mt-1">
+                                            Itens de carga bônus: +{bonus} esp
+                                        </p>
+                                    )}
                                     {load > max && (
                                         <p className="text-[9px] text-red-600 dark:text-red-400 font-black uppercase tracking-widest mt-1">Sobrecarga total! Não pode carregar mais nada.</p>
                                     )}
@@ -357,6 +364,13 @@ const MembersPage: React.FC = () => {
                                     <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.space} onChange={e => setNewItemData({...newItemData, space: Number(e.target.value)})}>
                                         {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                     </select>
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.carryBonus ?? 0} onChange={e => setNewItemData({...newItemData, carryBonus: Number(e.target.value) || undefined})}>
+                                        <option value={0}>Sem Bônus</option>
+                                        <option value={5}>+5 Carga</option>
+                                        <option value={10}>+10 Carga</option>
+                                        <option value={15}>+15 Carga</option>
+                                        <option value={20}>+20 Carga</option>
+                                    </select>
                                 </div>
                                <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest">Criar Item</button>
                            </form>
@@ -372,7 +386,7 @@ const MembersPage: React.FC = () => {
                                         <div key={`${item.id}-${i}`} className="bg-white/50 dark:bg-black/40 p-3 rounded-xl flex justify-between items-center group">
                                             <div>
                                                 <div className={`font-medieval ${rarityStyle.color}`}>{item.name} <span className="text-xs opacity-60">x{item.quantity}</span></div>
-                                                <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}</div>
+                                                 <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}{item.carryBonus ? ` • +${item.carryBonus} Carga` : ''}</div>
                                             </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                <button 

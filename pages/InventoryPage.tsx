@@ -11,7 +11,7 @@ const InventoryPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'sell' | 'withdraw' | 'delete' | 'bulkSell' | 'bulkDelete' | null>(null);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [tempItemData, setTempItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: ''
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined
   });
   
   const [opQty, setOpQty] = useState(1);
@@ -30,7 +30,7 @@ const InventoryPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const openAdd = () => {
-      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '' });
+      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined });
       setModalMode('add');
   };
 
@@ -205,6 +205,7 @@ const InventoryPage: React.FC = () => {
                           </span>
                           {item.isQuestItem && <span className="text-[8px] bg-purple-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Item de Missão</span>}
                           {item.isNonNegotiable && <span className="text-[8px] bg-red-800 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Inalienável</span>}
+                          {item.carryBonus ? <span className="text-[8px] bg-cyan-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">+{item.carryBonus} Carga</span> : null}
                         </div>
                       </td>
                       <td className="px-6 py-8">
@@ -311,6 +312,17 @@ const InventoryPage: React.FC = () => {
                                 <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.space} onChange={e => setTempItemData({...tempItemData, space: Number(e.target.value)})}>
                                     {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value} className="dark:bg-black">{s.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Bônus de Carga</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                                    value={tempItemData.carryBonus ?? 0} onChange={e => setTempItemData({...tempItemData, carryBonus: Number(e.target.value) || undefined})}>
+                                    <option value={0} className="dark:bg-black">Nenhum</option>
+                                    <option value={5} className="dark:bg-black">+5 espaços</option>
+                                    <option value={10} className="dark:bg-black">+10 espaços</option>
+                                    <option value={15} className="dark:bg-black">+15 espaços</option>
+                                    <option value={20} className="dark:bg-black">+20 espaços</option>
                                 </select>
                             </div>
                         </div>

@@ -1,5 +1,5 @@
 import { GuildState, Member, CurrencyType, Item, LogCategory, LogEntry } from '../../types';
-import { RATES, calcCarryLimit } from '../../constants';
+import { RATES, calcTotalCarryLimit } from '../../constants';
 
 interface MemberDeps {
   activeGuild: GuildState;
@@ -146,11 +146,14 @@ export const useMemberActions = ({ activeGuild, triggerSave, notify, internalAdd
   const createItemForMember = (memberId: string, itemData: Omit<Item, 'id'>) => {
     const member = activeGuild.members.find(m => m.id === memberId);
     if (member) {
-      const limit = calcCarryLimit(member.strength);
+      const baseLimit = calcTotalCarryLimit(member.strength, member.inventory);
       const currentLoad = calcMemberLoad(member);
       const addSpace = (itemData.space || 1) * (itemData.quantity || 1);
-      if (currentLoad + addSpace > limit * 2) {
-        return notify(`${member.name} não pode carregar tanto peso (limite ${limit} espaços, máximo ${limit * 2}).`, "error");
+      const newBonus = (itemData.carryBonus || 0) * (itemData.quantity || 1);
+      const newLimit = baseLimit + newBonus;
+      const maxLoad = newLimit * 2;
+      if (currentLoad + addSpace > maxLoad) {
+        return notify(`${member.name} não pode carregar tanto peso (limite ${baseLimit} esp, máximo ${maxLoad} esp).`, "error");
       }
     }
     const newItem = { ...itemData, id: crypto.randomUUID() };

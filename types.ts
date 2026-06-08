@@ -24,6 +24,7 @@ export interface Item {
   encounter: string;
   isQuestItem: boolean;
   isNonNegotiable: boolean;
+  carryBonus?: number; // Espaços extras de carga que este item concede (ex: Mochila de Carga)
 }
 
 export type BasePorte = 'Minima' | 'Modesta' | 'Basica' | 'Formidavel' | 'Grandiosa' | 'Suprema';

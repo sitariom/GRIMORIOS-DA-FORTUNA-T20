@@ -1,5 +1,5 @@
 import { GuildState, Item, LogCategory, LogEntry } from '../../types';
-import { calcCarryLimit } from '../../constants';
+import { calcTotalCarryLimit, calcTotalMaxCarry } from '../../constants';
 
 interface ItemDeps {
   activeGuild: GuildState;
@@ -81,11 +81,14 @@ export const useItemActions = ({ activeGuild, triggerSave, notify, internalAddLo
 
     const member = activeGuild.members.find(m => m.id === memberId);
     if (member) {
-      const limit = calcCarryLimit(member.strength);
+      const baseLimit = calcTotalCarryLimit(member.strength, member.inventory);
       const currentLoad = calcMemberLoad(member);
       const addSpace = item.space * qty;
-      if (currentLoad + addSpace > limit * 2) {
-        return notify(`${member.name} não pode carregar tanto peso (limite ${limit} espaços, máximo ${limit * 2}).`, "error");
+      const newBonus = (item.carryBonus || 0) * qty;
+      const newLimit = baseLimit + newBonus;
+      const maxLoad = newLimit * 2;
+      if (currentLoad + addSpace > maxLoad) {
+        return notify(`${member.name} não pode carregar tanto peso (limite ${baseLimit} esp, máximo ${maxLoad} esp).`, "error");
       }
     }
     let updatedMembers = activeGuild.members;

@@ -1,5 +1,5 @@
 
-import { BasePorte, BaseType, CourtType, PopularityType, ItemRarity, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
+import { Item, BasePorte, BaseType, CourtType, PopularityType, ItemRarity, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
 
 export const PORTE_DATA: Record<BasePorte, { cost: number; maintenance: number; slots: number; label: string }> = {
   Minima: { cost: 1000, maintenance: 100, slots: 0, label: 'Mínima (T$ 1k)' },
@@ -89,6 +89,12 @@ export const MAX_OVERLOAD_MULTIPLIER = 2;
 
 export const calcCarryLimit = (strength: number): number => Math.max(0, BASE_CARRY + strength * CARRY_PER_STR);
 export const calcMaxCarry = (strength: number): number => calcCarryLimit(strength) * MAX_OVERLOAD_MULTIPLIER;
+export const calcCarryBonus = (inventory: Item[]): number =>
+  inventory.reduce((acc, i) => acc + (i.carryBonus || 0), 0);
+export const calcTotalCarryLimit = (strength: number, inventory: Item[]): number =>
+  calcCarryLimit(strength) + calcCarryBonus(inventory);
+export const calcTotalMaxCarry = (strength: number, inventory: Item[]): number =>
+  calcTotalCarryLimit(strength, inventory) * MAX_OVERLOAD_MULTIPLIER;
 
 export const SPACE_OPTIONS = [
   { value: 0, label: '0 — Item Ínfimo' },

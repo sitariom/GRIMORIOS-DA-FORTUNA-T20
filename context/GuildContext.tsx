@@ -229,7 +229,8 @@ const sanitizeGuildData = (data: any): GuildState => {
         origin: item.origin || '',
         encounter: item.encounter || '',
         isQuestItem: !!item.isQuestItem,
-        isNonNegotiable: !!item.isNonNegotiable
+        isNonNegotiable: !!item.isNonNegotiable,
+        carryBonus: [5, 10, 15, 20].includes(item.carryBonus) ? item.carryBonus : undefined
     });
 
     safeData.items = (Array.isArray(safeData.items) ? safeData.items : []).map(sanitizeItem);
