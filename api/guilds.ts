@@ -53,9 +53,9 @@ export default async function handler(request: Request) {
         }
 
         const adminTableCheck = await client.sql`SELECT to_regclass('public.admin_auth')`;
-        if (adminTableCheck.rows[0].to_regclass) {
+        if (adminTableCheck.rows[0]?.to_regclass) {
           const adminAuth = await client.sql`SELECT password FROM admin_auth WHERE key = 'master'`;
-          if (adminAuth.rowCount > 0) {
+          if ((adminAuth.rowCount ?? 0) > 0) {
             const storedAdmin = adminAuth.rows[0].password as string;
             const a = await verifyAndMaybeUpgradePassword(storedAdmin, password);
             if (a.ok) {
@@ -99,7 +99,7 @@ export default async function handler(request: Request) {
       const existing = await client.sql`SELECT password, data FROM guilds WHERE id = ${id}`;
       
       // Update
-      if (existing.rowCount > 0) {
+      if ((existing.rowCount ?? 0) > 0) {
         const dbRow = existing.rows[0];
         
         const v = await verifyAndMaybeUpgradePassword(dbRow.password as string, password);
@@ -109,7 +109,7 @@ export default async function handler(request: Request) {
 
         // 2. Validação de Concorrência (Optimistic Locking)
         const dbData = dbRow.data;
-        const dbVersion = dbData.version || 0;
+        const dbVersion = (dbData && dbData.version) || 0;
         const incomingVersion = version || 0;
 
         // Se a versão que chega é MENOR ou IGUAL a do banco, significa que o cliente está desatualizado
@@ -150,7 +150,7 @@ export default async function handler(request: Request) {
       // Verifica se é a senha da guilda
       let canDelete = false;
       const guild = await client.sql`SELECT password FROM guilds WHERE id = ${id}`;
-      if (guild.rowCount > 0) {
+      if ((guild.rowCount ?? 0) > 0) {
         const storedGuild = guild.rows[0].password as string;
         const v = await verifyAndMaybeUpgradePassword(storedGuild, password);
         if (v.ok) {
@@ -165,9 +165,9 @@ export default async function handler(request: Request) {
       if (!canDelete) {
          // Verifica tabela admin
          const adminTableCheck = await client.sql`SELECT to_regclass('public.admin_auth')`;
-         if (adminTableCheck.rows[0].to_regclass) {
+          if (adminTableCheck.rows[0]?.to_regclass) {
              const adminAuth = await client.sql`SELECT password FROM admin_auth WHERE key = 'master'`;
-             if (adminAuth.rowCount > 0) {
+              if ((adminAuth.rowCount ?? 0) > 0) {
                const storedAdmin = adminAuth.rows[0].password as string;
                const v = await verifyAndMaybeUpgradePassword(storedAdmin, password);
                if (v.ok) {

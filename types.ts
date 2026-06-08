@@ -26,9 +26,9 @@ export interface Item {
 }
 
 export type BasePorte = 'Minima' | 'Modesta' | 'Basica' | 'Formidavel' | 'Grandiosa' | 'Suprema';
-export type BaseType = 'CentroDePoder' | 'Empreendimento' | 'Esconderijo' | 'Fortificacao' | 'Movel' | 'Residencia';
+export type BaseType = 'CentroDePoder' | 'Empreendimento' | 'Esconderijo' | 'Fortificacao' | 'Movel' | 'Residencia' | 'Negocio';
 
-export type NPCLocationType = 'Base' | 'Dominio' | 'Construcao' | 'Grupo';
+export type NPCLocationType = 'Base' | 'Dominio' | 'Construcao' | 'Grupo' | 'Membro' | 'Livre';
 export type NPCRelationship = 'Contratado' | 'Aliado' | 'Parceiro' | 'Recrutado';
 
 export interface NPC {
@@ -37,9 +37,18 @@ export interface NPC {
   role: string;
   monthlyCost: number;
   locationType: NPCLocationType;
-  locationId?: string; // ID da base, domínio ou construção
+  locationId?: string; // ID da base, domínio, construção, membro ou livre
   locationName: string; // Nome descritivo para exibição
   relationship?: NPCRelationship;
+  tier?: 'Iniciante' | 'Veterano' | 'Mestre' | 'N/A';
+  allyType?: 'Adepto' | 'Ajudante' | 'Assassino' | 'Perseguidor' | 'Vigilante' | 'Atirador' | 'Combatente' | 'Destruidor' | 'Fortão' | 'Guardião' | 'Magivocador' | 'Médico' | 'Familiar' | 'Familiar Especial' | 'Montaria' | 'Montaria Especial' | 'Parceiro Especial' | 'N/A';
+  bonusDescription?: string;
+  status?: MemberStatus;
+  associatedMemberId?: string;
+  likes?: string;
+  dislikes?: string;
+  affinityByMember?: Record<string, number>;
+  ultimateQuestDone?: Record<string, boolean>;
 }
 
 export interface Furniture {
@@ -53,6 +62,17 @@ export interface Room {
   id: string;
   name: string;
   furnitures: Furniture[];
+  cost?: number;
+  isDamaged?: boolean;
+}
+
+export interface BusinessAsset {
+  name: string;
+  description: string;
+  benefit: string;
+  requires?: string[];
+  levelReq?: number;
+  cost: number;
 }
 
 export interface Base {
@@ -62,6 +82,11 @@ export interface Base {
   type: BaseType;
   rooms: Room[]; 
   history: string[];
+  security?: number;
+  gargulas?: number;
+  businessLevel?: number;
+  businessAssetNames?: string[];
+  lastIncomeDay?: number;
 }
 
 export type CourtType = 'Inexistente' | 'Pobre' | 'Comum' | 'Rica';
@@ -73,6 +98,11 @@ export interface DomainUnit {
   type: string;
   power: number;
   costLO: number;
+  maintenance: number;
+  defense: number;
+  damage: string;
+  speed: number;
+  requires: string;
 }
 
 export interface DomainBuilding {
@@ -81,6 +111,40 @@ export interface DomainBuilding {
   description: string;
   costLO: number;
   benefit: string;
+  fortificationBonus: number;
+  requires: string[];
+  skill: string;
+  income: string;
+}
+
+export type AdvisorRole = 'Bispo' | 'Capitão da Guarda' | 'Embaixador' | 'Espião' | 'Falcoeiro' | 'Magistrado' | 'Mago da Corte' | 'Menestrel' | 'Senescal';
+
+export interface DomainAdvisor {
+  id: string;
+  name: string;
+  role: AdvisorRole;
+  skill: string;
+  associatedId?: string;
+  associatedType?: 'Member' | 'NPC';
+}
+
+export type TaskStatus = 'Pendente' | 'Em Progresso' | 'Concluido' | 'Cancelado';
+
+export interface DomainPendingTask {
+  id: string;
+  name: string;
+  description: string;
+  status: TaskStatus;
+  progress: number;
+  history?: { date: string; details: string }[];
+}
+
+export interface DomainTransaction {
+  id: string;
+  date: string;
+  type: 'Entrada' | 'Saída';
+  amount: number;
+  reason: string;
 }
 
 export interface Domain {
@@ -89,21 +153,35 @@ export interface Domain {
   regent: string;
   level: number;
   terrain: string;
+  isMystic?: boolean; // Domínios Místicos (Regra T20 p. 325)
+  coexistingDomainId?: string; // ID do domínio civil coexistente (para cálculo de potencial místico)
   court: CourtType;
   treasury: number;
-  popularity: PopularityType;
+  popularity: PopularityType | 'N/A'; // Místicos não têm popularidade
   fortification: number;
   buildings: DomainBuilding[]; 
   units: DomainUnit[];
+  advisors: DomainAdvisor[];
+  pendingTasks?: DomainPendingTask[];
+  cashFlow?: DomainTransaction[];
+  revolt: boolean;
+  actionsRemaining?: number;
+  actionModifier?: number;    // Modificador de ação adicional manual (+/-)
+  maintenanceMod?: number;    // Custo de manutenção adicional (LO extras por turno)
+  magicPowerLevel?: number;   // Nível de poder mágico (apenas domínios místicos)
+  hasWaterAccess?: boolean;         // Rio ou mar (+1 ao Nível Máximo)
+  hasMysticElement?: boolean;       // Elemento místico (+1 ao Potencial Mágico)
+  isNatureBoundRace?: boolean;      // Raça ligada à natureza (Elfo, Sílfide, Dahllan...)
+  isSubterraneanBoundRace?: boolean;// Raça ligada ao subterrâneo (Anão, Trog, Medusa...)
+  tempCaosPenalty?: boolean;        // Caos temporário no governo (-5 em ações de domínio no turno)
 }
 
-export interface GovernResult {
-  income: number;
-  maintenance: number;
-  net: number;
+export type DomainActionType = 'govern' | 'increaseCourt' | 'decreaseCourt' | 'festival' | 'extort' | 'conscript' | 'recruit' | 'build' | 'taxLow' | 'taxMedium' | 'taxHigh' | 'convert' | 'caravan';
+
+export interface ActionResult {
   success: boolean;
-  popularityChange: number;
-  details: string[];
+  message: string;
+  details?: string[];
 }
 
 export type LogCategory = 'Venda' | 'Compra' | 'Saque' | 'Deposito' | 'Investimento' | 'Manutencao' | 'Conversao' | 'Sistema' | 'Base' | 'Dominio' | 'Estoque' | 'NPC' | 'Quest' | 'Calendario' | 'Membro';
@@ -127,6 +205,7 @@ export interface Member {
   wallet: Wallet; // Carteira individual do aventureiro
   inventory: Item[]; // Inventário individual
   divinePoints?: number; // Pontos divinos / de ação
+  activeAffinityNpcId?: string; // ID do NPC de afinidade ativa
 }
 
 export interface CalendarState {

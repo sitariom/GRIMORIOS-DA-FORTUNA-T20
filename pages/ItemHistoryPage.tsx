@@ -119,7 +119,7 @@ const ItemHistoryPage: React.FC = () => {
   return (
     <div className="space-y-10 pb-20 font-serif">
        <header>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Movimentação de itens</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Movimentação de itens</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Onde as armas, armaduras e relíquias são registradas.</p>
        </header>
        

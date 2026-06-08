@@ -89,7 +89,7 @@ const QuestBoardPage: React.FC = () => {
     <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
         <div>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
         </div>
         <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">

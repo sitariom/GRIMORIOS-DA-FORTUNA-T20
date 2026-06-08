@@ -104,7 +104,7 @@ const MembersPage: React.FC = () => {
     <div className="space-y-12 pb-20 font-serif">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-white tracking-tighter uppercase leading-none mb-2">Aventureiros</h2>
+          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Aventureiros</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">As almas heróicas que compõem o corpo da guilda.</p>
         </div>
       </header>

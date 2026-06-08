@@ -1,6 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { hashPassword, verifyAndMaybeUpgradePassword, verifyPassword } from "./utils/password";
 
@@ -136,7 +139,25 @@ async function ensureSchema() {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+
+  // Segurança: Headers HTTP
+  app.use(helmet({
+    contentSecurityPolicy: false, // Desabilitado temporariamente para não quebrar o Vite/React
+  }));
+
+  // Segurança: CORS
+  app.use(cors());
+
+  // Segurança: Rate Limiting para evitar ataques de força bruta na API
+  const isDevOrTest = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || !process.env.NODE_ENV;
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: isDevOrTest ? 10000 : 100, // Limite muito maior em desenvolvimento/testes
+    message: { error: "Muitas requisições deste IP, tente novamente em 15 minutos." }
+  });
+  
+  app.use("/api/", apiLimiter);
 
   app.use(express.json({ limit: '10mb' }));
 
@@ -214,15 +235,6 @@ async function startServer() {
     let dbWrapper;
     try {
       dbWrapper = await getDbClient();
-      await dbWrapper.sql`
-        CREATE TABLE IF NOT EXISTS guilds (
-          id UUID PRIMARY KEY,
-          guild_name TEXT NOT NULL,
-          password TEXT NOT NULL,
-          data JSONB,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `;
 
       const id = req.query.id as string | undefined;
 
@@ -297,15 +309,6 @@ async function startServer() {
     let dbWrapper;
     try {
       dbWrapper = await getDbClient();
-      await dbWrapper.sql`
-        CREATE TABLE IF NOT EXISTS guilds (
-          id UUID PRIMARY KEY,
-          guild_name TEXT NOT NULL,
-          password TEXT NOT NULL,
-          data JSONB,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `;
 
       const body = req.body;
       const { id, guildName, password, version, ...rest } = body;
@@ -366,15 +369,6 @@ async function startServer() {
     let dbWrapper;
     try {
       dbWrapper = await getDbClient();
-      await dbWrapper.sql`
-        CREATE TABLE IF NOT EXISTS guilds (
-          id UUID PRIMARY KEY,
-          guild_name TEXT NOT NULL,
-          password TEXT NOT NULL,
-          data JSONB,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `;
 
       const id = req.query.id as string | undefined;
       const authHeader = req.headers["authorization"];
