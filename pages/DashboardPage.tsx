@@ -6,7 +6,7 @@ import { DEFAULT_TIERS } from './ReputationPage';
 import { 
   TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, Shield, 
   Activity, Home, Crown, Tent, User, Calendar, Plus, Hammer, Heart, 
-  AlertTriangle, ChevronRight, Edit2, Package, Star
+  AlertTriangle, ChevronRight, Edit2, Package, Star, Clock
 } from 'lucide-react';
 import { CurrencyType, ReputationTier } from '../types';
 
@@ -122,6 +122,9 @@ const DashboardPage: React.FC = () => {
   const contractedNPCs = useMemo(() => npcs.filter(n => n.relationship === 'Contratado'), [npcs]);
   const activeContractedNPCs = useMemo(() => contractedNPCs.filter(n => n.status === 'Ativo'), [npcs]);
   const alliesNPCs = useMemo(() => npcs.filter(n => n.relationship === 'Aliado' || n.relationship === 'Parceiro' || n.relationship === 'Recrutado'), [npcs]);
+
+  const activeMembers = useMemo(() => members.filter(m => m.status === 'Ativo'), [members]);
+  const acompanhandoNPCs = useMemo(() => npcs.filter(n => n.locationType === 'Membro'), [npcs]);
 
   const questItems = useMemo(() => (useGuild().items || []).filter(item => item.isQuestItem), [useGuild().items]);
   const totalItemsCount = useMemo(() => (useGuild().items || []).reduce((acc, item) => acc + item.quantity, 0), [useGuild().items]);
@@ -499,47 +502,44 @@ const DashboardPage: React.FC = () => {
                       </Link>
                   </div>
                   <div className="space-y-4">
-                      {(() => {
-                          const activeMembers = members.filter(m => m.status === 'Ativo');
-                          return activeMembers.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
-                                  {members.length === 0 ? 'Nenhum aventureiro cadastrado na guilda.' : 'Nenhum aventureiro ativo no momento.'}
-                              </p>
-                          ) : (
-                              <div className="space-y-3">
-                                  {activeMembers.map(m => {
-                                  const activeNpc = npcs.find(n => n.id === m.activeAffinityNpcId);
-                                  return (
-                                      <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between">
-                                          <div className="flex justify-between items-center">
-                                              <div>
-                                                  <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{m.name}</span>
-                                                  <span className="text-[9px] uppercase tracking-wider opacity-60 font-serif">Status: {m.status}</span>
-                                              </div>
-                                              <div className="flex items-center gap-2">
-                                                  <span className="px-2 py-0.5 bg-fantasy-gold/10 text-fantasy-gold border border-fantasy-gold/20 rounded-md text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5">
-                                                      <Sparkles size={8}/> {m.divinePoints || 0} PD
-                                                  </span>
-                                              </div>
+                      {activeMembers.length === 0 ? (
+                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
+                              {members.length === 0 ? 'Nenhum aventureiro cadastrado na guilda.' : 'Nenhum aventureiro ativo no momento.'}
+                          </p>
+                      ) : (
+                          <div className="space-y-3">
+                              {activeMembers.map(m => {
+                              const activeNpc = npcs.find(n => n.id === m.activeAffinityNpcId);
+                              return (
+                                  <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between">
+                                      <div className="flex justify-between items-center">
+                                          <div>
+                                              <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{m.name}</span>
+                                              <span className="text-[9px] uppercase tracking-wider opacity-60 font-serif">Status: {m.status}</span>
                                           </div>
-                                          {activeNpc && (
-                                              <div className="mt-2.5 p-2 bg-fantasy-gold/5 border border-fantasy-gold/20 rounded-xl flex items-center gap-2 text-[10px]">
-                                                  <Crown size={12} className="text-fantasy-gold shrink-0"/>
-                                                  <span className="text-fantasy-wood/80 dark:text-fantasy-parchment/80 font-serif">
-                                                      Afinidade Ativa: <strong>{activeNpc.name}</strong> ({activeNpc.allyType})
-                                                  </span>
-                                              </div>
-                                          )}
+                                          <div className="flex items-center gap-2">
+                                              <span className="px-2 py-0.5 bg-fantasy-gold/10 text-fantasy-gold border border-fantasy-gold/20 rounded-md text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5">
+                                                  <Sparkles size={8}/> {m.divinePoints || 0} PD
+                                              </span>
+                                          </div>
                                       </div>
-                                  )
-                              })}
-                          </div>
-                      );
-                   })()}
+                                      {activeNpc && (
+                                          <div className="mt-2.5 p-2 bg-fantasy-gold/5 border border-fantasy-gold/20 rounded-xl flex items-center gap-2 text-[10px]">
+                                              <Crown size={12} className="text-fantasy-gold shrink-0"/>
+                                              <span className="text-fantasy-wood/80 dark:text-fantasy-parchment/80 font-serif">
+                                                  Afinidade Ativa: <strong>{activeNpc.name}</strong> ({activeNpc.allyType})
+                                              </span>
+                                          </div>
+                                      )}
+                                  </div>
+                              )
+                          })}
+                      </div>
+                      )}
+                  </div>
               </div>
-          </div>
 
-          {/* 6. Comitiva & Aliados (NPCs) */}
+              {/* 6. Comitiva & Aliados (NPCs) */}
               <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
@@ -568,29 +568,26 @@ const DashboardPage: React.FC = () => {
                               <span className="font-bold text-red-900/60 dark:text-red-400/60">T$ {totalNPCCost}</span>
                           </div>
                           <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Acompanhando o Grupo</span>
-                          {(() => {
-                              const acompanhando = npcs.filter(n => n.locationType === 'Membro');
-                              return acompanhando.length === 0 ? (
-                                  <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
-                              ) : (
-                                  <div className="space-y-2">
-                                      {acompanhando.map(n => {
-                                          const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
-                                          return (
-                                              <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
-                                                  <div>
-                                                      <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
-                                                      <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
-                                                  </div>
-                                                  <div className="text-right">
-                                                      <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
-                                                  </div>
+                          {acompanhandoNPCs.length === 0 ? (
+                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
+                          ) : (
+                              <div className="space-y-2">
+                                  {acompanhandoNPCs.map(n => {
+                                      const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
+                                      return (
+                                          <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
+                                              <div>
+                                                  <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
+                                                  <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
                                               </div>
-                                          )
-                                      })}
-                                  </div>
-                              );
-                          })()}
+                                              <div className="text-right">
+                                                  <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
+                                              </div>
+                                          </div>
+                                      )
+                                  })}
+                              </div>
+                          )}
                       </div>
                   </div>
               </div>
