@@ -9,6 +9,7 @@ import InventoryPage from './pages/InventoryPage';
 import ItemHistoryPage from './pages/ItemHistoryPage';
 import BasesPage from './pages/BasesPage';
 import DomainsPage from './pages/DomainsPage';
+import ConglomeratesPage from './pages/ConglomeratesPage';
 import InvestmentsPage from './pages/InvestmentsPage';
 import MembersPage from './pages/MembersPage';
 import DivinePointsPage from './pages/DivinePointsPage';
@@ -143,6 +144,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/itemhistory" element={isAuthenticated ? <ItemHistoryPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/bases" element={isAuthenticated ? <BasesPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/domains" element={isAuthenticated ? <DomainsPage /> : <Navigate to="/guilds" replace />} />
+        <Route path="/conglomerates" element={isAuthenticated ? <ConglomeratesPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/npcs" element={isAuthenticated ? <NPCsPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/investments" element={isAuthenticated ? <InvestmentsPage /> : <Navigate to="/guilds" replace />} />
         <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />

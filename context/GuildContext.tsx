@@ -5,7 +5,7 @@ import {
   CurrencyType, LogCategory, MemberStatus, ItemType, ItemRarity, BasePorte, BaseType, 
   DomainBuilding, DomainUnit, CourtType, PopularityType, NPCRelationship, NPCLocationType,
   PointOfInterest, ReputationEntry, PointOfInterestType, ReputationTargetType, QuestStatus,
-  DomainActionType, ActionResult
+  DomainActionType, ActionResult, Conglomerate
 } from '../types';
 import { RATES, PORTE_DATA, COURT_DATA, POPULARITY_LEVELS } from '../constants';
 import { dbService, GuildSummary } from '../services/db';
@@ -27,15 +27,16 @@ interface Feedback {
 }
 
 interface GuildContextData {
-   activeGuildId: string | null;
-   guildName: string;
-   wallet: Wallet;
-   members: Member[];
-   items: Item[];
-   bases: Base[];
-   domains: Domain[];
-   npcs: NPC[];
-   logs: LogEntry[];
+  activeGuildId: string | null;
+  guildName: string;
+  wallet: Wallet;
+  members: Member[];
+  items: Item[];
+  bases: Base[];
+  domains: Domain[];
+  conglomerates: Conglomerate[];
+  npcs: NPC[];
+  logs: LogEntry[];
    calendar: CalendarState;
    quests: Quest[];
    pointsOfInterest: PointOfInterest[];
@@ -146,10 +147,17 @@ interface GuildContextData {
        lostBuildingIds: string[],
        loseLevel: boolean
    ) => ActionResult;
-   resetDomainTurn: (id: string) => void;
-   resetAllDomainsTurns: () => void;
+    resetDomainTurn: (id: string) => void;
+    resetAllDomainsTurns: () => void;
 
-   advanceDate: (days: number) => void;
+    conglomerates: Conglomerate[];
+    createConglomerate: (name: string, type: 'Alianca' | 'Imperio', capitalDomainId: string) => void;
+    addDomainToConglomerate: (conglomerateId: string, domainId: string) => void;
+    removeDomainFromConglomerate: (conglomerateId: string, domainId: string) => void;
+    subjugateDomain: (conglomerateId: string, targetDomainId: string) => void;
+    disbandConglomerate: (conglomerateId: string) => void;
+
+    advanceDate: (days: number) => void;
    setGameDate: (day: number, month: number, year: number) => void;
    toggleNimbDay: (state: boolean) => void;
 
@@ -189,6 +197,7 @@ const initialGuildState: GuildState = {
     items: [],
     bases: [],
     domains: [],
+    conglomerates: [],
     npcs: [],
     logs: [],
     members: [],
@@ -335,6 +344,16 @@ const sanitizeGuildData = (data: any): GuildState => {
             amount: typeof cf.amount === 'number' ? cf.amount : 0,
             reason: cf.reason || ''
         })) : []
+    }));
+
+    safeData.conglomerates = (Array.isArray(safeData.conglomerates) ? safeData.conglomerates : []).map((c: any) => ({
+        id: c.id || crypto.randomUUID(),
+        name: c.name || 'Conglomerado Sem Nome',
+        type: c.type === 'Imperio' ? 'Imperio' : 'Alianca',
+        capitalDomainId: c.capitalDomainId || '',
+        memberDomainIds: Array.isArray(c.memberDomainIds) ? c.memberDomainIds : [],
+        subjugatedIds: Array.isArray(c.subjugatedIds) ? c.subjugatedIds : [],
+        formationDate: c.formationDate || ''
     }));
 
     return safeData;
@@ -490,6 +509,126 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         resolveCaravan, applyBattleOutcome, resetDomainTurn, resetAllDomainsTurns,
         getDomainMaxLevel, getDomainMagicPotential
     } = useDomainActions(hookDeps);
+
+    // Conglomerate actions
+    const createConglomerate = useCallback((name: string, type: 'Alianca' | 'Imperio', capitalDomainId: string) => {
+        const newC: Conglomerate = {
+            id: crypto.randomUUID(),
+            name,
+            type,
+            capitalDomainId,
+            memberDomainIds: [capitalDomainId],
+            subjugatedIds: type === 'Imperio' ? [capitalDomainId] : [],
+            formationDate: `${activeGuild.calendar.day}/${activeGuild.calendar.month + 1}/${activeGuild.calendar.year}`
+        };
+        triggerSave({
+            ...activeGuild,
+            conglomerates: [...activeGuild.conglomerates, newC],
+            domains: activeGuild.domains.map(d => d.id === capitalDomainId ? { ...d, conglomerateId: newC.id, subjugated: type === 'Imperio' ? true : d.subjugated } : d),
+            logs: internalAddLog(activeGuild, 'Dominio', `${type === 'Alianca' ? 'Aliança' : 'Império'} "${name}" formado(a). Capital: ${activeGuild.domains.find(d => d.id === capitalDomainId)?.name || 'Desconhecido'}`, 0, 'system')
+        });
+    }, [activeGuild, triggerSave, internalAddLog]);
+
+    const addDomainToConglomerate = useCallback((conglomerateId: string, domainId: string) => {
+        const c = activeGuild.conglomerates.find(c => c.id === conglomerateId);
+        if (!c) return;
+        if (c.memberDomainIds.includes(domainId)) return notify('Domínio já pertence ao conglomerado.', 'error');
+        triggerSave({
+            ...activeGuild,
+            conglomerates: activeGuild.conglomerates.map(c2 =>
+                c2.id === conglomerateId ? { ...c2, memberDomainIds: [...c2.memberDomainIds, domainId] } : c2
+            ),
+            domains: activeGuild.domains.map(d => d.id === domainId ? { ...d, conglomerateId } : d),
+            logs: internalAddLog(activeGuild, 'Dominio', `Domínio "${activeGuild.domains.find(d => d.id === domainId)?.name}" juntou-se a "${c.name}".`, 0, 'system')
+        });
+        notify('Domínio adicionado ao conglomerado.');
+    }, [activeGuild, triggerSave, internalAddLog, notify]);
+
+    const removeDomainFromConglomerate = useCallback((conglomerateId: string, domainId: string) => {
+        const c = activeGuild.conglomerates.find(c => c.id === conglomerateId);
+        if (!c) return;
+        const isSubjugated = c.subjugatedIds.includes(domainId);
+        if (isSubjugated) return notify('Domínios subjugados não podem sair do império pacificamente.', 'error');
+        triggerSave({
+            ...activeGuild,
+            conglomerates: activeGuild.conglomerates.map(c2 =>
+                c2.id === conglomerateId ? {
+                    ...c2,
+                    memberDomainIds: c2.memberDomainIds.filter(id => id !== domainId),
+                    capitalDomainId: c2.capitalDomainId === domainId ? (c2.memberDomainIds.filter(id => id !== domainId)[0] || '') : c2.capitalDomainId
+                } : c2
+            ).filter(c2 => c2.memberDomainIds.length > 0),
+            domains: activeGuild.domains.map(d => d.id === domainId ? { ...d, conglomerateId: undefined, subjugated: undefined } : d),
+            logs: internalAddLog(activeGuild, 'Dominio', `Domínio "${activeGuild.domains.find(d => d.id === domainId)?.name}" saiu de "${c.name}".`, 0, 'system')
+        });
+        notify('Domínio removido do conglomerado.');
+    }, [activeGuild, triggerSave, internalAddLog, notify]);
+
+    const subjugateDomain = useCallback((conglomerateId: string, targetDomainId: string) => {
+        const c = activeGuild.conglomerates.find(c => c.id === conglomerateId);
+        const target = activeGuild.domains.find(d => d.id === targetDomainId);
+        if (!c || !target) return;
+        if (c.memberDomainIds.includes(targetDomainId)) return notify('Este domínio já é membro.', 'error');
+
+        // Aplicar perdas por anexação (Terra Arrasada)
+        const halvedPower = Math.ceil(
+            (target.units?.reduce((sum, u) => sum + (u.power || 1), 0) || 0) / 2
+        );
+        const levelDrop = Math.max(1, target.level - 1);
+        const buildingLoss = target.buildings?.length > 0
+            ? target.buildings[Math.floor(Math.random() * target.buildings.length)]
+            : null;
+
+        const updatedUnits = target.units?.map(u => ({
+            ...u,
+            power: Math.ceil((u.power || 1) / 2)
+        })) || [];
+        const updatedBuildings = buildingLoss
+            ? target.buildings.filter(b => b.name !== buildingLoss.name)
+            : target.buildings || [];
+
+        const updatedDomain: Domain = {
+            ...target,
+            level: levelDrop,
+            units: updatedUnits,
+            buildings: updatedBuildings,
+            popularity: 'Odiado',
+            revolt: true,
+            conglomerateId,
+            subjugated: true,
+            treasury: Math.floor(target.treasury / 2)
+        };
+
+        triggerSave({
+            ...activeGuild,
+            conglomerates: activeGuild.conglomerates.map(c2 =>
+                c2.id === conglomerateId ? {
+                    ...c2,
+                    memberDomainIds: [...c2.memberDomainIds, targetDomainId],
+                    subjugatedIds: [...c2.subjugatedIds, targetDomainId]
+                } : c2
+            ),
+            domains: activeGuild.domains.map(d => d.id === targetDomainId ? updatedDomain : d),
+            logs: internalAddLog(activeGuild, 'Dominio',
+                `IMPÉRIO: "${target.name}" foi subjugado por "${c.name}"! Poder militar reduzido à metade, nível caiu para ${levelDrop}, ${buildingLoss ? `construção "${buildingLoss.name}" destruída,` : ''} popularidade Odiado, em revolta.`,
+                0, 'system')
+        });
+        notify(`"${target.name}" foi subjugado! Terra arrasada.`);
+    }, [activeGuild, triggerSave, internalAddLog, notify]);
+
+    const disbandConglomerate = useCallback((conglomerateId: string) => {
+        const c = activeGuild.conglomerates.find(c => c.id === conglomerateId);
+        if (!c) return;
+        triggerSave({
+            ...activeGuild,
+            conglomerates: activeGuild.conglomerates.filter(c2 => c2.id !== conglomerateId),
+            domains: activeGuild.domains.map(d =>
+                d.conglomerateId === conglomerateId ? { ...d, conglomerateId: undefined, subjugated: undefined } : d
+            ),
+            logs: internalAddLog(activeGuild, 'Dominio', `Conglomerado "${c.name}" foi dissolvido.`, 0, 'system')
+        });
+        notify(`"${c.name}" foi dissolvido.`);
+    }, [activeGuild, triggerSave, internalAddLog, notify]);
 
     // NPC actions
     const { 
@@ -683,6 +822,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             items: activeGuild.items || [],
             bases: activeGuild.bases || [],
             domains: activeGuild.domains || [],
+            conglomerates: activeGuild.conglomerates || [],
             npcs: activeGuild.npcs || [],
             logs: activeGuild.logs || [],
             calendar: activeGuild.calendar || initialGuildState.calendar,
@@ -773,6 +913,13 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             resetAllDomainsTurns,
             getDomainMaxLevel,
             getDomainMagicPotential,
+
+            conglomerates: activeGuild.conglomerates || [],
+            createConglomerate,
+            addDomainToConglomerate,
+            removeDomainFromConglomerate,
+            subjugateDomain,
+            disbandConglomerate,
 
             advanceDate,
             setGameDate,
