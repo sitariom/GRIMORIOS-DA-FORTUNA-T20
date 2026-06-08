@@ -572,20 +572,12 @@ const DashboardPage: React.FC = () => {
                               <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
                           ) : (
                               <div className="space-y-2">
-                                  {acompanhandoNPCs.map(n => {
-                                      const maxPA = Object.values(n.affinityByMember || {}).reduce((a, b) => Math.max(a, b), 0);
-                                      return (
-                                          <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-serif">
-                                              <div>
-                                                  <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
-                                                  <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
-                                              </div>
-                                              <div className="text-right">
-                                                  <span className="font-medieval text-fantasy-gold text-sm">{maxPA} / 7 PA</span>
-                                              </div>
-                                          </div>
-                                      )
-                                  })}
+                                  {acompanhandoNPCs.map(n => (
+                                      <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl text-xs font-serif">
+                                          <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
+                                          <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
+                                      </div>
+                                  ))}
                               </div>
                           )}
                       </div>
