@@ -159,6 +159,7 @@ interface GuildContextData {
     payAllNPCs: () => void;
     paySingleNPC: (id: string) => void;
     interactWithNPC: (npcId: string, memberId: string, alignsWithLikes: boolean) => void;
+    decreaseAffinity: (npcId: string, memberId: string) => void;
     toggleActiveAffinity: (memberId: string, npcId: string) => void;
     completeUltimateQuest: (npcId: string, memberId: string) => void;
 
@@ -490,7 +491,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // NPC actions
     const { 
         addNPC, updateNPC, removeNPC, payAllNPCs, paySingleNPC,
-        interactWithNPC, toggleActiveAffinity, completeUltimateQuest
+        interactWithNPC, decreaseAffinity, toggleActiveAffinity, completeUltimateQuest
     } = useNPCActions(hookDeps);
 
     // Calendar actions
@@ -779,6 +780,7 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             payAllNPCs,
             paySingleNPC,
             interactWithNPC,
+            decreaseAffinity,
             toggleActiveAffinity,
             completeUltimateQuest,
             addQuest,

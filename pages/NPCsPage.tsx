@@ -33,7 +33,7 @@ const TIER_COLORS = {
 const NPCsPage: React.FC = () => {
   const { 
     bases, domains, npcs, members, addNPC, updateNPC, removeNPC, 
-    payAllNPCs, paySingleNPC, interactWithNPC, toggleActiveAffinity, 
+    payAllNPCs, paySingleNPC, interactWithNPC, decreaseAffinity, toggleActiveAffinity, 
     completeUltimateQuest, notify, wallet 
   } = useGuild();
 
@@ -675,7 +675,7 @@ interface NPCCardProps {
 }
 
 const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId }) => {
-   const { members, wallet, paySingleNPC, removeNPC, toggleActiveAffinity, interactWithNPC, completeUltimateQuest } = useGuild();
+   const { members, wallet, paySingleNPC, removeNPC, toggleActiveAffinity, interactWithNPC, decreaseAffinity, completeUltimateQuest } = useGuild();
    
    const focusMember = members.find(m => m.id === selectedMemberId);
    
@@ -836,6 +836,17 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
                                   Agradar (+2 PA)
                               </button>
                           </div>
+                          <button 
+                            onClick={() => decreaseAffinity(npc.id, selectedMemberId)} 
+                            disabled={currentPA <= 0}
+                            className={`w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${
+                              currentPA > 0
+                                ? 'bg-red-900/20 hover:bg-red-900/40 text-red-400 border-red-800/40'
+                                : 'bg-black/10 text-fantasy-wood/30 dark:text-fantasy-parchment/20 border-white/5 cursor-not-allowed'
+                            }`}
+                          >
+                              Esfriar Relação (-1 PA)
+                          </button>
 
                           <div className="flex flex-col gap-2">
                               {/* Ultimate quest button */}

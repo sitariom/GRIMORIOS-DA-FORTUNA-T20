@@ -93,6 +93,33 @@ export const useNPCActions = ({ activeGuild, triggerSave, notify, internalAddLog
     notify(`Interação realizada! Afinidade com ${npc.name} agora é ${newPA} PA.`);
   };
 
+  const decreaseAffinity = (npcId: string, memberId: string) => {
+    const npc = activeGuild.npcs.find(n => n.id === npcId);
+    if (!npc) return notify("NPC não encontrado.", "error");
+
+    const currentAffinities = npc.affinityByMember || {};
+    const currentPA = currentAffinities[memberId] || 0;
+    if (currentPA <= 0) return notify(`${npc.name} já está com 0 PA para este herói.`, "info");
+
+    const newPA = Math.max(0, currentPA - 1);
+
+    triggerSave({
+      ...activeGuild,
+      npcs: activeGuild.npcs.map(n =>
+        n.id === npcId
+          ? {
+              ...n,
+              affinityByMember: {
+                ...currentAffinities,
+                [memberId]: newPA
+              }
+            }
+          : n
+      )
+    });
+    notify(`Afinidade reduzida! ${npc.name} agora tem ${newPA} PA com este herói.`);
+  };
+
   const toggleActiveAffinity = (memberId: string, npcId: string) => {
     const member = activeGuild.members.find(m => m.id === memberId);
     if (!member) return notify("Membro não encontrado.", "error");
@@ -145,6 +172,7 @@ export const useNPCActions = ({ activeGuild, triggerSave, notify, internalAddLog
     payAllNPCs,
     paySingleNPC,
     interactWithNPC,
+    decreaseAffinity,
     toggleActiveAffinity,
     completeUltimateQuest
   };
