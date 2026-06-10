@@ -155,13 +155,9 @@ export const dbService = {
   async getGuild(id: string, password?: string): Promise<GuildState | null> {
     if (!password) return null;
     try {
-      const token = getToken();
+      sessionStorage.removeItem('guild_token');
       const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        headers['Authorization'] = `Bearer ${password}`;
-      }
+      headers['Authorization'] = `Bearer ${password}`;
 
       const { data, headers: respHeaders } = await apiRequest(`guilds?id=${id}`, {
         method: 'GET',
