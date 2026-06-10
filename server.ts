@@ -159,7 +159,7 @@ async function startServer() {
   
   app.use("/api/", apiLimiter);
 
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '50mb' }));
 
   await ensureSchema();
 

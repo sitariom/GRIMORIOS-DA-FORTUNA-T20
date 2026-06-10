@@ -64,7 +64,7 @@ const getReputationData = (value: number, customTiers?: ReputationTier[]) => {
 const DashboardPage: React.FC = () => {
   const { 
     wallet, domains, guildName, npcs, members, logs, bases, calendar, quests, pointsOfInterest, reputations,
-    advanceDate, toggleNimbDay, isAdmin
+    items, advanceDate, toggleNimbDay, isAdmin
   } = useGuild();
   
   // 1. Cálculos Gerais
@@ -126,9 +126,9 @@ const DashboardPage: React.FC = () => {
   const activeMembers = useMemo(() => members.filter(m => m.status === 'Ativo'), [members]);
   const acompanhandoNPCs = useMemo(() => npcs.filter(n => n.locationType === 'Membro'), [npcs]);
 
-  const questItems = useMemo(() => (useGuild().items || []).filter(item => item.isQuestItem), [useGuild().items]);
-  const totalItemsCount = useMemo(() => (useGuild().items || []).reduce((acc, item) => acc + item.quantity, 0), [useGuild().items]);
-  const totalInventoryValue = useMemo(() => (useGuild().items || []).reduce((acc, item) => acc + (item.value * item.quantity), 0), [useGuild().items]);
+  const questItems = useMemo(() => (items || []).filter(item => item.isQuestItem), [items]);
+  const totalItemsCount = useMemo(() => (items || []).reduce((acc, item) => acc + item.quantity, 0), [items]);
+  const totalInventoryValue = useMemo(() => (items || []).reduce((acc, item) => acc + (item.value * item.quantity), 0), [items]);
 
   return (
     <div className="space-y-12 pb-20 font-serif">

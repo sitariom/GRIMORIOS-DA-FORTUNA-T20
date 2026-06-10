@@ -424,6 +424,8 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         versionRef.current = activeGuild.version || 0;
     }, [activeGuild.id, activeGuild.version]);
 
+    const MAX_LOGS = 500;
+
     const triggerSave = useCallback(async (newState: GuildState) => {
         const baseVersion = versionRef.current || 0;
         const versionedState = { ...newState, version: baseVersion + 1 };
@@ -436,7 +438,10 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         saveChainRef.current = saveChainRef.current
             .then(async () => {
                 if (saveEpochRef.current !== epoch) return;
-                await dbService.saveGuild(versionedState, sessionKey);
+                const payload = versionedState.logs.length > MAX_LOGS
+                    ? { ...versionedState, logs: versionedState.logs.slice(0, MAX_LOGS) }
+                    : versionedState;
+                await dbService.saveGuild(payload, sessionKey);
             })
             .catch(async (e: any) => {
                 if (saveEpochRef.current !== epoch) return;
@@ -822,7 +827,6 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             items: activeGuild.items || [],
             bases: activeGuild.bases || [],
             domains: activeGuild.domains || [],
-            conglomerates: activeGuild.conglomerates || [],
             npcs: activeGuild.npcs || [],
             logs: activeGuild.logs || [],
             calendar: activeGuild.calendar || initialGuildState.calendar,
