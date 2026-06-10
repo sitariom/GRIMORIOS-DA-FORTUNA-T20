@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Coins, Package, Castle, LandPlot, Users, 
   X, History, Contact, ShieldCheck, Scroll, Hammer, BookOpen, 
-  NotebookPen, Sun, Moon, Calendar, Map, CheckSquare, Sparkles
+  NotebookPen, Sun, Moon, Calendar, Map, CheckSquare, Sparkles, Globe
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useGuild } from '../context/GuildContext';
@@ -35,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
     { path: '/inventory', label: 'Arsenal e bens', icon: Package },
     { path: '/bases', label: 'Bases', icon: Castle },
     { path: '/domains', label: 'Dominios', icon: LandPlot },
+    { path: '/conglomerates', label: 'Alianças & Impérios', icon: Globe },
     { path: '/npcs', label: 'Aliados e Comitiva', icon: Contact },
     { path: '/investments', label: 'Investimentos', icon: Hammer },
     { path: '/reputation', label: 'Reputação', icon: Scroll },

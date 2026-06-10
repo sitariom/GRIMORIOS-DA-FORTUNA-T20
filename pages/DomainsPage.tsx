@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, Map as MapIcon, Settings, UserCircle, Swords, TrendingUp, TrendingDown, Dices, ArrowLeftRight, Heart, AlertTriangle, Users, ShoppingCart, Scale, Hand, Sparkles, RotateCcw, Scroll } from 'lucide-react';
 import { POPULARITY_LEVELS, TERRAIN_TYPES, COURT_DATA, CRISIS_EVENTS, DOMAIN_BUILDINGS_CATALOG, DOMAIN_UNITS_CATALOG, RANDOM_EVENTS_TABLE, TAX_TABLE, TERRAIN_MAX_LEVEL, POPULARITY_MODIFIERS } from '../constants';
-import { PopularityType, CourtType, DomainActionType, ActionResult, DomainUnit, DomainBuilding } from '../types';
+import { PopularityType, CourtType, DomainActionType, ActionResult, DomainUnit, DomainBuilding, TaskStatus, AdvisorRole } from '../types';
 
 const DomainsPage: React.FC = () => {
   const { 
@@ -55,7 +55,7 @@ const DomainsPage: React.FC = () => {
   const [eventInvasionRoll, setEventInvasionRoll] = useState(1);
   const [eventLOAmount, setEventLOAmount] = useState(1);
   const [eventPenaltyValue, setEventPenaltyValue] = useState(2);
-  const [eventResult, setEventResult] = useState<import('../types').ActionResult | null>(null);
+  const [eventResult, setEventResult] = useState<ActionResult | null>(null);
 
   // Crisis States
   const [activeCrisis, setActiveCrisis] = useState<typeof CRISIS_EVENTS[0] | null>(null);
@@ -129,24 +129,24 @@ const DomainsPage: React.FC = () => {
   const [pendingTaskName, setPendingTaskName] = useState('');
   const [pendingTaskDesc, setPendingTaskDesc] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  const [editTaskStatus, setEditTaskStatus] = useState<import('../types').TaskStatus>('Pendente');
+  const [editTaskStatus, setEditTaskStatus] = useState<TaskStatus>('Pendente');
   const [editTaskProgress, setEditTaskProgress] = useState(0);
   const [editTaskNote, setEditTaskNote] = useState('');
   const [taxLevel, setTaxLevel] = useState<'taxLow' | 'taxMedium' | 'taxHigh'>('taxLow');
   const [customAdvisorName, setCustomAdvisorName] = useState('');
-  const [customAdvisorRole, setCustomAdvisorRole] = useState<import('../types').AdvisorRole>('Senescal');
+  const [customAdvisorRole, setCustomAdvisorRole] = useState<AdvisorRole>('Senescal');
   const [newAdvisorType, setNewAdvisorType] = useState<'Member' | 'NPC' | 'None'>('None');
   const [newAdvisorAssocId, setNewAdvisorAssocId] = useState('');
 
   // Editing Advisor States
   const [editingAdvisorId, setEditingAdvisorId] = useState<string | null>(null);
   const [editAdvisorName, setEditAdvisorName] = useState('');
-  const [editAdvisorRole, setEditAdvisorRole] = useState<import('../types').AdvisorRole>('Senescal');
+  const [editAdvisorRole, setEditAdvisorRole] = useState<AdvisorRole>('Senescal');
   const [editAdvisorType, setEditAdvisorType] = useState<'Member' | 'NPC' | 'None'>('None');
   const [editAdvisorAssocId, setEditAdvisorAssocId] = useState('');
   const [editAdvisorDomainId, setEditAdvisorDomainId] = useState('');
   
-  const ADVISOR_ROLES: { role: import('../types').AdvisorRole, skill: string }[] = [
+  const ADVISOR_ROLES: { role: AdvisorRole, skill: string }[] = [
     { role: 'Bispo', skill: 'Religião' },
     { role: 'Capitão da Guarda', skill: 'Guerra' },
     { role: 'Embaixador', skill: 'Diplomacia' },
@@ -798,15 +798,18 @@ const DomainsPage: React.FC = () => {
                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('finance'); }} className="px-6 py-3 rounded-2xl bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black hover:bg-amber-600 dark:hover:bg-fantasy-gold/90 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
                              <Coins size={18}/> Tesouro
                           </button>
-                          <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-6 py-3 rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-750 dark:hover:bg-amber-700 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
+                          <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-6 py-3 rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-700 dark:hover:bg-amber-700 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
                              <Dices size={18}/> Eventos
                           </button>
-                          <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-6 py-3 rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
-                             <Zap size={18}/> Crise
-                          </button>
-                          <button onClick={() => openStatsModal(domain)} className="px-4 py-3 rounded-2xl bg-stone-200 dark:bg-stone-850 text-stone-850 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-750 transition-all border border-stone-300 dark:border-stone-750 shadow-md">
-                             <Settings size={20}/>
-                          </button>
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-6 py-3 rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
+                              <Zap size={18}/> Crise
+                           </button>
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('levelup'); }} className="px-6 py-3 rounded-2xl bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 hover:bg-purple-800 dark:hover:bg-purple-800 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold" title="Concessão do Mestre — evolução gratuita sem custo de ação">
+                              <Sparkles size={18}/> Mestre
+                           </button>
+                           <button onClick={() => openStatsModal(domain)} className="px-4 py-3 rounded-2xl bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-all border border-stone-300 dark:border-stone-700 shadow-md">
+                              <Settings size={20}/>
+                           </button>
                           {(domain.court === 'Comum' || domain.court === 'Rica') && (
                              <button onClick={() => { setActiveDomainId(domain.id); setModalMode('advisors'); }} className="px-4 py-3 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-all border border-purple-200 dark:border-purple-900/50 shadow-md" title="Conselheiros da Corte">
                                 <Crown size={20}/>
@@ -844,19 +847,19 @@ const DomainsPage: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <ActionButton icon={Gavel} label="Governar" onClick={() => openActionModal(domain.id, 'govern')} disabled={domainActions <= 0 || revolt} color="bg-indigo-700 dark:bg-indigo-900 text-white dark:text-indigo-200 border-indigo-600/30 dark:border-indigo-800/40 hover:bg-indigo-800 dark:hover:bg-indigo-850" />
-                          <ActionButton icon={Sparkles} label="Festival" onClick={() => openActionModal(domain.id, 'festival')} disabled={domainActions <= 0 || revolt} color="bg-emerald-700 dark:bg-emerald-900 text-white dark:text-emerald-200 border-emerald-600/30 dark:border-emerald-800/40 hover:bg-emerald-800 dark:hover:bg-emerald-850" />
-                          <ActionButton icon={TrendingUp} label="Caravana" onClick={() => { if (domain.isMystic) { notify("O domínio místico não suporta essa operação.", "error"); return; } setActiveDomainId(domain.id); setModalMode('caravan'); }} disabled={domainActions <= 0 || revolt} color="bg-orange-700 dark:bg-orange-900 text-white dark:text-orange-200 border-orange-600/30 dark:border-orange-800/40 hover:bg-orange-800 dark:hover:bg-orange-850" />
-                          <ActionButton icon={TrendingDown} label="Extorquir" onClick={() => openActionModal(domain.id, 'extort')} disabled={domainActions <= 0} color="bg-amber-700 dark:bg-amber-900 text-white dark:text-amber-200 border-amber-600/30 dark:border-amber-800/40 hover:bg-amber-800 dark:hover:bg-amber-850" />
-                          <ActionButton icon={Users} label="Convocar" onClick={() => openActionModal(domain.id, 'conscript')} disabled={domainActions <= 0} color="bg-yellow-600 dark:bg-yellow-900 text-stone-950 dark:text-yellow-100 border-yellow-500/30 dark:border-yellow-800/40 hover:bg-yellow-700 dark:hover:bg-yellow-850" />
+                          <ActionButton icon={Gavel} label="Governar" onClick={() => openActionModal(domain.id, 'govern')} disabled={domainActions <= 0 || revolt} color="bg-indigo-700 dark:bg-indigo-900 text-white dark:text-indigo-200 border-indigo-600/30 dark:border-indigo-800/40 hover:bg-indigo-800 dark:hover:bg-indigo-800" />
+                          <ActionButton icon={Sparkles} label="Festival" onClick={() => openActionModal(domain.id, 'festival')} disabled={domainActions <= 0 || revolt} color="bg-emerald-700 dark:bg-emerald-900 text-white dark:text-emerald-200 border-emerald-600/30 dark:border-emerald-800/40 hover:bg-emerald-800 dark:hover:bg-emerald-800" />
+                          <ActionButton icon={TrendingUp} label="Caravana" onClick={() => { if (domain.isMystic) { notify("O domínio místico não suporta essa operação.", "error"); return; } setActiveDomainId(domain.id); setModalMode('caravan'); }} disabled={domainActions <= 0 || revolt} color="bg-orange-700 dark:bg-orange-900 text-white dark:text-orange-200 border-orange-600/30 dark:border-orange-800/40 hover:bg-orange-800 dark:hover:bg-orange-800" />
+                          <ActionButton icon={TrendingDown} label="Extorquir" onClick={() => openActionModal(domain.id, 'extort')} disabled={domainActions <= 0} color="bg-amber-700 dark:bg-amber-900 text-white dark:text-amber-200 border-amber-600/30 dark:border-amber-800/40 hover:bg-amber-800 dark:hover:bg-amber-800" />
+                          <ActionButton icon={Users} label="Convocar" onClick={() => openActionModal(domain.id, 'conscript')} disabled={domainActions <= 0} color="bg-yellow-600 dark:bg-yellow-900 text-stone-950 dark:text-yellow-100 border-yellow-500/30 dark:border-yellow-800/40 hover:bg-yellow-700 dark:hover:bg-yellow-800" />
                           <ActionButton icon={Scale} label="Impostos" onClick={() => { setTaxLevel('taxLow'); openActionModal(domain.id, 'taxLow'); }} disabled={domainActions <= 0 || revolt} color="bg-stone-700 dark:bg-fantasy-wood text-white dark:text-fantasy-parchment border-stone-600/30 dark:border-fantasy-wood/30 hover:bg-stone-800 dark:hover:bg-fantasy-wood/50" />
                           <ActionButton icon={Hand} label="Elevar Corte" onClick={() => openActionModal(domain.id, 'increaseCourt')} disabled={domainActions <= 0} color="bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black border-amber-400/30 dark:border-fantasy-gold/30 hover:bg-amber-600 dark:hover:bg-fantasy-gold/90" />
-                          <ActionButton icon={TrendingDown} label="Rebaixar Corte" onClick={() => openActionModal(domain.id, 'decreaseCourt')} color="bg-red-700 dark:bg-red-900 text-white dark:text-red-200 border-red-600/30 dark:border-red-800/40 hover:bg-red-800 dark:hover:bg-red-850" />
-                          <ActionButton icon={ArrowLeftRight} label="Converter" onClick={() => openActionModal(domain.id, 'convert')} color="bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 border-purple-600/30 dark:border-purple-800/40 hover:bg-purple-800 dark:hover:bg-purple-850" />
-                          <ActionButton icon={Scroll} label="Pendências" onClick={() => { setActiveDomainId(domain.id); setModalMode('pending'); }} color="bg-teal-700 dark:bg-teal-900 text-white dark:text-teal-200 border-teal-600/30 dark:border-teal-800/40 hover:bg-teal-800 dark:hover:bg-teal-850" />
-                          <ActionButton icon={Coins} label="Manutenção" onClick={() => handleMaintenanceClick(domain.id)} color="bg-slate-700 dark:bg-slate-800 text-white dark:text-slate-200 border-slate-600/30 dark:border-slate-800/40 hover:bg-slate-800 dark:hover:bg-slate-750" />
+                          <ActionButton icon={TrendingDown} label="Rebaixar Corte" onClick={() => openActionModal(domain.id, 'decreaseCourt')} color="bg-red-700 dark:bg-red-900 text-white dark:text-red-200 border-red-600/30 dark:border-red-800/40 hover:bg-red-800 dark:hover:bg-red-800" />
+                          <ActionButton icon={ArrowLeftRight} label="Converter" onClick={() => openActionModal(domain.id, 'convert')} color="bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 border-purple-600/30 dark:border-purple-800/40 hover:bg-purple-800 dark:hover:bg-purple-800" />
+                          <ActionButton icon={Scroll} label="Pendências" onClick={() => { setActiveDomainId(domain.id); setModalMode('pending'); }} color="bg-teal-700 dark:bg-teal-900 text-white dark:text-teal-200 border-teal-600/30 dark:border-teal-800/40 hover:bg-teal-800 dark:hover:bg-teal-800" />
+                          <ActionButton icon={Coins} label="Manutenção" onClick={() => handleMaintenanceClick(domain.id)} color="bg-slate-700 dark:bg-slate-800 text-white dark:text-slate-200 border-slate-600/30 dark:border-slate-800/40 hover:bg-slate-800 dark:hover:bg-slate-700" />
                           <ActionButton icon={AlertTriangle} label="Perdas/Danos" onClick={() => { setActiveDomainId(domain.id); setModalMode('losses'); }} color="bg-rose-700 dark:bg-rose-950 text-white dark:text-rose-200 border-rose-600/30 dark:border-rose-900/40 hover:bg-rose-800 dark:hover:bg-rose-900" />
-                          <ActionButton icon={Sparkles} label="Ver Bônus" onClick={() => { setActiveDomainId(domain.id); setModalMode('bonuses'); }} color="bg-violet-700 dark:bg-violet-900 text-white dark:text-violet-200 border-violet-600/30 dark:border-violet-850/40 hover:bg-violet-800 dark:hover:bg-violet-850" />
+                          <ActionButton icon={Sparkles} label="Ver Bônus" onClick={() => { setActiveDomainId(domain.id); setModalMode('bonuses'); }} color="bg-violet-700 dark:bg-violet-900 text-white dark:text-violet-200 border-violet-600/30 dark:border-violet-800/40 hover:bg-violet-800 dark:hover:bg-violet-800" />
                         </div>
                       </div>
                     </div>
@@ -925,7 +928,7 @@ const DomainsPage: React.FC = () => {
                           </div>
                           {domain.level < maxLevel && (
                               <button onClick={() => openActionModal(domain.id, 'govern')} className="w-full py-4 border-2 border-dashed border-fantasy-wood/40 dark:border-white/20 rounded-3xl text-xs font-black uppercase tracking-widest text-fantasy-wood/70 dark:text-fantasy-parchment/70 hover:bg-fantasy-gold/15 hover:border-fantasy-gold/50 hover:text-fantasy-gold bg-black/5 dark:bg-white/5 transition-all shadow-inner">
-                                 Expandir Fronteiras (Ação Governar: {domain.level * 20} LO)
+                                  Ação Governar: {domain.level * 20} LO (consome 1 ação)
                               </button>
                           )}
                        </div>
@@ -1365,7 +1368,7 @@ const DomainsPage: React.FC = () => {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Cargo e Perícia</label>
-                                    <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl appearance-none cursor-pointer" value={editAdvisorRole} onChange={e => setEditAdvisorRole(e.target.value as import('../types').AdvisorRole)}>
+                                    <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl appearance-none cursor-pointer" value={editAdvisorRole} onChange={e => setEditAdvisorRole(e.target.value as AdvisorRole)}>
                                         {ADVISOR_ROLES.map(r => <option key={r.role} value={r.role} className="dark:bg-black">{r.role} ({r.skill})</option>)}
                                     </select>
                                 </div>
@@ -1442,7 +1445,7 @@ const DomainsPage: React.FC = () => {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Cargo e Perícia</label>
-                                        <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl appearance-none cursor-pointer" value={customAdvisorRole} onChange={e => setCustomAdvisorRole(e.target.value as import('../types').AdvisorRole)}>
+                                        <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl appearance-none cursor-pointer" value={customAdvisorRole} onChange={e => setCustomAdvisorRole(e.target.value as AdvisorRole)}>
                                             {ADVISOR_ROLES.map(r => <option key={r.role} value={r.role} className="dark:bg-black">{r.role} ({r.skill})</option>)}
                                         </select>
                                     </div>
@@ -1455,28 +1458,29 @@ const DomainsPage: React.FC = () => {
                       </div>
                   )}
 
-                  {/* Level Up Modal */}
+                  {/* Level Up Modal — Concessão do Mestre (gratuita, sem custo de ação) */}
                   {modalMode === 'levelup' && (
                       <div className="space-y-8 text-center">
-                          <div className="wax-seal w-24 h-24 mx-auto mb-6 flex items-center justify-center text-white"><MapIcon size={40}/></div>
-                          <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Ascensão de Nível</h3>
-                          <div className="p-8 bg-black/5 dark:bg-black/20 rounded-[40px] border-4 border-fantasy-wood/10 dark:border-white/10">
-                              <p className="font-serif italic text-lg mb-6">"Expandir as fronteiras requer investimento do Tesouro Real."</p>
-                              <div className="text-4xl font-medieval text-indigo-900 dark:text-indigo-400 mb-2">Custo: {activeDomain.level * 20} LO</div>
-                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest">Disponível: {activeDomain.treasury} LO</div>
-                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest mt-2">Limite Terreno: {getDomainMaxLevel(activeDomain)}</div>
-                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest">Construções: {activeDomain.buildings.length}/{(activeDomain.level + 1) * 3}</div>
+                          <div className="wax-seal w-24 h-24 mx-auto mb-6 flex items-center justify-center text-white"><Sparkles size={40}/></div>
+                          <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Concessão do Mestre</h3>
+                          <div className="p-8 bg-gradient-to-br from-purple-900/10 to-indigo-900/10 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-[40px] border-4 border-purple-300/20 dark:border-purple-700/30">
+                              <p className="font-serif italic text-lg mb-6 text-purple-800 dark:text-purple-300">"Os deuses sorriem para seu domínio. Uma bênção é concedida."</p>
+                              <div className="text-2xl font-medieval text-purple-700 dark:text-purple-400 mb-2">✦ Evolução Gratuita ✦</div>
+                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest mt-2">Nível Atual: {activeDomain.level} → {activeDomain.level + 1}</div>
+                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest">Limite do Terreno: {getDomainMaxLevel(activeDomain)}</div>
+                              <div className="text-xs font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest">Construções: {activeDomain.buildings.length}/{activeDomain.level * 3}</div>
                               <div className="text-xs font-serif text-fantasy-wood/60 dark:text-fantasy-parchment/60 mt-3 border-t border-fantasy-wood/10 dark:border-white/10 pt-3 text-center">
-                                 A evolução aumentará a população estimada para:{' '}
+                                 A população estimada passará para:{' '}
                                  {
                                    (activeDomain.level + 1) <= 2 ? '1.000 a 2.500' :
                                    (activeDomain.level + 1) <= 5 ? '5.000 a 25.000' :
                                    '50.000 a 100.000'
                                  } habitantes.
                               </div>
+                              <div className="text-[10px] font-black uppercase text-purple-500/50 dark:text-purple-400/50 mt-3 tracking-widest">Nenhum custo de LO ou ação de turno</div>
                           </div>
-                          <button onClick={() => { if (activeDomainId) { levelUpDomain(activeDomainId); closeModal(); } }} className="w-full bg-indigo-900 text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-indigo-950 active:translate-y-2 active:border-b-0 transition-all">
-                              Autorizar Expansão
+                          <button onClick={() => { if (activeDomainId) { levelUpDomain(activeDomainId); closeModal(); } }} className="w-full bg-purple-900 text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-purple-950 active:translate-y-2 active:border-b-0 transition-all">
+                              ✦ Conceder Evolução ✦
                           </button>
                       </div>
                   )}
@@ -1706,6 +1710,9 @@ const DomainsPage: React.FC = () => {
                                         <p className="text-sm font-serif italic text-fantasy-wood/80 dark:text-fantasy-parchment/80">"Com teste bem-sucedido, o domínio sobe de nível."</p>
                                         <div className="text-xs font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50">
                                           Custo: {activeDomain.level * 20} LO | Próximo Nível: {activeDomain.level + 1}
+                                        </div>
+                                        <div className="text-[10px] font-black uppercase text-indigo-500/60 dark:text-indigo-400/50 tracking-widest">
+                                          Consome 1 ação de turno • +1 Popularidade se bem-sucedido
                                         </div>
                                       </div>
                                     )}
@@ -2246,7 +2253,7 @@ const DomainsPage: React.FC = () => {
                                   <h4 className="text-xl font-medieval text-fantasy-gold uppercase text-center">Evoluir Pendência</h4>
                                   <div className="space-y-2">
                                       <label className="text-[10px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">Status</label>
-                                      <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 font-medieval text-xl appearance-none" value={editTaskStatus} onChange={e => setEditTaskStatus(e.target.value as import('../types').TaskStatus)}>
+                                      <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-6 py-4 font-medieval text-xl appearance-none" value={editTaskStatus} onChange={e => setEditTaskStatus(e.target.value as TaskStatus)}>
                                           <option value="Pendente" className="dark:bg-black">Pendente</option>
                                           <option value="Em Progresso" className="dark:bg-black">Em Progresso</option>
                                           <option value="Concluido" className="dark:bg-black">Concluído</option>

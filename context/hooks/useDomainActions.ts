@@ -14,6 +14,16 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
     return domain.court === 'Rica' ? 3 : 2;
   };
 
+  const normalizeTerrain = (terrain: string): string => {
+    const t = (terrain || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const map: Record<string, string> = {
+      planicie: 'Planicie', floresta: 'Floresta', montanha: 'Montanha',
+      colina: 'Colina', colinas: 'Colina', pantano: 'Pantano',
+      deserto: 'Deserto', subterraneo: 'Subterraneo', aquatico: 'Aquatico'
+    };
+    return map[t] || '';
+  };
+
   const getDomainMaxLevel = (domain: {
     terrain: string;
     isNatureBoundRace?: boolean;
@@ -33,20 +43,13 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
       return potential;
     }
 
-    let baseMax = 7;
-    const t = domain?.terrain ? domain.terrain.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-    if (t === 'planicie') baseMax = 6;
-    else if (t === 'floresta') baseMax = domain.isNatureBoundRace ? 6 : 4;
-    else if (t === 'montanha') baseMax = 3;
-    else if (t === 'colina' || t === 'colinas') baseMax = 5;
-    else if (t === 'pantano') baseMax = 3;
-    else if (t === 'deserto') baseMax = 4;
-    else if (t === 'subterraneo') baseMax = domain.isSubterraneanBoundRace ? 6 : 2;
-    else if (t === 'aquatico') baseMax = 3;
-    
-    if (domain.hasWaterAccess) {
-      baseMax += 1;
-    }
+    const key = normalizeTerrain(domain.terrain);
+    let baseMax = TERRAIN_MAX_LEVEL[key] ?? 7;
+
+    if (key === 'Floresta' && domain.isNatureBoundRace) baseMax = 6;
+    if (key === 'Subterraneo' && domain.isSubterraneanBoundRace) baseMax = 6;
+    if (domain.hasWaterAccess) baseMax += 1;
+
     return Math.min(7, baseMax);
   };
 
@@ -54,16 +57,8 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
     terrain: string;
     hasMysticElement?: boolean;
   }): number => {
-    let basePotential = 0;
-    const t = domain?.terrain ? domain.terrain.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-    if (t === 'planicie') basePotential = 4;
-    else if (t === 'floresta') basePotential = 6;
-    else if (t === 'montanha') basePotential = 7;
-    else if (t === 'colina' || t === 'colinas') basePotential = 5;
-    else if (t === 'pantano') basePotential = 7;
-    else if (t === 'deserto') basePotential = 6;
-    else if (t === 'subterraneo') basePotential = 8;
-    else if (t === 'aquatico') basePotential = 4;
+    const key = normalizeTerrain(domain.terrain);
+    let basePotential = TERRAIN_MAGIC_POTENTIAL[key] ?? 0;
 
     if (domain.hasMysticElement) {
       basePotential += 1;
@@ -254,13 +249,6 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
     const maxLevel = getDomainMaxLevel(domain);
     if (domain.level >= maxLevel) return notify("Domínio já no nível máximo para este terreno.", "error");
 
-    const cost = domain.level * 20;
-    if (domain.treasury < cost) return notify("Tesouro Real insuficiente.", "error");
-
-    const buildingLimit = (domain.level + 1) * 3;
-    if (domain.buildings.length > buildingLimit) return notify(`Reduza as construções para no máximo ${buildingLimit} antes de subir de nível.`, "error");
-
-    const transaction = createTransaction('Saída', cost, `Evolução de Domínio (Nível ${domain.level} -> ${domain.level + 1})`);
     const newLevel = domain.level + 1;
     const newMagicPower = domain.isMystic ? newLevel * newLevel : 0;
 
@@ -269,13 +257,11 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
       domains: activeGuild.domains.map(d => d.id === id ? {
         ...d,
         level: newLevel,
-        treasury: d.treasury - cost,
-        cashFlow: [...(d.cashFlow || []), transaction],
         magicPowerLevel: newMagicPower
       } : d),
-      logs: internalAddLog(activeGuild, 'Dominio', `Domínio ${domain.name} evoluiu para Nível ${newLevel}`, 0, 'system')
+      logs: internalAddLog(activeGuild, 'Dominio', `Domínio ${domain.name} evoluiu para Nível ${newLevel} (Concedido pelo Mestre)`, 0, 'system')
     });
-    notify("Domínio evoluiu!");
+    notify("Domínio evoluiu por graça do Mestre!");
   };
 
   const addDomainBuilding = (id: string, building: Omit<DomainBuilding, 'id'>, pay: boolean) => {

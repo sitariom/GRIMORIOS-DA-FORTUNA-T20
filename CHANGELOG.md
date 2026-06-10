@@ -3,7 +3,24 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
-## [2.3.0] — 2026-05-13
+## [2.4.0] — 2026-06-10
+### Adicionado
+- **Sistema de Alianças & Impérios:** Tela dedicada com criação de conglomerados (Aliança/Império), adição e subjugação de domínios, exibição de Poder Militar somado com bônus de papéis táticos.
+- **Papéis Táticos:** Domínios em conglomerados podem assumir papéis de Capital (+3 Poder), Baluarte (+2 Poder) ou Valete (+1 Poder), com bônus exibidos no Poder Total do conglomerado.
+- **Sistema de Afinidade:** Substitui o booleano `subjugated` por 4 níveis de afinidade (Subjugado → Vassalo → Integrado → Aliado), com controle evolutivo pelo mestre via dropdown na UI.
+- **Suborno Diplomático:** Ao aliar um domínio via diplomacia, o mestre pode oferecer um suborno em LO que sai do tesouro do domínio capital e vai para o tesouro do domínio alvo.
+- **Inativação de Conglomerados:** Conglomerados podem ser inativados (arquivados com histórico preservado) ou reativados, além da dissolução completa.
+- **Transferência entre Conglomerados:** Domínios podem migrar entre conglomerados (aliança voluntária ou conquista), com rastreamento histórico de ex-membros.
+- **Controle de Ex-membros:** Cada conglomerado registra domínios que saíram; cada domínio registra conglomerados pelos quais passou, exibido na UI como badges de histórico.
+
+### Alterado
+- **LevelUp de Domínio:** Removido custo financeiro e cheque de limite de construções; evolução é concedida pelo Mestre sem custo de tesouro.
+- **Refatoração de Terrenos:** Normalização e tabelas de Nível Máximo e Potencial Mágico extraídas para constantes com fallback seguro.
+- **Botão "Configurar" (Dark Mode):** Corrigidas classes Tailwind inválidas (`-750`, `-850`) em 13 botões no DomainsPage.tsx.
+
+### Corrigido
+- **Criação de Império:** Capital não é mais marcada como subjugada automaticamente.
+- **Sanitização de Dados:** Mapeamento automático do campo legado `subjugated` para o novo sistema de afinidade na migração.
 ### Adicionado
 - **Sistema de Negócios:** Novo tipo de base "Negócio" com 45 ativos oficiais T20, evolução por níveis (1-7), coleta de lucros mensais e interface dedicada.
 - **Fila de Salvamento:** Salvamento em lote para pontos divinos evitando perda de dados em edições múltiplas.
