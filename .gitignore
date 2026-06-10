@@ -23,12 +23,16 @@ database.sqlite*
 
 # AI Agent configuration (tooling, not project code)
 .trae/
+.claude/
+.opencode/
 AGENTS.md
 CLAUDE.md
 ai-agency-blueprint/
 setup-agency.ps1
+update-agency-knowledge.ps1
 tasks/
 docs/memory/
+.github/workflows/ai-qa-check.yml
 
 # Editor directories and files
 .vscode/*
