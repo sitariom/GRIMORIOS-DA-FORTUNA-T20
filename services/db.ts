@@ -155,6 +155,7 @@ export const dbService = {
   async getGuild(id: string, password?: string): Promise<GuildState | null> {
     if (!password) return null;
     try {
+<<<<<<< HEAD
       const token = getToken();
       const headers: Record<string, string> = {};
       if (token) {
@@ -162,6 +163,11 @@ export const dbService = {
       } else {
         headers['Authorization'] = `Bearer ${password}`;
       }
+=======
+      sessionStorage.removeItem('guild_token');
+      const headers: Record<string, string> = {};
+      headers['Authorization'] = `Bearer ${password}`;
+>>>>>>> experimental/carga
 
       const { data, headers: respHeaders } = await apiRequest(`guilds?id=${id}`, {
         method: 'GET',

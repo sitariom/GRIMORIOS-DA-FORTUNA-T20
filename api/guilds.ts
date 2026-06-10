@@ -1,7 +1,11 @@
 
 import { db } from '@vercel/postgres';
 import { hashPassword, verifyAndMaybeUpgradePassword } from '../utils/password';
+<<<<<<< HEAD
 import { authenticate, AuthError, signToken, type AuthResult } from './middleware/auth';
+=======
+import { authenticate, AuthError, signToken } from './middleware/auth';
+>>>>>>> experimental/carga
 import { checkJsonbColumn } from '../utils/schemaCheck';
 
 export const config = {
@@ -50,7 +54,11 @@ export default async function handler(request: Request) {
 
     // --- SUB-RESOURCE ENDPOINTS (partial queries) ---
     if (method === 'GET' && id && subResource) {
+<<<<<<< HEAD
       let auth: AuthResult;
+=======
+      let auth: { userId: string };
+>>>>>>> experimental/carga
       try {
         auth = await authenticate(request, { allowAdmin: true });
       } catch (e) {
@@ -207,14 +215,22 @@ export default async function handler(request: Request) {
           const patchFields = { guildName, version, ...rest };
           for (const [key, value] of Object.entries(patchFields)) {
             const jsonValue = JSON.stringify(value);
+<<<<<<< HEAD
             const dbQuery = client.sql as unknown as { query: (text: string, params: unknown[]) => Promise<{ rowCount: number }> };
             await dbQuery.query(
+=======
+            await client.sql.query(
+>>>>>>> experimental/carga
               `UPDATE guilds SET data = jsonb_set(data, '{${key}}', $1::jsonb), updated_at = NOW() WHERE id = $2`,
               [jsonValue, id]
             );
           }
+<<<<<<< HEAD
           const dbQuery = client.sql as unknown as { query: (text: string, params: unknown[]) => Promise<{ rowCount: number }> };
           await dbQuery.query(
+=======
+          await client.sql.query(
+>>>>>>> experimental/carga
             `UPDATE guilds SET guild_name = $1, updated_at = NOW() WHERE id = $2`,
             [guildName, id]
           );
