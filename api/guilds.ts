@@ -1,7 +1,7 @@
 
 import { db } from '@vercel/postgres';
 import { hashPassword, verifyAndMaybeUpgradePassword } from '../utils/password';
-import { authenticate, AuthError, signToken } from './middleware/auth';
+import { authenticate, AuthError, signToken, type AuthResult } from './middleware/auth';
 import { checkJsonbColumn } from '../utils/schemaCheck';
 
 export const config = {
@@ -50,7 +50,7 @@ export default async function handler(request: Request) {
 
     // --- SUB-RESOURCE ENDPOINTS (partial queries) ---
     if (method === 'GET' && id && subResource) {
-      let auth: { userId: string };
+      let auth: AuthResult;
       try {
         auth = await authenticate(request, { allowAdmin: true });
       } catch (e) {
@@ -207,12 +207,14 @@ export default async function handler(request: Request) {
           const patchFields = { guildName, version, ...rest };
           for (const [key, value] of Object.entries(patchFields)) {
             const jsonValue = JSON.stringify(value);
-            await client.sql.query(
+            const dbQuery = client.sql as unknown as { query: (text: string, params: unknown[]) => Promise<{ rowCount: number }> };
+            await dbQuery.query(
               `UPDATE guilds SET data = jsonb_set(data, '{${key}}', $1::jsonb), updated_at = NOW() WHERE id = $2`,
               [jsonValue, id]
             );
           }
-          await client.sql.query(
+          const dbQuery = client.sql as unknown as { query: (text: string, params: unknown[]) => Promise<{ rowCount: number }> };
+          await dbQuery.query(
             `UPDATE guilds SET guild_name = $1, updated_at = NOW() WHERE id = $2`,
             [guildName, id]
           );

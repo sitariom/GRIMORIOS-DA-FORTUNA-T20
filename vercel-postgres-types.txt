@@ -1,0 +1,15 @@
+{
+  VercelClient: [class VercelClient extends NeonClient],
+  VercelPool: [class VercelPool extends NeonPool],
+  createClient: [Function: createClient],
+  createPool: [Function: createPool],
+  db: [Function (anonymous)],
+  postgresConnectionString: [Function: postgresConnectionString],
+  sql: [Function (anonymous)],
+  types: {
+    getTypeParser: [Function: getTypeParser],
+    setTypeParser: [Function: setTypeParser],
+    arrayParser: [Object],
+    builtins: [Object]
+  }
+}
