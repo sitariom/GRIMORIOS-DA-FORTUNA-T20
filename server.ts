@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { hashPassword, verifyAndMaybeUpgradePassword, verifyPassword } from "./utils/password";
 import { signToken, verifyToken, errors as jwtErrors } from "./utils/jwt";
+import { checkJsonbColumn } from "./utils/schemaCheck";
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
@@ -172,6 +173,16 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
 
   await ensureSchema();
+
+  // Schema check cacheado (apenas Postgres)
+  if (usePostgres) {
+    const dbWrapper = await getDbClient();
+    try {
+      await checkJsonbColumn(dbWrapper.sql, 'server');
+    } finally {
+      dbWrapper.release();
+    }
+  }
 
   // --- ADMIN API ---
   app.post("/api/admin", async (req, res) => {
@@ -597,6 +608,30 @@ async function startServer() {
       res.status(500).json({ error: (error as Error).message });
     } finally {
       if (dbWrapper) dbWrapper.release();
+    }
+  });
+
+  // --- TOKEN REFRESH ---
+  app.post("/api/auth/refresh", async (req, res) => {
+    try {
+      const token = getBearerPassword(req);
+      if (!token) {
+        res.status(401).json({ error: "Token necessário" });
+        return;
+      }
+      const payload = await verifyToken(token);
+      const { token: newToken, expiresIn } = await signToken({
+        sub: payload.sub,
+        role: payload.role,
+        ver: payload.ver,
+      });
+      res.status(200).json({ success: true, token: newToken, expiresIn, role: payload.role });
+    } catch (err: any) {
+      if (err instanceof jwtErrors.JWTExpired) {
+        res.status(401).json({ error: "Token expirado. Faça login novamente." });
+        return;
+      }
+      res.status(401).json({ error: "Token inválido." });
     }
   });
 

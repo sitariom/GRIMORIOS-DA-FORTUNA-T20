@@ -2,6 +2,7 @@
 import { db } from '@vercel/postgres';
 import { hashPassword, verifyAndMaybeUpgradePassword } from '../utils/password';
 import { authenticate, AuthError, signToken } from './middleware/auth';
+import { checkJsonbColumn } from '../utils/schemaCheck';
 
 export const config = {
   runtime: 'edge',
@@ -34,6 +35,12 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Schema check cacheado (apenas Postgres)
+    if (process.env.POSTGRES_URL && !process.env.__JSONB_CHECKED__) {
+      checkJsonbColumn(client.sql, 'guilds').catch(() => {});
+      process.env.__JSONB_CHECKED__ = '1';
+    }
 
     const url = new URL(request.url);
     const method = request.method;

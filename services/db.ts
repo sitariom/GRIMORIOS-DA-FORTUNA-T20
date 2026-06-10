@@ -10,7 +10,12 @@ export interface GuildSummary {
   wallet_summary?: string;
 }
 
+const REFRESH_THRESHOLD_SEC = 1800; // 30 minutos
+
 const apiRequest = async (endpoint: string, options?: RequestInit) => {
+  // Tenta renovar token antes de qualquer request
+  await maybeRefreshToken();
+
   const url = `/api/${endpoint}`;
   const res = await fetch(url, options);
   const text = await res.text();
@@ -36,6 +41,17 @@ function getToken(): string | null {
   return sessionStorage.getItem('guild_token') || localStorage.getItem('admin_token');
 }
 
+function getTokenStorage(): 'session' | 'local' | null {
+  if (sessionStorage.getItem('guild_token')) return 'session';
+  if (localStorage.getItem('admin_token')) return 'local';
+  return null;
+}
+
+function getTokenExpiresAt(): number | null {
+  const val = sessionStorage.getItem('guild_token_expires_at') || localStorage.getItem('admin_token_expires_at');
+  return val ? Number(val) : null;
+}
+
 function setToken(token: string, storage: 'session' | 'local' = 'session') {
   if (storage === 'local') {
     localStorage.setItem('admin_token', token);
@@ -49,6 +65,45 @@ function clearTokens() {
   sessionStorage.removeItem('guild_token_expires_at');
   localStorage.removeItem('admin_token');
   localStorage.removeItem('admin_token_expires_at');
+  localStorage.removeItem('active_guild_id');
+}
+
+async function maybeRefreshToken() {
+  const expiresAt = getTokenExpiresAt();
+  if (!expiresAt) return;
+
+  const now = Math.floor(Date.now() / 1000);
+  if (now < expiresAt - REFRESH_THRESHOLD_SEC) return; // ainda fresco
+
+  const token = getToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      // Token expirado e não renovável — limpa
+      clearTokens();
+      return;
+    }
+    const data = await res.json();
+    if (data.token) {
+      const storage = getTokenStorage() || 'session';
+      setToken(data.token, storage);
+      if (data.expiresIn) {
+        const newExpiresAt = String(Math.floor(Date.now() / 1000) + data.expiresIn);
+        if (storage === 'local') {
+          localStorage.setItem('admin_token_expires_at', newExpiresAt);
+        } else {
+          sessionStorage.setItem('guild_token_expires_at', newExpiresAt);
+        }
+      }
+    }
+  } catch {
+    // Falha na renovação — continua com token atual (pode expirar na request)
+  }
 }
 
 export const dbService = {
@@ -60,11 +115,12 @@ export const dbService = {
     const payload = { ...guild, password };
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    await apiRequest('guilds', {
+    const { data } = await apiRequest('guilds', {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
     });
+    return data;
   },
 
   async deleteGuild(id: string, password?: string) {
@@ -112,7 +168,6 @@ export const dbService = {
         headers,
       });
 
-      // Se recebeu JWT, armazena no lugar da senha
       const sessionToken = respHeaders.get('X-Session-Token');
       const expiresIn = respHeaders.get('X-Token-Expires-In');
       if (sessionToken) {
@@ -121,7 +176,6 @@ export const dbService = {
           const expiresAt = Math.floor(Date.now() / 1000) + Number(expiresIn);
           sessionStorage.setItem('guild_token_expires_at', String(expiresAt));
         }
-        // Remove senha do sessionStorage se ainda existir (migração)
         sessionStorage.removeItem('active_guild_key');
       }
       return data;
@@ -190,33 +244,36 @@ export const dbService = {
     const token = getToken();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    return apiRequest('admin', {
+    const { data } = await apiRequest('admin', {
       method: 'POST',
       headers,
       body: JSON.stringify({ action: 'change_admin_password', password: currentPass, newPassword: newPass })
     });
+    return data;
   },
 
   async resetGuildPassword(adminPass: string, guildId: string, newGuildPass: string) {
     const token = getToken();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    return apiRequest('admin', {
+    const { data } = await apiRequest('admin', {
       method: 'POST',
       headers,
       body: JSON.stringify({ action: 'reset_guild_password', password: adminPass, guildId, newPassword: newGuildPass })
     });
+    return data;
   },
 
   async revokeAllSessions(adminPass: string) {
     const token = getToken();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    return apiRequest('admin', {
+    const { data } = await apiRequest('admin', {
       method: 'POST',
       headers,
       body: JSON.stringify({ action: 'revoke_all', password: adminPass })
     });
+    return data;
   },
 
   // --- SESSION UTILS ---
@@ -224,9 +281,7 @@ export const dbService = {
   async setSession(id: string, password?: string) {
     if (id && password) {
       localStorage.setItem('active_guild_id', id);
-      // A senha NÃO é mais armazenada — apenas JWT via getGuild()
     } else {
-      localStorage.removeItem('active_guild_id');
       clearTokens();
     }
   },
@@ -235,10 +290,8 @@ export const dbService = {
     const id = localStorage.getItem('active_guild_id');
     const token = getToken();
     if (id && token) return { id, token };
-    // Fallback: se tem senha antiga, precisa relogar
     const oldKey = sessionStorage.getItem('active_guild_key');
     if (id && oldKey) {
-      // Migração: tenta login e obtém JWT
       try {
         await this.getGuild(id, oldKey);
         const newToken = getToken();
@@ -251,13 +304,12 @@ export const dbService = {
   },
 
   async isTokenExpired(): Promise<boolean> {
-    const expiresAt = sessionStorage.getItem('guild_token_expires_at') || localStorage.getItem('admin_token_expires_at');
+    const expiresAt = getTokenExpiresAt();
     if (!expiresAt) return true;
-    return Math.floor(Date.now() / 1000) >= Number(expiresAt);
+    return Math.floor(Date.now() / 1000) >= expiresAt;
   },
 
   async logout() {
-    localStorage.removeItem('active_guild_id');
     clearTokens();
-  }
+  },
 };
