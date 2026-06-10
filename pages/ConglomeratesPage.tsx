@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { LandPlot, Crown, Shield, Globe, Users, Swords, AlertTriangle, Plus, X, Building2, Coins, HeartHandshake, Skull, TrendingDown, ChevronRight, Trash2 } from 'lucide-react';
-import { ConglomerateType } from '../types';
+import { LandPlot, Crown, Shield, Globe, Users, Swords, AlertTriangle, Plus, X, Building2, Coins, HeartHandshake, Skull, TrendingDown, ChevronRight, Trash2, ShieldCheck, Zap, Pause, Play, History } from 'lucide-react';
+import { ConglomerateType, ConglomerateRole, ConglomerateAffinity } from '../types';
 
 const ConglomeratesPage: React.FC = () => {
   const {
     domains, conglomerates, members, npcs,
     createConglomerate, addDomainToConglomerate, removeDomainFromConglomerate,
-    subjugateDomain, disbandConglomerate, notify
+    subjugateDomain, disbandConglomerate, setDomainRole,
+    inactivateConglomerate, reactivateConglomerate, setConglomerateAffinity, notify
   } = useGuild();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -19,8 +20,19 @@ const ConglomeratesPage: React.FC = () => {
   const [showAddDomain, setShowAddDomain] = useState<string | null>(null);
   const [showSubjugate, setShowSubjugate] = useState<string | null>(null);
   const [selectedDomain, setSelectedDomain] = useState('');
+  const [bribeAmount, setBribeAmount] = useState('');
 
   const freeDomains = domains.filter(d => !d.conglomerateId);
+  const inactiveConglomerateIds = conglomerates.filter(c => !c.active).map(c => c.id);
+  const domainsFromInactive = domains.filter(d => d.conglomerateId && inactiveConglomerateIds.includes(d.conglomerateId));
+  // Para aliança: domínios livres + de conglomerados inativos (não subjugados)
+  const targetableForAlliance = [
+    ...freeDomains,
+    ...domainsFromInactive.filter(d => d.conglomerateAffinity !== 'Subjugado')
+  ];
+  // Para subjugação: qualquer domínio que não pertença a este conglomerado
+  const targetableForSubjugation = (excludeConglomerateId: string) =>
+    domains.filter(d => d.conglomerateId !== excludeConglomerateId);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +49,16 @@ const ConglomeratesPage: React.FC = () => {
       const d = domains.find(x => x.id === did);
       return sum + (d?.units?.reduce((s, u) => s + (u.power || 1), 0) || 0);
     }, 0);
+
+  const rolePowerBonus = (roles: Record<string, ConglomerateRole> | undefined) => {
+    const vals = Object.values(roles || {});
+    return vals.reduce((sum, r) => {
+      if (r === 'Capital') return sum + 3;
+      if (r === 'Baluarte') return sum + 2;
+      if (r === 'Valete') return sum + 1;
+      return sum;
+    }, 0);
+  };
 
   return (
     <div className="space-y-10 pb-20 font-serif">
@@ -65,7 +87,7 @@ const ConglomeratesPage: React.FC = () => {
             const subjugatedCount = c.subjugatedIds.length;
 
             return (
-              <div key={c.id} className="parchment-card rounded-[60px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
+              <div key={c.id} className={`parchment-card rounded-[60px] overflow-hidden shadow-5xl border-4 ${c.active ? 'border-fantasy-gold/20' : 'border-stone-600/20 opacity-70'}`}>
                 <div className="bg-fantasy-wood/5 dark:bg-black/20 p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10">
                   <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                     <div className="flex items-center gap-6">
@@ -78,6 +100,11 @@ const ConglomeratesPage: React.FC = () => {
                           <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest ${c.type === 'Imperio' ? 'bg-red-900/30 text-red-400' : 'bg-emerald-900/30 text-emerald-400'}`}>
                             {c.type === 'Imperio' ? 'Império' : 'Aliança'}
                           </span>
+                          {!c.active && (
+                            <span className="text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest bg-stone-700/30 text-stone-500">
+                              Inativo
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50 mt-1">
                           Capital: {capital?.name || 'N/A'} • Formado em {c.formationDate || '?'}
@@ -92,8 +119,25 @@ const ConglomeratesPage: React.FC = () => {
                       <div className="h-12 w-px bg-fantasy-wood/20" />
                       <div>
                         <div className="text-2xl font-medieval text-red-600 dark:text-red-400">{power}</div>
-                        <div className="text-[9px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">Poder Militar</div>
+                        <div className="text-[9px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">Poder Base</div>
                       </div>
+                      {(() => {
+                        const bonus = rolePowerBonus(c.domainRoles);
+                        return bonus > 0 ? (
+                          <>
+                            <div className="h-12 w-px bg-fantasy-wood/20" />
+                            <div>
+                              <div className="text-2xl font-medieval text-emerald-500 dark:text-emerald-400">+{bonus}</div>
+                              <div className="text-[9px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">Bônus de Papéis</div>
+                            </div>
+                            <div className="h-12 w-px bg-fantasy-wood/20" />
+                            <div>
+                              <div className="text-3xl font-medieval text-fantasy-gold">{power + bonus}</div>
+                              <div className="text-[9px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">Poder Total</div>
+                            </div>
+                          </>
+                        ) : null;
+                      })()}
                       {subjugatedCount > 0 && (
                         <>
                           <div className="h-12 w-px bg-fantasy-wood/20" />
@@ -111,17 +155,29 @@ const ConglomeratesPage: React.FC = () => {
                       className="flex items-center gap-2 px-4 py-2 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 rounded-xl text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment transition-all">
                       <ChevronRight size={16} className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} /> Detalhes
                     </button>
-                    <button onClick={() => { setExpandedId(c.id); setShowAddDomain(c.id); setShowSubjugate(null); }}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                      <Plus size={14} /> Adicionar Domínio
-                    </button>
-                    {freeDomains.length > 0 && (
-                      <button onClick={() => { setExpandedId(c.id); setShowSubjugate(c.id); setShowAddDomain(null); }}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                        <Skull size={14} /> Subjugar
+                    {c.active && (
+                      <>
+                        <button onClick={() => { setExpandedId(c.id); setShowAddDomain(c.id); setShowSubjugate(null); }}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          <Plus size={14} /> Adicionar Domínio
+                        </button>
+                        <button onClick={() => { setExpandedId(c.id); setShowSubjugate(c.id); setShowAddDomain(null); }}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          <Skull size={14} /> Subjugar
+                        </button>
+                        <button onClick={() => { if (window.confirm(`Inativar "${c.name}"? Os domínios serão liberados e o conglomerado arquivado.`)) inactivateConglomerate(c.id); }}
+                          className="flex items-center gap-2 px-4 py-2 bg-amber-900/10 hover:bg-amber-900/20 text-amber-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          <Pause size={14} /> Inativar
+                        </button>
+                      </>
+                    )}
+                    {!c.active && (
+                      <button onClick={() => reactivateConglomerate(c.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-900/10 hover:bg-green-900/20 text-green-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                        <Play size={14} /> Reativar
                       </button>
                     )}
-                    <button onClick={() => { if (window.confirm(`Dissolver "${c.name}"?`)) disbandConglomerate(c.id); }}
+                    <button onClick={() => { if (window.confirm(`Dissolver "${c.name}"? Esta ação removerá permanentemente o conglomerado.`)) disbandConglomerate(c.id); }}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-900/10 hover:bg-gray-900/20 text-gray-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all ml-auto">
                       <Trash2 size={14} /> Dissolver
                     </button>
@@ -133,13 +189,18 @@ const ConglomeratesPage: React.FC = () => {
                     {showAddDomain === c.id && (
                       <div className="bg-blue-900/5 dark:bg-blue-400/5 p-6 rounded-3xl border-2 border-blue-900/20 space-y-4">
                         <h4 className="font-medieval text-lg text-blue-700 dark:text-blue-400">Adicionar Domínio por Aliança</h4>
+                        <p className="text-xs font-black uppercase tracking-widest text-blue-600/60">
+                          Suborno opcional (deduzido do tesouro do domínio capital) para facilitar as negociações.
+                        </p>
                         <div className="flex gap-4">
                           <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-2xl px-6 py-4 font-medieval text-lg outline-none"
                             value={selectedDomain} onChange={e => setSelectedDomain(e.target.value)}>
                             <option value="">Selecione um domínio...</option>
-                            {freeDomains.map(d => <option key={d.id} value={d.id}>{d.name} (Lv{d.level})</option>)}
+                            {targetableForAlliance.map(d => <option key={d.id} value={d.id}>{d.name} (Lv{d.level}){domainsFromInactive.includes(d) ? ' [Inativo]' : ''}</option>)}
                           </select>
-                          <button onClick={() => { if (selectedDomain) { addDomainToConglomerate(c.id, selectedDomain); setSelectedDomain(''); } }}
+                          <input type="number" min="0" placeholder="Suborno (LO)" className="w-40 bg-white/40 dark:bg-black/40 rounded-2xl px-6 py-4 font-medieval text-lg outline-none text-center"
+                            value={bribeAmount} onChange={e => setBribeAmount(e.target.value)} />
+                          <button onClick={() => { if (selectedDomain) { addDomainToConglomerate(c.id, selectedDomain, bribeAmount ? Number(bribeAmount) : undefined); setSelectedDomain(''); setBribeAmount(''); } }}
                             className="bg-blue-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-blue-950 active:translate-y-1 transition-all">
                             Aliar
                           </button>
@@ -159,7 +220,14 @@ const ConglomeratesPage: React.FC = () => {
                           <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-2xl px-6 py-4 font-medieval text-lg outline-none"
                             value={selectedDomain} onChange={e => setSelectedDomain(e.target.value)}>
                             <option value="">Selecione um domínio para atacar...</option>
-                            {freeDomains.map(d => <option key={d.id} value={d.id}>{d.name} (Lv{d.level}, Poder {d.units?.reduce((s, u) => s + (u.power || 1), 0) || 0})</option>)}
+                            {targetableForSubjugation(c.id).map(d => {
+                              const owner = d.conglomerateId ? conglomerates.find(co => co.id === d.conglomerateId) : null;
+                              return (
+                                <option key={d.id} value={d.id}>
+                                  {d.name} (Lv{d.level}, Poder {d.units?.reduce((s, u) => s + (u.power || 1), 0) || 0}){owner ? ` [${owner.name}${owner.active ? '' : ' (Inativo)'}]` : ''}{d.conglomerateAffinity && d.conglomerateAffinity !== 'Aliado' ? ` [${d.conglomerateAffinity}]` : ''}
+                                </option>
+                              );
+                            })}
                           </select>
                           <button onClick={() => { if (selectedDomain) { subjugateDomain(c.id, selectedDomain); setSelectedDomain(''); } }}
                             className="bg-red-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-red-950 active:translate-y-1 transition-all">
@@ -169,46 +237,106 @@ const ConglomeratesPage: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Former members */}
+                    {c.formerMemberDomainIds.length > 0 && (
+                      <div className="bg-stone-900/5 dark:bg-stone-400/5 p-6 rounded-3xl border-2 border-stone-900/10 space-y-3">
+                        <h4 className="font-medieval text-lg text-stone-600 dark:text-stone-400 flex items-center gap-2">
+                          <History size={18} /> Ex-membros ({c.formerMemberDomainIds.length})
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {c.formerMemberDomainIds.map(fid => {
+                            const fd = domains.find(d => d.id === fid);
+                            const hasHistory = fd?.formerConglomerateIds?.includes(c.id);
+                            return fd ? (
+                              <span key={fid} className="text-[10px] bg-stone-700/20 text-stone-500 dark:text-stone-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                                {fd.name}{hasHistory ? '' : ' (removido)'}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-parchment flex items-center gap-3">
                         <LandPlot size={20} /> Domínios Membros
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {members.map(d => d && (
-                          <div key={d.id} className={`bg-white/30 dark:bg-black/20 p-4 rounded-2xl border-2 ${c.subjugatedIds.includes(d.id) ? 'border-red-700/30 bg-red-900/5' : 'border-fantasy-wood/10 dark:border-white/10'}`}>
+                        {members.filter(Boolean).map(d => {
+                          const role: ConglomerateRole = c.domainRoles?.[d!.id] || 'Nenhum';
+                          const affinity: ConglomerateAffinity = d!.conglomerateAffinity || 'Aliado';
+                          const affinityColors: Record<ConglomerateAffinity, string> = {
+                            Subjugado: 'border-red-700/30 bg-red-900/5',
+                            Vassalo: 'border-amber-700/30 bg-amber-900/5',
+                            Integrado: 'border-blue-700/30 bg-blue-900/5',
+                            Aliado: 'border-fantasy-wood/10 dark:border-white/10'
+                          };
+                          if (!d) return null;
+                          return (
+                          <div key={d.id} className={`bg-white/30 dark:bg-black/20 p-4 rounded-2xl border-2 ${affinityColors[affinity]}`}>
                             <div className="flex justify-between items-start">
-                              <div>
-                                <div className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment">{d.name}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment truncate">{d.name}</div>
                                 <div className="text-[9px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/50">
                                   Nível {d.level} • Corte {d.court} • {d.terrain}
                                 </div>
                                 <div className="flex gap-2 mt-2 flex-wrap">
-                                  {c.subjugatedIds.includes(d.id) && (
-                                    <span className="text-[8px] bg-red-800 text-white px-2 py-0.5 rounded-full font-black uppercase">Subjugado</span>
-                                  )}
+                                  {/* Affinity badge */}
+                                  <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase ${affinity === 'Subjugado' ? 'bg-red-800 text-white' : affinity === 'Vassalo' ? 'bg-amber-700 text-amber-100' : affinity === 'Integrado' ? 'bg-blue-800 text-blue-200' : 'bg-emerald-800 text-emerald-200'}`}>
+                                    {affinity}
+                                  </span>
                                   {d.id === c.capitalDomainId && (
                                     <span className="text-[8px] bg-fantasy-gold text-black px-2 py-0.5 rounded-full font-black uppercase">Capital</span>
+                                  )}
+                                  {role !== 'Nenhum' && role !== 'Capital' && (
+                                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase ${role === 'Baluarte' ? 'bg-emerald-800 text-emerald-200' : 'bg-violet-800 text-violet-200'}`}>
+                                      {role === 'Baluarte' ? <><ShieldCheck size={10} className="inline mr-1" />Baluarte +2</> : <><Zap size={10} className="inline mr-1" />Valete +1</>}
+                                    </span>
                                   )}
                                   {d.revolt && (
                                     <span className="text-[8px] bg-amber-600 text-white px-2 py-0.5 rounded-full font-black uppercase">Revolta</span>
                                   )}
+                                  {d.formerConglomerateIds && d.formerConglomerateIds.length > 0 && (
+                                    <span className="text-[8px] bg-stone-600/30 text-stone-500 px-2 py-0.5 rounded-full font-black uppercase" title={d.formerConglomerateIds.map(id => conglomerates.find(co => co.id === id)?.name || id).join(', ')}>
+                                      {d.formerConglomerateIds.length} anterior(es)
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Affinity evolution control */}
+                                <div className="mt-2 flex gap-1 items-center">
+                                  <select className="text-[9px] bg-transparent border border-fantasy-wood/20 dark:border-white/10 rounded-lg px-2 py-1 font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60 outline-none cursor-pointer flex-1"
+                                    value={affinity} onChange={e => setConglomerateAffinity(d.id, e.target.value as ConglomerateAffinity)}>
+                                    <option value="Subjugado">Subjugado</option>
+                                    <option value="Vassalo">Vassalo</option>
+                                    <option value="Integrado">Integrado</option>
+                                    <option value="Aliado">Aliado</option>
+                                  </select>
+                                  {/* Role selector */}
+                                  <select className="text-[9px] bg-transparent border border-fantasy-wood/20 dark:border-white/10 rounded-lg px-2 py-1 font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60 outline-none cursor-pointer"
+                                    value={role} onChange={e => setDomainRole(c.id, d.id, e.target.value as ConglomerateRole)}>
+                                    <option value="Nenhum">Sem Papel</option>
+                                    <option value="Baluarte">Baluarte (+2 Poder)</option>
+                                    <option value="Valete">Valete (+1 Poder)</option>
+                                    <option value="Capital">Capital (+3 Poder, General)</option>
+                                  </select>
                                 </div>
                               </div>
-                              <div className="text-right shrink-0">
+                              <div className="text-right shrink-0 ml-3">
                                 <div className="font-medieval text-xl text-red-600 dark:text-red-400">
                                   {d.units?.reduce((s, u) => s + (u.power || 1), 0) || 0}
                                 </div>
                                 <div className="text-[8px] font-black uppercase tracking-widest opacity-50">Poder</div>
                               </div>
                             </div>
-                            {!c.subjugatedIds.includes(d.id) && !(d.id === c.capitalDomainId && c.memberDomainIds.length <= 1) && (
+                            {affinity !== 'Subjugado' && affinity !== 'Vassalo' && !(d.id === c.capitalDomainId && c.memberDomainIds.length <= 1) && (
                               <button onClick={() => { if (window.confirm(`Remover "${d.name}" do conglomerado?`)) removeDomainFromConglomerate(c.id, d.id); }}
-                                className="mt-3 text-[9px] text-gray-500 hover:text-red-500 font-black uppercase tracking-widest transition-colors">
+                                className="mt-2 text-[9px] text-gray-500 hover:text-red-500 font-black uppercase tracking-widest transition-colors">
                                 Remover
                               </button>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -252,7 +380,7 @@ const ConglomeratesPage: React.FC = () => {
                       className={`p-6 rounded-3xl border-2 text-center transition-all ${newType === 'Imperio' ? 'bg-red-900/20 border-red-600 text-red-600' : 'border-fantasy-wood/10 text-fantasy-wood/60'}`}>
                       <Skull size={32} className="mx-auto mb-2" />
                       <div className="font-medieval text-lg">Império</div>
-                      <div className="text-[8px] font-black uppercase tracking-widest mt-1">Subjugação</div>
+                      <div className="text-[8px] font-black uppercase tracking-widest mt-1">Domínio Central</div>
                     </button>
                   </div>
                 </div>

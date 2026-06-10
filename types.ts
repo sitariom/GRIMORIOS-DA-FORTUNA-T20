@@ -177,7 +177,8 @@ export interface Domain {
   isSubterraneanBoundRace?: boolean;// Raça ligada ao subterrâneo (Anão, Trog, Medusa...)
   tempCaosPenalty?: boolean;        // Caos temporário no governo (-5 em ações de domínio no turno)
   conglomerateId?: string;           // ID do conglomerado/aliança/império a que pertence
-  subjugated?: boolean;              // Foi anexado à força (Terra Arrasada)
+  conglomerateAffinity?: import('./types').ConglomerateAffinity; // Nível de controle/afinidade com o conglomerado
+  formerConglomerateIds?: string[];  // IDs de conglomerados dos quais já fez parte
 }
 
 export type DomainActionType = 'govern' | 'increaseCourt' | 'decreaseCourt' | 'festival' | 'extort' | 'conscript' | 'recruit' | 'build' | 'taxLow' | 'taxMedium' | 'taxHigh' | 'convert' | 'caravan';
@@ -223,6 +224,9 @@ export interface CalendarState {
 
 export type ConglomerateType = 'Alianca' | 'Imperio';
 
+export type ConglomerateRole = 'Capital' | 'Baluarte' | 'Valete' | 'Nenhum';
+export type ConglomerateAffinity = 'Subjugado' | 'Vassalo' | 'Integrado' | 'Aliado';
+
 export interface Conglomerate {
   id: string;
   name: string;
@@ -231,6 +235,9 @@ export interface Conglomerate {
   memberDomainIds: string[];      // Todos os IDs dos domínios membros
   subjugatedIds: string[];        // Domínios anexados à força
   formationDate: string;          // Data (turno) de formação
+  domainRoles?: Record<string, ConglomerateRole>; // Papel tático de cada domínio membro
+  active: boolean;                // Se está operacional (inativo = arquivado)
+  formerMemberDomainIds: string[];// Domínios que já foram membros e saíram
 }
 
 export type QuestStatus = 'Disponivel' | 'Em Andamento' | 'Concluida' | 'Falha';
