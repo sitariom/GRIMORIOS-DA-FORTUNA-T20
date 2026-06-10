@@ -814,11 +814,11 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const session = await dbService.getSession();
             if (session) {
                 try {
-                    const guildData = await dbService.getGuild(session.id, session.key);
+                    const guildData = await dbService.getGuild(session.id, session.token);
                     if (guildData) {
                         const safeData = sanitizeGuildData(guildData);
                         setActiveGuild(safeData);
-                        setSessionKey(session.key);
+                        setSessionKey(session.token);
                         setIsAuthenticated(true);
                     }
                 } catch (e) {
