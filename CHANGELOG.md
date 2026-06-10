@@ -3,6 +3,23 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.5.0] — 2026-06-10
+### Adicionado
+- **JWT com jose:** Login de admin e guilda emite token JWT (HS256, Edge Runtime) no lugar de expor a senha. Suporte a renovação silenciosa (`/api/auth/refresh`) e revogação via `token_version`.
+- **Middleware de Autenticação:** Módulo compartilhado (`api/middleware/auth.ts`) eliminando duplicação de auth entre endpoints serverless.
+- **Vercel Edge Middleware:** `middleware.ts` na raiz valida JWT antes de rotear para a serverless function, rejeitando tokens inválidos/expirados sem bater no Neon.
+- **Endpoints Parciais:** `GET /api/guilds/:id/members|domains|items|wallet` retornam apenas o sub-recurso solicitado (~2KB vs 150KB do blob completo).
+- **Filtro Server-Side:** `GET /api/guilds/:id/members?status=Ativo` usa `jsonb_path_query_array` no PostgreSQL para filtrar diretamente no banco.
+- **Scripts de Banco:** `npm run db:verify|migrate|validate|index` para verificação JSONB, migração TEXT→JSONB, validação de dados e criação de índice GIN.
+- **Patch Parcial:** `POST /api/guilds` com `$patch: true` usa `jsonb_set` no PostgreSQL para atualizar apenas campos modificados.
+- **Schema Check Automático:** Startup do servidor e serverless functions verificam se coluna `data` é JSONB, com cache para evitar repetição.
+
+### Alterado
+- **Segurança:** Senha nunca armazenada em sessionStorage/localStorage — apenas JWT. Migração automática de sessões antigas.
+- **Listagem Pública:** `GET /api/guilds` agora inclui `member_count` e `domain_count` extraídos do JSONB (PostgreSQL).
+- **Admin Login:** Retorna `{ success, token, expiresIn, role }` — o token JWT substitui sessão baseada em senha.
+
+
 ## [2.4.0] — 2026-06-10
 ### Adicionado
 - **Sistema de Alianças & Impérios:** Tela dedicada com criação de conglomerados (Aliança/Império), adição e subjugação de domínios, exibição de Poder Militar somado com bônus de papéis táticos.

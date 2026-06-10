@@ -1,6 +1,6 @@
 # Grimório da Fortuna T20
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.3.0-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.5.0-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 ![Express](https://img.shields.io/badge/Express-5-green)
@@ -45,6 +45,12 @@ Aplicação web full-stack para gestão de tesouraria, inventário, propriedades
 
 ### Infraestrutura
 - **Múltiplos Perfis:** Suporte a campanhas simultâneas com autenticação por senha (PBKDF2).
+- **JWT:** Tokens com expiração, renovação silenciosa e revogação — senha nunca armazenada no navegador.
+- **Edge Middleware:** Validação de token JWT antes de rotear para serverless function, reduzindo chamadas desnecessárias ao banco.
+- **Endpoints Parciais:** Dados de membros, domínios, itens e carteira servidos individualmente (~2KB vs 150KB do blob completo).
+- **Filtros Server-Side:** Consultas com `jsonb_path_query_array` no PostgreSQL para filtrar diretamente no banco.
+- **Scripts de Banco:** `npm run db:verify|migrate|validate|index` para gestão de schema e índices GIN.
+- **Patch Parcial:** Atualizações incrementais com `jsonb_set` no PostgreSQL.
 - **Backup:** Exportação e importação de dados via JSON.
 - **Servidor Express:** API própria com suporte a SQLite (dev) e PostgreSQL (produção/Neon via Vercel).
 
@@ -55,7 +61,7 @@ Aplicação web full-stack para gestão de tesouraria, inventário, propriedades
 - **Ícones:** Lucide React
 - **Backend:** Express 5, esbuild, Vite 6
 - **Banco:** SQLite (local) / PostgreSQL (Neon via Vercel)
-- **Segurança:** Helmet, CORS, Rate Limit, PBKDF2
+- **Segurança:** Helmet, CORS, Rate Limit, PBKDF2, JWT (jose)
 - **CI:** GitHub Actions
 
 ## Instalação e Uso Local
@@ -144,6 +150,8 @@ No painel do projeto na Vercel, vá em **Settings → Environment Variables** e 
 |----------|-------------|-----------|
 | `POSTGRES_URL` | Não | URL de conexão PostgreSQL (Neon). Sem ela, o app **não funciona em produção** — crie um banco Neon em https://neon.com. |
 | `ADMIN_PASSWORD` | Não | Senha inicial do administrador mestre (definida uma vez na primeira execução). |
+| `JWT_SECRET` | Não | Chave secreta JWT. Se ausente, gera aleatória (sessões inválidas após restart). |
+| `JWT_EXPIRES_IN` | Não | Expiração do token JWT em segundos (padrão: 86400). |
 | `NODE_ENV` | Não | `production` (padrão na Vercel). |
 
 > **Importante:** Em produção na Vercel o app **requer PostgreSQL**. O SQLite é usado apenas em desenvolvimento local.
@@ -180,6 +188,8 @@ O Vercel Postgres foi descontinuado e migrado para [Neon](https://neon.com). Cri
 |----------|:-----------:|:-----:|:------:|-----------|
 | `POSTGRES_URL` | Sim | ❌ | ✅ | URL de conexão PostgreSQL (Neon). Sem ela, usa SQLite local. |
 | `ADMIN_PASSWORD` | Não | ❌ | ✅ | Senha do admin mestre (definida na primeira execução). |
+| `JWT_SECRET` | Não | ❌ | ✅ | Chave secreta para assinatura de tokens JWT. Se ausente, gera aleatória (sessões inválidas após restart). |
+| `JWT_EXPIRES_IN` | Não | ❌ | ✅ | Expiração do token JWT em segundos (padrão: 86400 = 24h). |
 | `GEMINI_API_KEY` | Não | ❌ | ❌ | Chave da API Gemini (funcionalidade descontinuada). |
 | `NODE_ENV` | Não | ❌ | ❌ | `development`, `production` ou `test`. |
 
@@ -194,6 +204,10 @@ O Vercel Postgres foi descontinuado e migrado para [Neon](https://neon.com). Cri
 | `npm start` | Servir produção localmente (requer `npm run build` antes) |
 | `npm test` | Rodar testes automatizados |
 | `npm run preview` | Preview do build Vite (sem backend) |
+| `npm run db:verify` | Verifica se coluna `data` da tabela `guilds` é JSONB no PostgreSQL |
+| `npm run db:migrate` | Migra coluna `data` de TEXT para JSONB (PostgreSQL) |
+| `npm run db:validate` | Valida dados JSONB de todas as guildas |
+| `npm run db:index` | Cria índice GIN na coluna `data` para acelerar consultas JSON |
 
 ---
 
@@ -217,15 +231,27 @@ grimorio-fortuna-t20/
 ├── components/             # Sidebar, Logo, ConfirmModal
 ├── services/db.ts          # Cliente da API (fetch para /api/guilds)
 │
-├── api/                    # Serverless Functions (Vercel Edge)
-│   ├── guilds.ts           # CRUD de guildas
-│   └── admin.ts            # Autenticação e gestão admin
+├── middleware.ts            # Vercel Edge Middleware (valida JWT antes da serverless)
 │
-├── utils/password.ts       # Hash PBKDF2 via WebCrypto
+├── api/                    # Serverless Functions (Vercel Edge)
+│   ├── guilds.ts           # CRUD de guildas + endpoints parciais
+│   ├── admin.ts            # Autenticação e gestão admin
+│   ├── auth/refresh.ts     # Renovação silenciosa de token JWT
+│   └── middleware/auth.ts  # Middleware de autenticação compartilhado
+│
+├── utils/
+│   ├── password.ts         # Hash PBKDF2 via WebCrypto
+│   ├── jwt.ts              # Sign/verify de tokens JWT (jose)
+│   └── schemaCheck.ts      # Verificação cacheada de tipo JSONB
+│
+├── scripts/                # Scripts de banco de dados
+│   ├── db.ts               # Conexão compartilhada
+│   ├── verify.ts           # npm run db:verify
+│   ├── migrate.ts          # npm run db:migrate
+│   ├── validate.ts         # npm run db:validate
+│   └── index.ts            # npm run db:index
 │
 ├── tests/                  # Testes automatizados
-├── docs/memory/            # ADRs e documentação da agência de IA
-├── .trae/skills/           # Skills dos agentes de IA
 │
 ├── .env.example            # Template de variáveis de ambiente
 ├── .gitignore
