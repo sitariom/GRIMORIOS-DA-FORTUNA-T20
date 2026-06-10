@@ -19,6 +19,7 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 - **Listagem Pública:** `GET /api/guilds` agora inclui `member_count` e `domain_count` extraídos do JSONB (PostgreSQL).
 - **Admin Login:** Retorna `{ success, token, expiresIn, role }` — o token JWT substitui sessão baseada em senha.
 
+
 ## [2.4.0] — 2026-06-10
 ### Adicionado
 - **Sistema de Alianças & Impérios:** Tela dedicada com criação de conglomerados (Aliança/Império), adição e subjugação de domínios, exibição de Poder Militar somado com bônus de papéis táticos.
