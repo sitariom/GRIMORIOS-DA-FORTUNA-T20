@@ -121,31 +121,29 @@ const ChroniclesPage: React.FC = () => {
                     const isZero = log.value === 0;
                     
                     return (
-                      <AnimatedCard key={log.id} delay={index * 50}>
-                        <tr className="hover:bg-fantasy-gold/10 dark:hover:bg-fantasy-gold/5 transition-colors group">
-                          <td className="px-12 py-8">
-                            <div className="font-medieval text-2xl text-[#1a0f08]/80 dark:text-fantasy-parchment leading-none mb-2">{new Date(log.date).toLocaleDateString()}</div>
-                            <div className="text-[10px] font-black text-[#1a0f08]/30 dark:text-fantasy-parchment/30 uppercase tracking-widest">{new Date(log.date).toLocaleTimeString()}</div>
-                          </td>
-                          <td className="px-12 py-8">
-                            <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 tracking-[0.2em] shadow-sm inline-block ${
-                              log.category === 'Deposito' || log.category === 'Venda' ? 'bg-emerald-800/10 border-emerald-800/30 text-emerald-900 dark:text-emerald-400' : 
-                              log.category === 'Saque' || log.category === 'Manutencao' ? 'bg-red-900/10 border-red-900/30 text-red-950 dark:text-red-400' :
-                              'bg-[#1a0f08]/5 border-[#1a0f08]/20 text-[#1a0f08]/60 dark:text-fantasy-parchment/60'
-                            }`}>
-                              {log.category}
-                            </span>
-                          </td>
-                          <td className="px-12 py-8">
-                            <p className="font-serif text-[#1a0f08] dark:text-fantasy-parchment/80 font-bold italic leading-relaxed text-lg">"{log.details}"</p>
-                          </td>
-                          <td className="px-12 py-8">
-                            <span className="text-xs font-black text-[#1a0f08]/70 dark:text-fantasy-parchment/70 uppercase tracking-widest">{log.memberName}</span>
-                          </td>
-                          <td className={`px-12 py-8 text-right font-medieval text-3xl ${isZero ? 'text-[#1a0f08]/40 dark:text-white/10' : isIncome ? 'text-emerald-900 dark:text-emerald-400' : 'text-red-950 dark:text-red-400'}`}>
-                            {isZero ? '--' : `${isIncome ? '+' : '-'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
-                          </td>
-                        </tr>
+                      <AnimatedCard key={log.id} as="tr" delay={index * 50} className="hover:bg-fantasy-gold/10 dark:hover:bg-fantasy-gold/5 transition-colors group">
+                        <td className="px-12 py-8">
+                          <div className="font-medieval text-2xl text-[#1a0f08]/80 dark:text-fantasy-parchment leading-none mb-2">{new Date(log.date).toLocaleDateString()}</div>
+                          <div className="text-[10px] font-black text-[#1a0f08]/30 dark:text-fantasy-parchment/30 uppercase tracking-widest">{new Date(log.date).toLocaleTimeString()}</div>
+                        </td>
+                        <td className="px-12 py-8">
+                          <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 tracking-[0.2em] shadow-sm inline-block ${
+                            log.category === 'Deposito' || log.category === 'Venda' ? 'bg-emerald-800/10 border-emerald-800/30 text-emerald-900 dark:text-emerald-400' : 
+                            log.category === 'Saque' || log.category === 'Manutencao' ? 'bg-red-900/10 border-red-900/30 text-red-950 dark:text-red-400' :
+                            'bg-[#1a0f08]/5 border-[#1a0f08]/20 text-[#1a0f08]/60 dark:text-fantasy-parchment/60'
+                          }`}>
+                            {log.category}
+                          </span>
+                        </td>
+                        <td className="px-12 py-8">
+                          <p className="font-serif text-[#1a0f08] dark:text-fantasy-parchment/80 font-bold italic leading-relaxed text-lg">"{log.details}"</p>
+                        </td>
+                        <td className="px-12 py-8">
+                          <span className="text-xs font-black text-[#1a0f08]/70 dark:text-fantasy-parchment/70 uppercase tracking-widest">{log.memberName}</span>
+                        </td>
+                        <td className={`px-12 py-8 text-right font-medieval text-3xl ${isZero ? 'text-[#1a0f08]/40 dark:text-white/10' : isIncome ? 'text-emerald-900 dark:text-emerald-400' : 'text-red-950 dark:text-red-400'}`}>
+                          {isZero ? '--' : `${isIncome ? '+' : '-'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
+                        </td>
                       </AnimatedCard>
                     );
                   })}

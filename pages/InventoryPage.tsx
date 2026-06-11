@@ -201,8 +201,7 @@ const InventoryPage: React.FC = () => {
                     const isSelected = selectedIds.has(item.id);
                     
                     return (
-                    <AnimatedCard key={item.id} delay={index * 60}>
-                      <tr className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
+                    <AnimatedCard key={item.id} as="tr" delay={index * 60} className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
                       <td className="px-6 py-8 text-center">
                           <button type="button" onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
                               {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
@@ -254,7 +253,6 @@ const InventoryPage: React.FC = () => {
                           </button>
                         </div>
                       </td>
-                    </tr>
                     </AnimatedCard>
                   )})}
                 </tbody>
