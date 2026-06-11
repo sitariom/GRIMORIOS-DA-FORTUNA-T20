@@ -134,7 +134,7 @@ const InventoryPage: React.FC = () => {
                  <span className="text-[9px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50 tracking-widest">Patrimônio em Bens</span>
                  <span className="text-2xl font-medieval text-fantasy-gold">T$ {totalAssetsValue.toLocaleString()}</span>
              </div>
-             <button onClick={openAdd} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
+              <button type="button" onClick={openAdd} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
                 <PackagePlus size={24} /> Novo Registro
              </button>
         </div>
@@ -145,10 +145,10 @@ const InventoryPage: React.FC = () => {
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-[#1a0f08] border-2 border-fantasy-gold text-fantasy-parchment px-8 py-4 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.8)] flex items-center gap-6 animate-slide-up">
               <span className="font-black uppercase tracking-widest text-xs">{selectedIds.size} Selecionados</span>
               <div className="h-6 w-px bg-fantasy-gold/30"></div>
-              <button onClick={() => setModalMode('bulkSell')} className="flex items-center gap-2 hover:text-emerald-400 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><ShoppingBag size={18}/> Vender Lote</button>
-              <button onClick={() => setModalMode('bulkDelete')} className="flex items-center gap-2 hover:text-red-500 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><Trash2 size={18}/> Queimar</button>
+              <button type="button" onClick={() => setModalMode('bulkSell')} className="flex items-center gap-2 hover:text-emerald-400 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><ShoppingBag size={18}/> Vender Lote</button>
+              <button type="button" onClick={() => setModalMode('bulkDelete')} className="flex items-center gap-2 hover:text-red-500 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><Trash2 size={18}/> Queimar</button>
               <div className="h-6 w-px bg-fantasy-gold/30"></div>
-              <button onClick={() => setSelectedIds(new Set())} className="hover:text-white transition-colors active:scale-95"><X size={20}/></button>
+              <button type="button" onClick={() => setSelectedIds(new Set())} className="hover:text-white transition-colors active:scale-95"><X size={20}/></button>
           </div>
       )}
 
@@ -158,9 +158,9 @@ const InventoryPage: React.FC = () => {
               <input type="text" placeholder="Buscar por nome..." className="w-full bg-white/20 dark:bg-black/30 border-2 border-fantasy-wood/10 dark:border-white/5 rounded-2xl pl-16 pr-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg focus:outline-none focus:border-fantasy-gold transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
-              <button onClick={() => setFilterType('Todos')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === 'Todos' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
+              <button type="button" onClick={() => setFilterType('Todos')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === 'Todos' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
               {ITEM_TYPES.map(t => (
-                  <button key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
+                  <button type="button" key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
               ))}
           </div>
       </div>
@@ -169,30 +169,30 @@ const InventoryPage: React.FC = () => {
         {filteredItems.length === 0 ? (
           <EmptyState icon={Package} title="Nenhum item encontrado..." description="Adicione itens ao arsenal da guilda." />
         ) : (
-          <div className="parchment-card rounded-[60px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
+          <div className="parchment-card rounded-[32px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
             <div className="overflow-x-auto">
-              <table className="w-full text-left font-serif">
+              <table className="w-full text-left font-serif table-fixed">
                 <thead className="bg-fantasy-wood/5 dark:bg-black/20 border-b-2 border-fantasy-wood/20 dark:border-white/10">
-                  <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em]">
+                  <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em] whitespace-nowrap">
                     <th className="px-6 py-8 text-center w-16">
-                        <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity active:scale-95">
+                        <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity active:scale-95" type="button">
                             {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
                         </button>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('name')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[30%]" onClick={() => handleSort('name')}>
                         Relíquia / Bem <SortIcon field="name"/>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('type')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[15%]" onClick={() => handleSort('type')}>
                         Essência <SortIcon field="type"/>
                     </th>
-                    <th className="px-6 py-8 text-center">Espaço</th>
-                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('quantity')}>
+                    <th className="px-6 py-8 text-center w-[10%]">Espaço</th>
+                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[10%]" onClick={() => handleSort('quantity')}>
                         Qtd <SortIcon field="quantity"/>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('value')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[18%]" onClick={() => handleSort('value')}>
                         Valor Estimado <SortIcon field="value"/>
                     </th>
-                    <th className="px-6 py-8 text-right">Ações de Gestão</th>
+                    <th className="px-6 py-8 text-right w-[20%]">Ações de Gestão</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
@@ -204,12 +204,12 @@ const InventoryPage: React.FC = () => {
                     <AnimatedCard key={item.id} delay={index * 60}>
                       <tr className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
                       <td className="px-6 py-8 text-center">
-                          <button onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
+                          <button type="button" onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
                               {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
                           </button>
                       </td>
-                      <td className="px-6 py-8">
-                        <div className={`font-medieval text-2xl leading-none mb-3 ${rarityStyle.color}`}>{item.name}</div>
+                      <td className="px-6 py-8 truncate">
+                        <div className={`font-medieval text-2xl leading-none mb-3 truncate ${rarityStyle.color}`}>{item.name}</div>
                         <div className="flex flex-wrap gap-2">
                           <span className={`text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${rarityStyle.border} ${rarityStyle.color}`}>
                               {rarityStyle.label}
@@ -235,21 +235,21 @@ const InventoryPage: React.FC = () => {
                          <div className="text-[9px] text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-black uppercase tracking-widest mt-1">Total: T$ {(item.value * item.quantity).toLocaleString()}</div>
                       </td>
                       <td className="px-6 py-8 text-right">
-                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                        <div className="flex justify-end gap-3">
                           {item.isNonNegotiable ? (
                              <div className="p-4 opacity-50 cursor-not-allowed" title="Item Inalienável"><Ban size={20} className="text-red-900 dark:text-red-500"/></div>
                           ) : (
-                             <button onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all active:scale-95">
+                             <button type="button" onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all active:scale-95">
                                 <ShoppingBag size={20} />
                              </button>
                           )}
-                          <button onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all active:scale-95">
+                          <button type="button" onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all active:scale-95">
                             <ArrowRightLeft size={20} />
                           </button>
-                          <button onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
+                          <button type="button" onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
                             <Edit size={20} />
                           </button>
-                          <button onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all active:scale-95">
+                          <button type="button" onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all active:scale-95">
                             <Trash2 size={20} />
                           </button>
                         </div>
