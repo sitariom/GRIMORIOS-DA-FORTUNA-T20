@@ -105,8 +105,7 @@ const InvestmentsPage: React.FC = () => {
                       {visibleLogs.map((log, index) => {
                           const isExpense = log.value < 0;
                           return (
-                              <AnimatedCard key={log.id} delay={index * 100}>
-                                  <tr className="hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:bg-fantasy-gold/5 dark:hover:bg-fantasy-gold/10">
+                              <AnimatedCard key={log.id} as="tr" delay={index * 100} className="hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:bg-fantasy-gold/5 dark:hover:bg-fantasy-gold/10">
                                       <td className="px-10 py-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-medieval text-lg whitespace-nowrap">
                                           {new Date(log.date).toLocaleDateString()}
                                       </td>
@@ -131,7 +130,6 @@ const InvestmentsPage: React.FC = () => {
                                       <td className={`px-10 py-6 text-right font-medieval text-2xl whitespace-nowrap ${isExpense ? 'text-red-900 dark:text-red-400' : 'text-emerald-800 dark:text-emerald-400'}`}>
                                           {isExpense ? '' : '+'}{log.value.toLocaleString('pt-BR')}
                                       </td>
-                                  </tr>
                               </AnimatedCard>
                           );
                       })}
