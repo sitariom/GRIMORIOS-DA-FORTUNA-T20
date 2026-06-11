@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { PointOfInterestType, ReputationTargetType, ReputationTier, PointOfInterest } from '../types';
 import { Scroll, Plus, Trash2, Edit2, ShieldAlert, Check, X, Shield, Star, Award, ChevronDown, ListTree, Settings, ArrowLeft, Save } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const POI_TYPES: PointOfInterestType[] = ['Ordem/Facção', 'Organização', 'NPC', 'Estabelecimento', 'Outro'];
 
@@ -104,8 +107,8 @@ const PoiItem = ({ poi, onUpdate, onRemove }: { poi: PointOfInterest, onUpdate: 
           />
         </div>
         <div className="flex gap-2 justify-end mt-2">
-          <button onClick={() => setIsEditing(false)} className="px-4 py-2 border border-[#3d2b1f] hover:bg-black/5 dark:hover:bg-white/5 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all">Cancelar</button>
-          <button onClick={() => { onUpdate(poi.id, { name: editName, type: editType, description: editDesc }); setIsEditing(false); }} className="px-5 py-2.5 bg-fantasy-gold hover:bg-yellow-500 text-black font-medieval text-xs uppercase tracking-wider rounded-xl font-bold shadow-md transition-all">Salvar</button>
+          <button onClick={() => setIsEditing(false)} className="px-4 py-2 border border-[#3d2b1f] hover:bg-black/5 dark:hover:bg-white/5 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all active:scale-95">Cancelar</button>
+          <button onClick={() => { onUpdate(poi.id, { name: editName, type: editType, description: editDesc }); setIsEditing(false); }} className="px-5 py-2.5 bg-fantasy-gold hover:bg-yellow-500 text-black font-medieval text-xs uppercase tracking-wider rounded-xl font-bold shadow-md transition-all active:scale-95">Salvar</button>
         </div>
       </div>
     );
@@ -173,22 +176,22 @@ const PoiTiersEditor = ({ poi, onSave, onCancel }: { poi: PointOfInterest, onSav
            </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap w-full xl:w-auto">
-           <button onClick={handleRestoreDefaults} className="flex-1 xl:flex-none px-5 py-3.5 bg-fantasy-blood/10 hover:bg-fantasy-blood/20 text-red-400 border border-fantasy-blood/30 rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-wider">
-             Restaurar Padrões
-           </button>
-           <button onClick={onCancel} className="flex-1 xl:flex-none px-5 py-3.5 border border-fantasy-wood/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-wider">
-              <ArrowLeft size={16} /> Voltar
-           </button>
-           <button onClick={() => onSave(tiers)} className="flex-1 xl:flex-none px-6 py-3.5 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all font-bold text-xs uppercase tracking-wider">
-              <Save size={16} /> Salvar Patamares
-           </button>
+           <button onClick={handleRestoreDefaults} className="flex-1 xl:flex-none px-5 py-3.5 bg-fantasy-blood/10 hover:bg-fantasy-blood/20 text-red-400 border border-fantasy-blood/30 rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-wider active:scale-95">
+              Restaurar Padrões
+            </button>
+            <button onClick={onCancel} className="flex-1 xl:flex-none px-5 py-3.5 border border-fantasy-wood/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-wider active:scale-95">
+               <ArrowLeft size={16} /> Voltar
+            </button>
+            <button onClick={() => onSave(tiers)} className="flex-1 xl:flex-none px-6 py-3.5 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all font-bold text-xs uppercase tracking-wider active:scale-95">
+               <Save size={16} /> Salvar Patamares
+            </button>
         </div>
       </div>
       
       <div className="space-y-6">
         {tiers.sort((a,b) => a.minPoints - b.minPoints).map(tier => (
           <div key={tier.id} className="bg-black/10 dark:bg-black/30 border border-fantasy-wood/10 dark:border-white/15 p-6 rounded-[32px] flex gap-6 items-start xl:items-center flex-col xl:flex-row relative group/tier hover:border-fantasy-gold/30 transition-all duration-300">
-            <button onClick={() => removeTier(tier.id)} className="absolute top-4 right-4 text-fantasy-blood/50 hover:text-red-500 transition-colors p-2 bg-black/5 dark:bg-white/5 rounded-full" title="Remover"><Trash2 size={16} /></button>
+            <button onClick={() => removeTier(tier.id)} className="absolute top-4 right-4 text-fantasy-blood/50 hover:text-red-500 transition-colors p-2 bg-black/5 dark:bg-white/5 rounded-full active:scale-95" title="Remover"><Trash2 size={16} /></button>
             
             <div className="flex flex-col gap-1 w-full xl:w-auto shrink-0">
                <label className="text-[10px] font-black uppercase tracking-widest text-fantasy-gold ml-2">Pontuação</label>
@@ -221,7 +224,7 @@ const PoiTiersEditor = ({ poi, onSave, onCancel }: { poi: PointOfInterest, onSav
           </div>
         ))}
 
-        <button onClick={handleCreate} className="w-full py-5 border-2 border-dashed border-fantasy-wood/20 dark:border-white/10 hover:border-fantasy-gold hover:text-fantasy-gold rounded-[24px] flex items-center justify-center gap-2 transition-all text-fantasy-wood/60 dark:text-fantasy-parchment/60 font-medieval uppercase text-xs tracking-wider">
+        <button onClick={handleCreate} className="w-full py-5 border-2 border-dashed border-fantasy-wood/20 dark:border-white/10 hover:border-fantasy-gold hover:text-fantasy-gold rounded-[24px] flex items-center justify-center gap-2 transition-all text-fantasy-wood/60 dark:text-fantasy-parchment/60 font-medieval uppercase text-xs tracking-wider active:scale-95">
            <Plus size={18} /> Nova Faixa de Reputação
         </button>
       </div>
@@ -238,6 +241,12 @@ const ReputationPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'pois' | 'manage' | 'tiers'>('manage');
   const [selectedPoiId, setSelectedPoiId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // POI Form
   const [newPoiName, setNewPoiName] = useState('');
@@ -288,6 +297,16 @@ const ReputationPage: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-20">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-20 font-serif">
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
@@ -298,7 +317,7 @@ const ReputationPage: React.FC = () => {
         <div className="flex bg-[#2a1b14] dark:bg-black/60 p-1 rounded-2xl border-2 border-fantasy-gold/20 shadow-lg w-full lg:w-auto">
           <button
             onClick={() => setActiveTab('manage')}
-            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
               activeTab === 'manage' ? 'bg-fantasy-gold text-black font-bold shadow-md' : 'text-fantasy-parchment/65 hover:text-fantasy-gold hover:bg-white/5'
             }`}
           >
@@ -306,7 +325,7 @@ const ReputationPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('pois')}
-            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
               activeTab === 'pois' ? 'bg-fantasy-gold text-black font-bold shadow-md' : 'text-fantasy-parchment/65 hover:text-fantasy-gold hover:bg-white/5'
             }`}
           >
@@ -354,7 +373,7 @@ const ReputationPage: React.FC = () => {
               <button 
                 onClick={handleAddPoi}
                 disabled={!newPoiName.trim()}
-                className="w-full bg-fantasy-gold hover:bg-yellow-500 text-black font-medieval text-lg py-4 rounded-[28px] transition-all shadow-lg active:translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2 border-b-4 border-yellow-800 disabled:border-transparent font-bold uppercase tracking-wider"
+                className="w-full bg-fantasy-gold hover:bg-yellow-500 text-black font-medieval text-lg py-4 rounded-[28px] transition-all shadow-lg active:translate-y-0.5 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 border-b-4 border-yellow-800 disabled:border-transparent font-bold uppercase tracking-wider"
               >
                 <Plus size={20} /> Adicionar POI
               </button>
@@ -363,11 +382,11 @@ const ReputationPage: React.FC = () => {
 
           <div className="lg:col-span-2 space-y-4">
             {pointsOfInterest.length === 0 ? (
-              <div className="parchment-card py-20 text-center opacity-70 rounded-[48px] border-2 border-dashed border-fantasy-wood/20 dark:border-white/10 bg-white/5 dark:bg-black/20">
-                <ShieldAlert size={64} className="mx-auto text-fantasy-wood/30 dark:text-fantasy-gold/30 mb-6" />
-                <h3 className="font-medieval text-2xl text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase">Nenhum Ponto de Interesse</h3>
-                <p className="text-sm font-serif mt-2 text-fantasy-wood/40 dark:text-fantasy-parchment/40">Comece cadastrando facções, NPCs ou guildas no menu ao lado.</p>
-              </div>
+              <EmptyState
+                icon={ShieldAlert}
+                title="Nenhum Ponto de Interesse"
+                description="Comece cadastrando facções, NPCs ou guildas no menu ao lado."
+              />
             ) : (
               pointsOfInterest.map(poi => (
                 <PoiItem key={poi.id} poi={poi} onUpdate={updatePointOfInterest} onRemove={removePointOfInterest} />
@@ -416,11 +435,11 @@ const ReputationPage: React.FC = () => {
           </div>
 
           {!selectedPoiId ? (
-            <div className="parchment-card py-20 text-center opacity-70 rounded-[48px] border-2 border-fantasy-wood/10 dark:border-white/5">
-                <Scroll size={80} className="mx-auto mb-6 text-fantasy-wood/30 dark:text-white/20"/>
-                <p className="font-medieval text-3xl text-fantasy-wood dark:text-fantasy-parchment uppercase">Nenhum Ponto de Interesse Selecionado</p>
-                <p className="text-sm text-fantasy-wood/65 dark:text-fantasy-parchment/65 mt-2">Escolha uma facção ou organização no menu acima para gerenciar a reputação.</p>
-            </div>
+            <EmptyState
+              icon={Scroll}
+              title="Nenhum Ponto de Interesse Selecionado"
+              description="Escolha uma facção ou organização no menu acima para gerenciar a reputação."
+            />
           ) : (() => {
             const currentPoi = pointsOfInterest.find(p => p.id === selectedPoiId);
             if (!currentPoi) return null;
@@ -532,6 +551,11 @@ const ReputationRow = ({
   const [editMode, setEditMode] = useState(false);
   const [exactVal, setExactVal] = useState(String(value));
 
+  const sortedTiersForBar = [...(customTiers && customTiers.length > 0 ? customTiers : DEFAULT_TIERS as ReputationTier[])].sort((a,b) => a.minPoints - b.minPoints);
+  const currentTierForBar = sortedTiersForBar.find(t => value >= t.minPoints && value <= t.maxPoints) || sortedTiersForBar[0] || DEFAULT_TIERS[0];
+  const tierRange = currentTierForBar.maxPoints - currentTierForBar.minPoints;
+  const progressInTier = tierRange > 0 ? Math.min(100, Math.max(0, ((value - currentTierForBar.minPoints) / tierRange) * 100)) : 100;
+
   const handleSaveExact = () => {
     const parsed = parseInt(exactVal, 10);
     if (!isNaN(parsed)) {
@@ -543,15 +567,15 @@ const ReputationRow = ({
   return (
     <>
       <td className="p-6 align-top">
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border mb-2 ${getBadgeStyle(cat.color)}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border mb-2 ${getBadgeStyle(cat.color)} shadow-[0_0_30px_rgba(212,175,55,0.3)] border-2 border-fantasy-gold/50`}>
           {cat.name}
         </span>
         <div className="flex flex-col gap-2 mt-2 max-w-sm">
           {cat.accumulated.map((tier, idx) => (
-             <div key={idx} className="flex gap-2 items-start border-l-2 border-fantasy-gold/30 pl-2 font-serif">
+             <AnimatedCard key={idx} delay={idx * 100} className="flex gap-2 items-start border-l-2 border-fantasy-gold/30 pl-2 font-serif">
                 <span className={`text-[10px] uppercase font-black shrink-0 ${tier.color}`}>{tier.name}:</span>
                 <span className="text-xs text-fantasy-wood/80 dark:text-fantasy-parchment/80 leading-tight">{tier.desc}</span>
-             </div>
+             </AnimatedCard>
           ))}
         </div>
       </td>
@@ -566,14 +590,22 @@ const ReputationRow = ({
                onKeyDown={e => { if (e.key === 'Enter') handleSaveExact(); }}
                autoFocus
              />
-             <button onClick={handleSaveExact} className="p-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg transition-colors border border-emerald-950 shadow-md" title="Salvar"><Check size={14}/></button>
-             <button onClick={() => setEditMode(false)} className="p-1.5 bg-fantasy-blood hover:bg-red-700 text-white rounded-lg transition-colors border border-red-950 shadow-md" title="Cancelar"><X size={14}/></button>
+       <button onClick={handleSaveExact} className="p-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg transition-colors border border-emerald-950 shadow-md active:scale-95" title="Salvar"><Check size={14}/></button>
+              <button onClick={() => setEditMode(false)} className="p-1.5 bg-fantasy-blood hover:bg-red-700 text-white rounded-lg transition-colors border border-red-950 shadow-md active:scale-95" title="Cancelar"><X size={14}/></button>
+            </div>
+         ) : (
+           <div className="animate-fade-in flex flex-col items-center gap-3">
+             <span className="flex items-center justify-center gap-2 cursor-pointer group/points py-1 px-3 bg-black/10 dark:bg-black/40 border border-fantasy-wood/10 dark:border-white/5 rounded-xl font-medieval text-2xl text-fantasy-wood dark:text-fantasy-gold hover:border-fantasy-gold/40 transition-colors w-fit mx-auto" onClick={() => { setEditMode(true); setExactVal(String(value)); }} title="Clique para editar valor exato">
+               {value} 
+               <Edit2 size={12} className="opacity-0 group-hover/points:opacity-100 text-fantasy-gold/60 hover:text-fantasy-gold transition-opacity shrink-0"/>
+             </span>
+             <div className="w-full max-w-[120px] h-2 bg-black/20 dark:bg-white/10 rounded-full overflow-hidden">
+               <div
+                 className="h-full bg-gradient-to-r from-fantasy-gold/60 to-fantasy-gold rounded-full transition-all duration-1000"
+                 style={{ width: `${progressInTier}%` }}
+               />
+             </div>
            </div>
-        ) : (
-          <span className="flex items-center justify-center gap-2 cursor-pointer group/points py-1 px-3 bg-black/10 dark:bg-black/40 border border-fantasy-wood/10 dark:border-white/5 rounded-xl font-medieval text-2xl text-fantasy-wood dark:text-fantasy-gold hover:border-fantasy-gold/40 transition-colors w-fit mx-auto" onClick={() => { setEditMode(true); setExactVal(String(value)); }} title="Clique para editar valor exato">
-            {value} 
-            <Edit2 size={12} className="opacity-0 group-hover/points:opacity-100 text-fantasy-gold/60 hover:text-fantasy-gold transition-opacity shrink-0"/>
-          </span>
         )}
       </td>
       <td className="p-6 text-center align-top pt-8">

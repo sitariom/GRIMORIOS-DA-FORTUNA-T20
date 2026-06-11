@@ -3,6 +3,9 @@ import { useGuild } from '../context/GuildContext';
 import { Link } from 'react-router-dom';
 import { RATES, PORTE_DATA, ARTON_MONTHS, ARTON_WEEKDAYS } from '../constants';
 import { DEFAULT_TIERS } from './ReputationPage';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 import { 
   TrendingUp, Coins, Users, Scroll, LandPlot, Sword, Castle, Sparkles, Shield, 
   Activity, Home, Crown, Tent, User, Calendar, Plus, Hammer, Heart, 
@@ -64,7 +67,7 @@ const getReputationData = (value: number, customTiers?: ReputationTier[]) => {
 const DashboardPage: React.FC = () => {
   const { 
     wallet, domains, guildName, npcs, members, logs, bases, calendar, quests, pointsOfInterest, reputations,
-    items, advanceDate, toggleNimbDay, isAdmin
+    items, advanceDate, toggleNimbDay, isAdmin, isLoading
   } = useGuild();
   
   // 1. Cálculos Gerais
@@ -130,6 +133,16 @@ const DashboardPage: React.FC = () => {
   const totalItemsCount = useMemo(() => (items || []).reduce((acc, item) => acc + item.quantity, 0), [items]);
   const totalInventoryValue = useMemo(() => (items || []).reduce((acc, item) => acc + (item.value * item.quantity), 0), [items]);
 
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 p-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-20 font-serif">
       {/* Hero Section */}
@@ -175,7 +188,7 @@ const DashboardPage: React.FC = () => {
           { label: 'Dia da Campanha', val: `Dia ${calendar.day}`, icon: Calendar, color: 'text-indigo-900 dark:text-indigo-400', border: 'border-indigo-900/30' },
           { label: 'Missões Ativas', val: activeQuests.length, icon: Sword, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
         ].map((kpi, i) => (
-          <div key={i} className={`parchment-card p-6 md:p-8 rounded-[32px] animate-slide-up relative overflow-hidden group border-b-[6px] ${kpi.border}`} style={{ animationDelay: `${i * 100}ms` }}>
+          <AnimatedCard key={i} delay={i * 100} className={`parchment-card p-6 md:p-8 rounded-[32px] relative overflow-hidden group border-b-[6px] ${kpi.border}`}>
              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <kpi.icon size={64} className="text-black dark:text-white"/>
              </div>
@@ -190,9 +203,9 @@ const DashboardPage: React.FC = () => {
                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-fantasy-wood/70 dark:text-fantasy-parchment/70">{kpi.label}</p>
                    <p className={`text-3xl md:text-4xl font-medieval ${kpi.color} drop-shadow-sm`}>{kpi.val}</p>
                 </div>
-             </div>
-          </div>
-        ))}
+              </div>
+          </AnimatedCard>
+         ))}
       </div>
 
       {/* SECTION: FLUXO DE CAIXA */}
@@ -253,7 +266,7 @@ const DashboardPage: React.FC = () => {
           <div className="space-y-10">
               
               {/* 1. Calendário e Tempo (Interactive Card) */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Calendar size={20} className="text-fantasy-gold" />
@@ -308,7 +321,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 2. Missões e Contratos */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Sword size={20} className="text-fantasy-gold" />
@@ -333,13 +346,13 @@ const DashboardPage: React.FC = () => {
                       <div className="space-y-2 mt-4">
                           <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1">Últimas Missões Ativas</span>
                           {activeQuests.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhuma missão em andamento no momento.</p>
+                              <EmptyState icon={Sword} title="Nenhuma Missão" description="Nenhuma missão em andamento no momento." />
                           ) : (
                               <div className="space-y-2">
                                   {activeQuests.slice(0, 3).map(q => {
                                       const assignedMembers = members.filter(m => q.assignedMemberIds.includes(m.id));
                                       return (
-                                          <div key={q.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-3.5 rounded-xl flex justify-between items-center">
+                                          <div key={q.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-3.5 rounded-xl flex justify-between items-center hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                               <div>
                                                   <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{q.title}</span>
                                                   <span className="text-[9px] uppercase tracking-wider text-fantasy-gold">Recompensa: {q.rewardGold} {q.rewardCurrency}</span>
@@ -367,7 +380,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 3. Infraestrutura & Bases */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Castle size={20} className="text-fantasy-gold" />
@@ -390,7 +403,7 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       {bases.length === 0 ? (
-                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhuma base estabelecida pela guilda.</p>
+                          <EmptyState icon={Castle} title="Nenhuma Base" description="Nenhuma base estabelecida pela guilda." />
                       ) : (
                           <div className="space-y-3 mt-4">
                               {bases.slice(0, 2).map(b => {
@@ -398,7 +411,7 @@ const DashboardPage: React.FC = () => {
                                   const damagedRooms = b.rooms.filter(r => r.isDamaged);
                                   const meta = PORTE_DATA[b.porte] || { maintenance: 0 };
                                   return (
-                                      <div key={b.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl">
+                                      <div key={b.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                           <div className="flex justify-between items-start mb-2">
                                               <div>
                                                   <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-gold block leading-none mb-1">{b.name}</span>
@@ -427,7 +440,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 4. Soberania e Domínios */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Crown size={20} className="text-fantasy-gold" />
@@ -450,12 +463,12 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       {domains.length === 0 ? (
-                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum domínio sob o controle da guilda.</p>
+                          <EmptyState icon={Crown} title="Nenhum Domínio" description="Nenhum domínio sob o controle da guilda." />
                       ) : (
                           <div className="space-y-3 mt-4">
                               {domains.slice(0, 2).map(d => {
                                   return (
-                                      <div key={d.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl">
+                                      <div key={d.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                           <div className="flex justify-between items-start mb-2">
                                               <div>
                                                   <span className="font-medieval text-lg text-indigo-900 dark:text-indigo-400 block leading-none mb-1">{d.name}</span>
@@ -491,7 +504,7 @@ const DashboardPage: React.FC = () => {
           <div className="space-y-10">
               
               {/* 5. Aventureiros (Membros) */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <User size={20} className="text-fantasy-gold" />
@@ -503,15 +516,13 @@ const DashboardPage: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                       {activeMembers.length === 0 ? (
-                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
-                              {members.length === 0 ? 'Nenhum aventureiro cadastrado na guilda.' : 'Nenhum aventureiro ativo no momento.'}
-                          </p>
+                          <EmptyState icon={User} title={members.length === 0 ? 'Nenhum Aventureiro' : 'Nenhum Membro Ativo'} description={members.length === 0 ? 'Nenhum aventureiro cadastrado na guilda.' : 'Nenhum aventureiro ativo no momento.'} />
                       ) : (
                           <div className="space-y-3">
                               {activeMembers.map(m => {
                               const activeNpc = npcs.find(n => n.id === m.activeAffinityNpcId);
                               return (
-                                  <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between">
+                                  <div key={m.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex flex-col justify-between hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                       <div className="flex justify-between items-center">
                                           <div>
                                               <span className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{m.name}</span>
@@ -540,7 +551,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 6. Comitiva & Aliados (NPCs) */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Tent size={20} className="text-fantasy-gold" />
@@ -569,11 +580,11 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1 mt-4">Acompanhando o Grupo</span>
                           {acompanhandoNPCs.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Nenhum NPC acompanhando o grupo atualmente.</p>
+                              <EmptyState icon={Tent} title="Nenhum Acompanhante" description="Nenhum NPC acompanhando o grupo atualmente." />
                           ) : (
                               <div className="space-y-2">
                                   {acompanhandoNPCs.map(n => (
-                                      <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl text-xs font-serif">
+                                      <div key={n.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3.5 py-2 rounded-xl text-xs font-serif hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                           <span className="font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80 block leading-tight">{n.name}</span>
                                           <span className="text-[8px] uppercase font-serif tracking-wider opacity-60">{n.relationship} • {n.tier}</span>
                                       </div>
@@ -585,7 +596,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 7. Arsenal e Riquezas (Inventory) */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Package size={20} className="text-fantasy-gold" />
@@ -610,11 +621,11 @@ const DashboardPage: React.FC = () => {
                       <div className="space-y-2 mt-4">
                           <span className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest block ml-1">Itens de Missão Guardados</span>
                           {questItems.length === 0 ? (
-                              <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 ml-1 py-1">Sem itens de missão em estoque.</p>
+                              <EmptyState icon={Package} title="Sem Itens de Missão" description="Sem itens de missão em estoque." />
                           ) : (
                               <div className="space-y-2">
                                   {questItems.slice(0, 2).map(item => (
-                                      <div key={item.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3 py-2 rounded-xl flex justify-between items-center text-xs">
+                                      <div key={item.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 px-3 py-2 rounded-xl flex justify-between items-center text-xs hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                           <span className="font-serif font-bold text-fantasy-wood/80 dark:text-fantasy-parchment/80">{item.name}</span>
                                           <span className="px-2 py-0.5 bg-fantasy-gold/10 text-fantasy-gold border border-fantasy-gold/20 rounded-md text-[8px] font-black uppercase tracking-wider shrink-0">Qtd: {item.quantity}</span>
                                       </div>
@@ -626,7 +637,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               {/* 8. Influência e Reputação */}
-              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20">
+              <div className="parchment-card p-6 md:p-8 rounded-[32px] border-2 border-fantasy-gold/20 shadow-xl bg-white/5 dark:bg-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                   <div className="flex justify-between items-center mb-6 border-b border-fantasy-wood/10 dark:border-white/10 pb-4">
                       <h4 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-gold flex items-center gap-2 uppercase tracking-wide">
                           <Scroll size={20} className="text-fantasy-gold" />
@@ -638,7 +649,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                       {pointsOfInterest.length === 0 ? (
-                          <p className="text-xs italic text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">Nenhum ponto de interesse cadastrado.</p>
+                          <EmptyState icon={Scroll} title="Nenhum POI" description="Nenhum ponto de interesse cadastrado." />
                       ) : (
                           <div className="space-y-3">
                               {pointsOfInterest.slice(0, 3).map(poi => {
@@ -646,7 +657,7 @@ const DashboardPage: React.FC = () => {
                                   const repValue = repEntry ? repEntry.value : 0;
                                   const cat = getReputationData(repValue, poi.tiers);
                                   return (
-                                      <div key={poi.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex justify-between items-center text-xs">
+                                      <div key={poi.id} className="bg-black/10 dark:bg-black/35 border border-fantasy-wood/5 p-4 rounded-2xl flex justify-between items-center text-xs hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                           <div>
                                               <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment block leading-none mb-1">{poi.name}</span>
                                               <span className="text-[8px] uppercase tracking-wider opacity-60 font-serif">{poi.type}</span>

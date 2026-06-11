@@ -1,8 +1,10 @@
-
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Quest, QuestStatus, CurrencyType } from '../types';
 import { CheckSquare, Plus, Trash2, ArrowRight, ArrowLeft, Coins, Award, Users, AlertCircle, X, Edit } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const STATUS_COLUMNS: { id: QuestStatus; label: string; color: string }[] = [
     { id: 'Disponivel', label: 'Disponíveis', color: 'border-slate-500/30 bg-slate-500/10' },
@@ -12,7 +14,7 @@ const STATUS_COLUMNS: { id: QuestStatus; label: string; color: string }[] = [
 ];
 
 const QuestBoardPage: React.FC = () => {
-  const { quests = [], addQuest, updateQuest, updateQuestStatus, deleteQuest, members } = useGuild();
+  const { quests = [], addQuest, updateQuest, updateQuestStatus, deleteQuest, members, isLoading } = useGuild();
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
   
   // Form States
@@ -85,6 +87,43 @@ const QuestBoardPage: React.FC = () => {
     return s !== 'inativo' && s !== 'morto';
   });
 
+  if (isLoading) {
+    return (
+      <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
+          <div>
+            <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
+            <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
+          </div>
+        </header>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (!quests || quests.length === 0) {
+    return (
+      <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
+          <div>
+            <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
+            <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
+          </div>
+          <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
+             <Plus size={24} /> Nova Missão
+          </button>
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyState icon={CheckSquare} title="Nenhuma missao encontrada..." description="Crie missoes para seus aventureiros." />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
@@ -92,7 +131,7 @@ const QuestBoardPage: React.FC = () => {
           <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
         </div>
-        <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
+        <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
            <Plus size={24} /> Nova Missão
         </button>
       </header>
@@ -107,68 +146,76 @@ const QuestBoardPage: React.FC = () => {
                       </div>
                       
                       <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2">
-                          {(quests || []).filter(q => q.status === col.id).map(quest => (
-                              <div key={quest.id} className="parchment-card p-5 rounded-3xl border-2 border-fantasy-wood/10 dark:border-white/10 shadow-md hover:border-fantasy-gold/50 transition-all group relative">
-                                  <div className="flex justify-between items-start mb-2">
-                                      <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight pr-6">{quest.title}</h4>
-                                      <div className="flex gap-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                          <button onClick={() => openEditModal(quest)} className="text-fantasy-wood/40 hover:text-fantasy-gold transition-colors"><Edit size={16}/></button>
-                                          <button onClick={() => deleteQuest(quest.id)} className="text-fantasy-wood/40 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                                      </div>
-                                  </div>
-                                  <p className="text-xs text-fantasy-wood/70 dark:text-fantasy-parchment/70 font-serif italic mb-4 line-clamp-3">{quest.description}</p>
-                                  
-                                  {/* Rewards */}
-                                  <div className="flex gap-2 mb-4 flex-wrap">
-                                      {quest.rewardGold > 0 && (
-                                          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-fantasy-gold/10 text-fantasy-gold px-2 py-1 rounded">
-                                              <Coins size={10}/> {quest.rewardGold} {quest.rewardCurrency || 'TS'}
-                                          </span>
-                                      )}
-                                      {quest.rewardXP && (
-                                          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-purple-900/10 text-purple-400 px-2 py-1 rounded">
-                                              <Award size={10}/> {quest.rewardXP}
-                                          </span>
-                                      )}
-                                  </div>
+                          {(quests || []).filter(q => q.status === col.id).length === 0 ? (
+                            <div className="py-8 text-center">
+                              <p className="text-xs text-fantasy-wood/40 dark:text-fantasy-parchment/40 italic">Nenhuma missão</p>
+                            </div>
+                          ) : (
+                            (quests || []).filter(q => q.status === col.id).map((quest, index) => (
+                              <AnimatedCard key={quest.id} delay={index * 100}>
+                                <div className="parchment-card p-5 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-md hover:border-fantasy-gold/50 transition-all group relative hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight pr-6">{quest.title}</h4>
+                                        <div className="flex gap-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => openEditModal(quest)} className="text-fantasy-wood/40 hover:text-fantasy-gold transition-colors active:scale-95"><Edit size={16}/></button>
+                                            <button onClick={() => deleteQuest(quest.id)} className="text-fantasy-wood/40 hover:text-red-500 transition-colors active:scale-95"><Trash2 size={16}/></button>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-fantasy-wood/70 dark:text-fantasy-parchment/70 font-serif italic mb-4 line-clamp-3">{quest.description}</p>
+                                    
+                                    {/* Rewards */}
+                                    <div className="flex gap-2 mb-4 flex-wrap">
+                                        {quest.rewardGold > 0 && (
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-fantasy-gold/10 text-fantasy-gold px-2 py-1 rounded">
+                                                <Coins size={10}/> {quest.rewardGold} {quest.rewardCurrency || 'TS'}
+                                            </span>
+                                        )}
+                                        {quest.rewardXP && (
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-purple-900/10 text-purple-400 px-2 py-1 rounded">
+                                                <Award size={10}/> {quest.rewardXP}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                  {/* Members */}
-                                  {quest.assignedMemberIds.length > 0 && (
-                                      <div className="flex items-center gap-1 mb-4 overflow-hidden">
-                                          {quest.assignedMemberIds.map(mid => {
-                                              const m = members.find(x => x.id === mid);
-                                              return m ? (
-                                                  <div key={mid} className="w-6 h-6 rounded-full bg-fantasy-wood text-fantasy-parchment flex items-center justify-center text-[10px] font-bold border border-fantasy-parchment" title={m.name}>
-                                                      {m.name.charAt(0)}
-                                                  </div>
-                                              ) : null;
-                                          })}
-                                      </div>
-                                  )}
+                                    {/* Members */}
+                                    {quest.assignedMemberIds.length > 0 && (
+                                        <div className="flex items-center gap-1 mb-4 overflow-hidden">
+                                            {quest.assignedMemberIds.map(mid => {
+                                                const m = members.find(x => x.id === mid);
+                                                return m ? (
+                                                    <div key={mid} className="w-6 h-6 rounded-full bg-fantasy-wood text-fantasy-parchment flex items-center justify-center text-[10px] font-bold border border-fantasy-parchment" title={m.name}>
+                                                        {m.name.charAt(0)}
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                        </div>
+                                    )}
 
-                                  {/* Actions */}
-                                  <div className="flex justify-between items-center pt-2 border-t border-fantasy-wood/5 dark:border-white/5">
-                                      {col.id !== 'Disponivel' && (
-                                          <button onClick={() => updateQuestStatus(quest.id, col.id === 'Em Andamento' ? 'Disponivel' : 'Em Andamento')} className="p-2 hover:bg-white/10 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-fantasy-wood">
-                                              <ArrowLeft size={16}/>
-                                          </button>
-                                      )}
-                                      <div className="flex-1"></div>
-                                      {col.id !== 'Concluida' && col.id !== 'Falha' && (
-                                          <div className="flex gap-1">
-                                              {col.id === 'Em Andamento' && (
-                                                  <button onClick={() => updateQuestStatus(quest.id, 'Falha')} className="p-2 hover:bg-red-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-red-500" title="Falhar">
-                                                      <X size={16}/>
-                                                  </button>
-                                              )}
-                                              <button onClick={() => updateQuestStatus(quest.id, col.id === 'Disponivel' ? 'Em Andamento' : 'Concluida')} className="p-2 hover:bg-emerald-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-emerald-500" title="Avançar">
-                                                  <ArrowRight size={16}/>
-                                              </button>
-                                          </div>
-                                      )}
-                                  </div>
-                              </div>
-                          ))}
+                                    {/* Actions */}
+                                    <div className="flex justify-between items-center pt-2 border-t border-fantasy-wood/5 dark:border-white/5">
+                                        {col.id !== 'Disponivel' && (
+                                            <button onClick={() => updateQuestStatus(quest.id, col.id === 'Em Andamento' ? 'Disponivel' : 'Em Andamento')} className="p-2 hover:bg-white/10 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-fantasy-wood active:scale-95">
+                                                <ArrowLeft size={16}/>
+                                            </button>
+                                        )}
+                                        <div className="flex-1"></div>
+                                        {col.id !== 'Concluida' && col.id !== 'Falha' && (
+                                            <div className="flex gap-1">
+                                                {col.id === 'Em Andamento' && (
+                                                    <button onClick={() => updateQuestStatus(quest.id, 'Falha')} className="p-2 hover:bg-red-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-red-500 active:scale-95" title="Falhar">
+                                                        <X size={16}/>
+                                                    </button>
+                                                )}
+                                                <button onClick={() => updateQuestStatus(quest.id, col.id === 'Disponivel' ? 'Em Andamento' : 'Concluida')} className="p-2 hover:bg-emerald-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-emerald-500 active:scale-95" title="Avançar">
+                                                    <ArrowRight size={16}/>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                              </AnimatedCard>
+                            ))
+                          )}
                       </div>
                   </div>
               ))}
@@ -178,7 +225,7 @@ const QuestBoardPage: React.FC = () => {
       {modalMode && (
           <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
               <div className="parchment-card p-10 rounded-[50px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-                  <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+                  <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
                   
                   <div className="text-center mb-8">
                       <div className="wax-seal w-20 h-20 mx-auto mb-4 flex items-center justify-center text-white"><CheckSquare size={40}/></div>
@@ -220,7 +267,7 @@ const QuestBoardPage: React.FC = () => {
                                     key={m.id}
                                     type="button" 
                                     onClick={() => toggleMemberAssign(m.id)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border active:scale-95 ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}
                                   >
                                       {m.name}
                                   </button>
@@ -228,7 +275,7 @@ const QuestBoardPage: React.FC = () => {
                           </div>
                       </div>
 
-                      <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all">
+                      <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all active:scale-95">
                           {modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}
                       </button>
                   </form>

@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { LogEntry } from '../types';
-import { Package, BookOpen, Calendar, Download, PlusCircle, Layers } from 'lucide-react';
+import { Package, BookOpen, Calendar, Download, PlusCircle, Layers, History } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { TableSkeleton } from '../components/LoadingSkeleton';
 
 const ItemHistoryPage: React.FC = () => {
-  const { logs } = useGuild();
+  const { logs, isLoading } = useGuild();
   
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -117,7 +120,7 @@ const ItemHistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 pb-20 font-serif">
+    <div className="space-y-12 pb-20 font-serif">
        <header>
           <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Movimentação de itens</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Onde as armas, armaduras e relíquias são registradas.</p>
@@ -137,7 +140,7 @@ const ItemHistoryPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-4">
                    <button 
                      onClick={() => setIsGrouped(!isGrouped)} 
-                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${isGrouped ? 'bg-indigo-900/10 text-indigo-800 dark:text-indigo-400 border-indigo-900/20' : 'bg-white/20 text-fantasy-wood/40 border-fantasy-wood/10'}`}
+                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${isGrouped ? 'bg-indigo-900/10 text-indigo-800 dark:text-indigo-400 border-indigo-900/20' : 'bg-white/20 text-fantasy-wood/40 border-fantasy-wood/10'}`}
                      title={isGrouped ? "Desagrupar registros similares" : "Agrupar registros similares"}
                    >
                        <Layers size={16}/> {isGrouped ? 'Agrupado' : 'Detalhado'}
@@ -150,63 +153,70 @@ const ItemHistoryPage: React.FC = () => {
                        <input type="date" className="bg-transparent text-xs font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none" value={endDate} onChange={e => setEndDate(e.target.value)} />
                    </div>
                    
-                   <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-800/20 transition-all">
+                   <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-800/20 transition-all active:scale-95">
                        <Download size={16}/> CSV
                    </button>
                </div>
            </div>
 
-           <div className="overflow-x-auto">
-             <table className="w-full text-left">
-                <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-widest">
-                    <tr>
-                        <th className="px-10 py-6 whitespace-nowrap">Época</th>
-                        <th className="px-10 py-6">Tipo</th>
-                        <th className="px-10 py-6">Crônica do Item</th>
-                        <th className="px-10 py-6 text-right whitespace-nowrap">Responsável</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
-                    {visibleLogs.length === 0 && (
-                        <tr><td colSpan={4} className="px-10 py-20 text-center font-medieval text-2xl text-fantasy-wood/30 dark:text-white/10 italic">Nenhuma crônica registrada no período...</td></tr>
-                    )}
-                    {visibleLogs.map((log, i) => {
-                        let badgeColor = 'bg-fantasy-wood/10 text-fantasy-wood/50 border-fantasy-wood/20 dark:text-fantasy-parchment/40 dark:border-white/10';
-                        if (log.category === 'Venda') badgeColor = 'bg-emerald-700/10 text-emerald-800 border-emerald-700/30 dark:text-emerald-400 dark:border-emerald-400/30';
-                        if (log.category === 'Estoque') badgeColor = 'bg-blue-700/10 text-blue-800 border-blue-700/30 dark:text-blue-400 dark:border-blue-400/30';
+           {isLoading ? (
+             <div className="p-8">
+               <TableSkeleton rows={4} />
+             </div>
+           ) : (
+             <div className="overflow-x-auto">
+               <table className="w-full text-left">
+                  <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-widest">
+                      <tr>
+                          <th className="px-10 py-6 whitespace-nowrap">Época</th>
+                          <th className="px-10 py-6">Tipo</th>
+                          <th className="px-10 py-6">Crônica do Item</th>
+                          <th className="px-10 py-6 text-right whitespace-nowrap">Responsável</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
+                      {visibleLogs.length === 0 && (
+                          <tr><td colSpan={4} className="p-0"><EmptyState icon={History} title="Nenhum historico de item..." description="As movimentacoes de itens aparecerao aqui." /></td></tr>
+                      )}
+                      {visibleLogs.map((log, i) => {
+                          let badgeColor = 'bg-fantasy-wood/10 text-fantasy-wood/50 border-fantasy-wood/20 dark:text-fantasy-parchment/40 dark:border-white/10';
+                          if (log.category === 'Venda') badgeColor = 'bg-emerald-700/10 text-emerald-800 border-emerald-700/30 dark:text-emerald-400 dark:border-emerald-400/30';
+                          if (log.category === 'Estoque') badgeColor = 'bg-blue-700/10 text-blue-800 border-blue-700/30 dark:text-blue-400 dark:border-blue-400/30';
 
-                        return (
-                            <tr key={`${log.id}-${i}`} className="hover:bg-fantasy-gold/5 dark:hover:bg-fantasy-gold/10 transition-colors">
-                                <td className="px-10 py-6 whitespace-nowrap">
-                                    <div className="font-medieval text-lg text-fantasy-wood/80 dark:text-fantasy-parchment">{new Date(log.date).toLocaleDateString()}</div>
-                                    <div className="text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border tracking-widest ${badgeColor}`}>
-                                        {log.category}
-                                    </span>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <div className="flex items-center gap-3">
-                                        <Package size={16} className="text-fantasy-gold shrink-0"/>
-                                        <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight">"{log.details}"</p>
-                                    </div>
-                                </td>
-                                <td className="px-10 py-6 text-right whitespace-nowrap">
-                                    <span className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center justify-end gap-2 tracking-tight">
-                                      {log.memberName} <div className="w-2 h-2 rounded-full bg-fantasy-gold"></div>
-                                    </span>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-             </table>
-           </div>
+                          return (
+                              <AnimatedCard as="tr" delay={i * 50} className="rounded-[20px]" key={`${log.id}-${i}`}>
+                                  <td className="px-10 py-6 whitespace-nowrap relative">
+                                      <div className="absolute left-0 top-3 bottom-3 border-l-2 border-fantasy-gold/20"></div>
+                                      <div className="font-medieval text-lg text-fantasy-wood/80 dark:text-fantasy-parchment">{new Date(log.date).toLocaleDateString()}</div>
+                                      <div className="text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
+                                  </td>
+                                  <td className="px-10 py-6">
+                                      <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border tracking-widest ${badgeColor}`}>
+                                          {log.category}
+                                      </span>
+                                  </td>
+                                  <td className="px-10 py-6">
+                                      <div className="flex items-center gap-3">
+                                          <Package size={16} className="text-fantasy-gold shrink-0"/>
+                                          <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight">"{log.details}"</p>
+                                      </div>
+                                  </td>
+                                  <td className="px-10 py-6 text-right whitespace-nowrap">
+                                      <span className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center justify-end gap-2 tracking-tight">
+                                        {log.memberName} <div className="w-2 h-2 rounded-full bg-fantasy-gold"></div>
+                                      </span>
+                                  </td>
+                              </AnimatedCard>
+                          );
+                      })}
+                  </tbody>
+               </table>
+             </div>
+           )}
 
-           {visibleCount < totalFilteredCount && (
+           {!isLoading && visibleCount < totalFilteredCount && (
                 <div className="p-4 bg-fantasy-wood/5 dark:bg-black/20 border-t border-fantasy-wood/10 dark:border-white/5 flex justify-center">
-                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="flex items-center gap-2 px-8 py-3 bg-fantasy-wood/10 dark:bg-white/5 hover:bg-fantasy-wood/20 dark:hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment transition-all">
+                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="flex items-center gap-2 px-8 py-3 bg-fantasy-wood/10 dark:bg-white/5 hover:bg-fantasy-wood/20 dark:hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
                         <PlusCircle size={16}/> Carregar Mais Histórico
                     </button>
                 </div>

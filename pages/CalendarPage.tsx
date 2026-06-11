@@ -2,7 +2,10 @@
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { ARTON_MONTHS, ARTON_WEEKDAYS } from '../constants';
-import { Moon, Sun, ChevronRight, ChevronsRight, Clock, ChevronLeft, ChevronsLeft, Edit, Dices, X } from 'lucide-react';
+import { Moon, Sun, ChevronRight, ChevronsRight, Clock, ChevronLeft, ChevronsLeft, Edit, Dices, X, Calendar } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const CalendarPage: React.FC = () => {
   const { calendar = { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false }, advanceDate, setGameDate, toggleNimbDay, isAdmin } = useGuild();
@@ -13,6 +16,13 @@ const CalendarPage: React.FC = () => {
   const [editMonth, setEditMonth] = useState(month);
   const [editYear, setEditYear] = useState(year);
 
+  const [browsingMonth, setBrowsingMonth] = useState(month);
+  const [browsingYear, setBrowsingYear] = useState(year);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dayNotes, setDayNotes] = useState<Record<string, string>>({});
+  const [noteInput, setNoteInput] = useState('');
+
   const currentMonthName = ARTON_MONTHS[month] || 'Desconhecido';
   const currentWeekDayName = ARTON_WEEKDAYS[dayOfWeek] || 'Dia';
 
@@ -21,6 +31,13 @@ const CalendarPage: React.FC = () => {
   if (month >= 3 && month <= 5) season = 'Verão';
   else if (month >= 6 && month <= 8) season = 'Outono';
   else if (month >= 9 && month <= 11) season = 'Inverno';
+
+  const daysInMonth = 30;
+  const monthDiff = (browsingYear - year) * 12 + (browsingMonth - month);
+  const firstDayOffset = (((dayOfWeek - (day - 1) + (monthDiff * 30)) % 7) + 7) % 7;
+  const browsingMonthName = ARTON_MONTHS[browsingMonth] || 'Desconhecido';
+  const isCurrentMonth = browsingMonth === month && browsingYear === year;
+  const selectedDayNotes = selectedDay !== null ? dayNotes[`${browsingYear}-${browsingMonth}-${selectedDay}`] : null;
 
   const handleManualSet = (e: React.FormEvent) => {
       e.preventDefault();
@@ -33,6 +50,37 @@ const CalendarPage: React.FC = () => {
       setEditMonth(month);
       setEditYear(year);
       setShowEditModal(true);
+  };
+
+  const goToPrevMonth = () => {
+    setIsLoading(true);
+    if (browsingMonth === 0) {
+      setBrowsingMonth(11);
+      setBrowsingYear(browsingYear - 1);
+    } else {
+      setBrowsingMonth(browsingMonth - 1);
+    }
+    setSelectedDay(null);
+    setTimeout(() => setIsLoading(false), 400);
+  };
+
+  const goToNextMonth = () => {
+    setIsLoading(true);
+    if (browsingMonth === 11) {
+      setBrowsingMonth(0);
+      setBrowsingYear(browsingYear + 1);
+    } else {
+      setBrowsingMonth(browsingMonth + 1);
+    }
+    setSelectedDay(null);
+    setTimeout(() => setIsLoading(false), 400);
+  };
+
+  const addNote = () => {
+    if (!noteInput.trim() || selectedDay === null) return;
+    const key = `${browsingYear}-${browsingMonth}-${selectedDay}`;
+    setDayNotes(prev => ({ ...prev, [key]: noteInput.trim() }));
+    setNoteInput('');
   };
 
   return (
@@ -136,6 +184,99 @@ const CalendarPage: React.FC = () => {
                   <p className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-parchment uppercase">Apenas o Mestre do Tempo pode alterar o destino.</p>
               </div>
           )}
+      </div>
+
+      {/* Month Grid */}
+      <div className="parchment-card p-8 rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={goToPrevMonth}
+            className="p-3 bg-white/40 dark:bg-white/5 border border-fantasy-wood/5 dark:border-white/5 rounded-xl hover:border-fantasy-wood/20 transition-all active:scale-95"
+          >
+            <ChevronLeft size={20} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60" />
+          </button>
+          <h3 className="text-2xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-wider">
+            {browsingMonthName} {browsingYear}
+          </h3>
+          <button
+            onClick={goToNextMonth}
+            className="p-3 bg-white/40 dark:bg-white/5 border border-fantasy-wood/5 dark:border-white/5 rounded-xl hover:border-fantasy-wood/20 transition-all active:scale-95"
+          >
+            <ChevronRight size={20} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60" />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <CardSkeleton />
+        ) : (
+          <>
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {ARTON_WEEKDAYS.map(wd => (
+                <div key={wd} className="text-center text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
+                  {wd}
+                </div>
+              ))}
+            </div>
+            <div key={`${browsingYear}-${browsingMonth}`} className="grid grid-cols-7 gap-1 animate-fade-in">
+              {Array.from({ length: firstDayOffset }).map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square" />
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const d = i + 1;
+                const isToday = isCurrentMonth && d === day;
+                const isSelected = selectedDay === d;
+                return (
+                  <AnimatedCard
+                    key={d}
+                    delay={i * 30}
+                    onClick={() => setSelectedDay(d)}
+                    className={`aspect-square rounded-xl flex items-center justify-center font-medieval text-lg cursor-pointer transition-all border ${
+                      isToday
+                        ? 'animate-pulse border-fantasy-gold bg-fantasy-gold/20 text-fantasy-gold shadow-[0_0_10px_rgba(212,175,55,0.3)]'
+                        : isSelected
+                        ? 'border-fantasy-wood/30 bg-fantasy-wood/10 dark:border-white/30 dark:bg-white/10 text-fantasy-wood dark:text-fantasy-parchment'
+                        : 'border-transparent hover:border-fantasy-wood/20 hover:bg-fantasy-wood/5 dark:hover:border-white/20 dark:hover:bg-white/5 text-fantasy-wood/70 dark:text-fantasy-parchment/70'
+                    }`}
+                  >
+                    {d}
+                  </AnimatedCard>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {selectedDay !== null && (
+          <div className="mt-8 pt-6 border-t border-fantasy-wood/10 dark:border-white/10 animate-fade-in">
+            <h4 className="text-lg font-medieval text-fantasy-wood dark:text-fantasy-parchment mb-2">
+              {selectedDay} de {browsingMonthName}
+            </h4>
+            {selectedDayNotes ? (
+              <p className="text-sm text-fantasy-wood/70 dark:text-fantasy-parchment/70 italic font-serif mb-4">{selectedDayNotes}</p>
+            ) : (
+              <EmptyState
+                icon={Calendar}
+                title="Nenhum evento registrado"
+                description="Adicione uma nota para este dia."
+              />
+            )}
+            <div className="flex gap-2 mt-4">
+              <input
+                type="text"
+                value={noteInput}
+                onChange={e => setNoteInput(e.target.value)}
+                placeholder="Adicionar nota..."
+                className="flex-1 bg-white/40 dark:bg-black/40 border border-fantasy-wood/10 rounded-xl px-4 py-2 text-sm font-serif text-fantasy-wood dark:text-fantasy-parchment placeholder-fantasy-wood/30"
+              />
+              <button
+                onClick={addNote}
+                className="px-4 py-2 bg-fantasy-wood/10 hover:bg-fantasy-wood/20 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl text-sm font-medieval uppercase tracking-wider text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Manual Set Modal */}
