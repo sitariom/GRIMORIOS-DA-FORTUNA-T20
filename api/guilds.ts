@@ -141,7 +141,7 @@ export default async function handler(request: Request) {
         // Try admin access
         try {
           const adminAuth = await authenticate(request, { allowAdmin: true });
-          if (adminAuth.role === 'admin') {
+          if (adminAuth.role === 'admin' || adminAuth.userId === id) {
             return new Response(JSON.stringify(guild.rows[0].data), {
               status: 200,
               headers: { 'content-type': 'application/json' }
