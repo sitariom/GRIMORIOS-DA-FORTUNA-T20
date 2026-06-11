@@ -1,10 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle } from 'lucide-react';
+import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle, Users } from 'lucide-react';
 import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
 import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, calcTotalCarryLimit, calcCarryBonus } from '../constants';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: string, bg: string, label: string }> = {
     'Ativo': { icon: Shield, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-700/10 dark:bg-emerald-400/10', label: 'Ativo' },
@@ -17,7 +20,7 @@ const STATUS_CONFIG: Record<MemberStatus, { icon: React.ElementType, color: stri
 
 const MembersPage: React.FC = () => {
   const { 
-    members, logs, addMember, removeMember, updateMember, 
+    members, logs, isLoading, addMember, removeMember, updateMember, 
     transferGoldToMember, transferGoldFromMember, updateMemberWallet,
     transferItemFromMember, deleteItemFromMember, createItemForMember
   } = useGuild();
@@ -127,73 +130,75 @@ const MembersPage: React.FC = () => {
                    required
                  />
               </div>
-              <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-2xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all">
-                Selar Contrato
-              </button>
+               <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-2xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
+                 Selar Contrato
+               </button>
            </form>
         </div>
 
         {/* Members List */}
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 h-fit content-start">
-           {members.length === 0 && (
-             <div className="col-span-full parchment-card p-20 rounded-[40px] border-4 border-dashed border-fantasy-wood/10 dark:border-white/10 text-center opacity-60">
-                <User size={80} className="mx-auto mb-6 text-fantasy-wood/20 dark:text-fantasy-parchment/10"/>
-                <p className="font-medieval text-2xl uppercase italic">Ninguém alistado ainda...</p>
-             </div>
-           )}
-           {members.map((member, idx) => {
-             const status = member.status || 'Ativo';
-             const config = STATUS_CONFIG[status] || STATUS_CONFIG['Ativo'];
-             const StatusIcon = config.icon;
-             const contribution = getContributionStats(member.id);
+           {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
+           ) : members.length === 0 ? (
+              <div className="col-span-full">
+                 <EmptyState icon={Users} title="Nenhum aventureiro..." description="Adicione membros a sua guilda." />
+              </div>
+           ) : members.map((member, idx) => {
+              const status = member.status || 'Ativo';
+              const config = STATUS_CONFIG[status] || STATUS_CONFIG['Ativo'];
+              const StatusIcon = config.icon;
+              const contribution = getContributionStats(member.id);
 
-             return (
-             <div key={member.id} className="parchment-card p-8 rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-2xl group hover:border-fantasy-gold/40 transition-all animate-slide-up h-fit relative" style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className="flex justify-between items-start mb-6">
-                   <div className={`${config.bg} p-4 rounded-3xl border border-fantasy-wood/10 dark:border-white/10 transition-colors`}>
-                      <StatusIcon size={32} className={config.color}/>
-                   </div>
-                   <div className="flex gap-2">
-                       <button 
-                         onClick={() => setDetailMemberId(member.id)}
-                         className="bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-gold/20 text-fantasy-wood dark:text-fantasy-parchment p-3 rounded-2xl transition-all"
-                         title="Detalhes e Inventário"
-                       >
-                         <Backpack size={20} />
-                       </button>
-                       <button 
-                         onClick={() => setConfirmDeleteId(member.id)}
-                         className="bg-red-900/5 hover:bg-red-900/20 text-red-800 dark:text-red-400 p-3 rounded-2xl transition-all"
-                         title="Expulsar Membro"
-                       >
-                         <Trash2 size={20} />
-                       </button>
-                   </div>
-                </div>
-                
-                <div className="space-y-4">
-                   <div>
-                       <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-1 leading-none truncate pr-2" title={member.name}>{member.name}</h3>
-                       <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest flex items-center gap-2">
-                           <Coins size={12}/> Contribuição: 
-                           <span className={contribution >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}>
-                             {contribution > 0 ? '+' : ''}{contribution.toLocaleString()} T$
-                           </span>
-                       </div>
-                   </div>
+              return (
+              <AnimatedCard key={member.id} delay={idx * 60}>
+              <div className="parchment-card p-8 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-2xl group hover:border-fantasy-gold/40 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 h-fit relative">
+                 <div className="flex justify-between items-start mb-6">
+                    <div className={`${config.bg} p-4 rounded-3xl border border-fantasy-wood/10 dark:border-white/10 transition-colors`}>
+                       <StatusIcon size={32} className={config.color}/>
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                          onClick={() => setDetailMemberId(member.id)}
+                          className="bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-gold/20 text-fantasy-wood dark:text-fantasy-parchment p-3 rounded-2xl transition-all active:scale-95"
+                          title="Detalhes e Inventário"
+                        >
+                          <Backpack size={20} />
+                        </button>
+                        <button 
+                          onClick={() => setConfirmDeleteId(member.id)}
+                          className="bg-red-900/5 hover:bg-red-900/20 text-red-800 dark:text-red-400 p-3 rounded-2xl transition-all active:scale-95"
+                          title="Expulsar Membro"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                    </div>
+                 </div>
+                 
+                 <div className="space-y-4">
+                    <div>
+                        <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-1 leading-none truncate pr-2" title={member.name}>{member.name}</h3>
+                        <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-widest flex items-center gap-2">
+                            <Coins size={12}/> Contribuição: 
+                            <span className={contribution >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}>
+                              {contribution > 0 ? '+' : ''}{contribution.toLocaleString()} T$
+                            </span>
+                        </div>
+                    </div>
 
-                   <div className="pt-4 border-t border-fantasy-wood/10 dark:border-white/5">
-                      <select 
-                        value={status} 
-                        onChange={(e) => updateMember(member.id, { status: e.target.value as MemberStatus })}
-                        className="w-full bg-white/40 dark:bg-black/20 border border-fantasy-wood/10 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment cursor-pointer focus:outline-none hover:bg-white/60 dark:hover:bg-white/10 transition-colors appearance-none text-center"
-                      >
-                         {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s} className="dark:bg-black">{s}</option>)}
-                      </select>
-                   </div>
-                </div>
-             </div>
-           )})}
+                    <div className="pt-4 border-t border-fantasy-wood/10 dark:border-white/5">
+                       <select 
+                         value={status} 
+                         onChange={(e) => updateMember(member.id, { status: e.target.value as MemberStatus })}
+                         className="w-full bg-white/40 dark:bg-black/20 border border-fantasy-wood/10 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment cursor-pointer focus:outline-none hover:bg-white/60 dark:hover:bg-white/10 transition-colors appearance-none text-center"
+                       >
+                          {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s} className="dark:bg-black">{s}</option>)}
+                       </select>
+                    </div>
+                 </div>
+              </div>
+              </AnimatedCard>
+            )})}
         </div>
       </div>
 
@@ -201,7 +206,7 @@ const MembersPage: React.FC = () => {
       {activeMember && (
         <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
            <div className="parchment-card p-8 md:p-12 rounded-[40px] w-full max-w-4xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col gap-10">
-                <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+                <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
                 
                 <div className="text-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
                     <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
@@ -239,20 +244,20 @@ const MembersPage: React.FC = () => {
 
                        <div className="bg-fantasy-wood/5 dark:bg-white/5 p-6 rounded-3xl border-2 border-dashed border-fantasy-wood/10 dark:border-white/10">
                            <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-4">
-                               <button onClick={() => setFinanceTab('transfer')} className={`flex-1 pb-2 border-b-2 transition-all ${financeTab === 'transfer' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Transferência</button>
-                               <button onClick={() => setFinanceTab('manual')} className={`flex-1 pb-2 border-b-2 transition-all ${financeTab === 'manual' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Ajuste Manual</button>
+                                <button onClick={() => setFinanceTab('transfer')} className={`flex-1 pb-2 border-b-2 transition-all active:scale-95 ${financeTab === 'transfer' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Transferência</button>
+                                <button onClick={() => setFinanceTab('manual')} className={`flex-1 pb-2 border-b-2 transition-all active:scale-95 ${financeTab === 'manual' ? 'border-fantasy-gold text-fantasy-gold' : 'border-transparent opacity-50'}`}>Ajuste Manual</button>
                            </div>
                            
                            <form onSubmit={handleGoldAction} className="space-y-4">
                                {financeTab === 'transfer' ? (
                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 bg-black/10 rounded-lg p-1">
-                                       <button type="button" onClick={() => setTransType('Deposit')} className={`flex-1 py-1 rounded transition-colors ${transType === 'Deposit' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Guilda &rarr; Aventureiro</button>
-                                       <button type="button" onClick={() => setTransType('Withdraw')} className={`flex-1 py-1 rounded transition-colors ${transType === 'Withdraw' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Aventureiro &rarr; Guilda</button>
+                                        <button type="button" onClick={() => setTransType('Deposit')} className={`flex-1 py-1 rounded transition-colors active:scale-95 ${transType === 'Deposit' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Guilda &rarr; Aventureiro</button>
+                                        <button type="button" onClick={() => setTransType('Withdraw')} className={`flex-1 py-1 rounded transition-colors active:scale-95 ${transType === 'Withdraw' ? 'bg-fantasy-wood text-white' : 'opacity-60'}`}>Aventureiro &rarr; Guilda</button>
                                    </div>
                                ) : (
                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 bg-black/10 rounded-lg p-1">
-                                       <button type="button" onClick={() => setManualType('add')} className={`flex-1 py-1 rounded transition-colors ${manualType === 'add' ? 'bg-emerald-700 text-white' : 'opacity-60'}`}>Adicionar (Achado)</button>
-                                       <button type="button" onClick={() => setManualType('remove')} className={`flex-1 py-1 rounded transition-colors ${manualType === 'remove' ? 'bg-red-700 text-white' : 'opacity-60'}`}>Remover (Gasto)</button>
+                                        <button type="button" onClick={() => setManualType('add')} className={`flex-1 py-1 rounded transition-colors active:scale-95 ${manualType === 'add' ? 'bg-emerald-700 text-white' : 'opacity-60'}`}>Adicionar (Achado)</button>
+                                        <button type="button" onClick={() => setManualType('remove')} className={`flex-1 py-1 rounded transition-colors active:scale-95 ${manualType === 'remove' ? 'bg-red-700 text-white' : 'opacity-60'}`}>Remover (Gasto)</button>
                                    </div>
                                )}
 
@@ -262,9 +267,9 @@ const MembersPage: React.FC = () => {
                                        {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c}>{c}</option>)}
                                    </select>
                                </div>
-                               <button type="submit" className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black py-3 rounded-xl font-medieval uppercase tracking-widest text-sm shadow-lg">
-                                   {financeTab === 'transfer' ? 'Transferir Fundos' : 'Atualizar Saldo'}
-                               </button>
+                                <button type="submit" className="w-full bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black py-3 rounded-xl font-medieval uppercase tracking-widest text-sm shadow-lg active:scale-95">
+                                    {financeTab === 'transfer' ? 'Transferir Fundos' : 'Atualizar Saldo'}
+                                </button>
                            </form>
                        </div>
                    </div>
@@ -273,7 +278,7 @@ const MembersPage: React.FC = () => {
                     <div className="space-y-6 relative">
                         <div className="flex justify-between items-center">
                             <h4 className="text-xl font-medieval flex items-center gap-3 text-fantasy-wood dark:text-fantasy-parchment"><Backpack size={24}/> Mochila</h4>
-                            <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors">
+                            <button onClick={() => setShowAddItem(!showAddItem)} className="p-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 rounded-lg text-fantasy-gold transition-colors active:scale-95">
                                 <Plus size={18}/>
                             </button>
                         </div>
@@ -336,10 +341,10 @@ const MembersPage: React.FC = () => {
                                        <span className="text-xs opacity-50">/ {itemAction.max}</span>
                                    </div>
                                    <div className="flex gap-2">
-                                       <button type="button" onClick={() => setItemAction(null)} className="flex-1 py-2 rounded-xl bg-gray-500/10 text-gray-500 text-xs font-black uppercase tracking-widest">Cancelar</button>
-                                       <button type="submit" className={`flex-1 py-2 rounded-xl text-white text-xs font-black uppercase tracking-widest ${itemAction.type === 'transfer' ? 'bg-blue-700' : 'bg-red-700'}`}>
-                                           Confirmar
-                                       </button>
+                                        <button type="button" onClick={() => setItemAction(null)} className="flex-1 py-2 rounded-xl bg-gray-500/10 text-gray-500 text-xs font-black uppercase tracking-widest active:scale-95">Cancelar</button>
+                                        <button type="submit" className={`flex-1 py-2 rounded-xl text-white text-xs font-black uppercase tracking-widest active:scale-95 ${itemAction.type === 'transfer' ? 'bg-blue-700' : 'bg-red-700'}`}>
+                                            Confirmar
+                                        </button>
                                    </div>
                                </form>
                            </div>
@@ -372,7 +377,7 @@ const MembersPage: React.FC = () => {
                                         <option value={20}>+20 Carga</option>
                                     </select>
                                 </div>
-                               <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest">Criar Item</button>
+                                <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95">Criar Item</button>
                            </form>
                        )}
 
@@ -389,20 +394,20 @@ const MembersPage: React.FC = () => {
                                                  <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}{item.carryBonus ? ` • +${item.carryBonus} Carga` : ''}</div>
                                             </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                               <button 
-                                                 onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'transfer', max: item.quantity, name: item.name }); }} 
-                                                 title="Devolver ao Cofre" 
-                                                 className="p-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-lg"
-                                               >
-                                                   <ArrowRight size={14}/>
-                                               </button>
-                                               <button 
-                                                 onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'delete', max: item.quantity, name: item.name }); }} 
-                                                 title="Jogar fora (Lixeira)" 
-                                                 className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg"
-                                               >
-                                                   <Trash2 size={14}/>
-                                               </button>
+                                                <button 
+                                                  onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'transfer', max: item.quantity, name: item.name }); }} 
+                                                  title="Devolver ao Cofre" 
+                                                  className="p-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-lg active:scale-95"
+                                                >
+                                                    <ArrowRight size={14}/>
+                                                </button>
+                                                <button 
+                                                  onClick={() => { setActionQty(1); setItemAction({ itemId: item.id, type: 'delete', max: item.quantity, name: item.name }); }} 
+                                                  title="Jogar fora (Lixeira)" 
+                                                  className="p-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-lg active:scale-95"
+                                                >
+                                                    <Trash2 size={14}/>
+                                                </button>
                                            </div>
                                        </div>
                                    )

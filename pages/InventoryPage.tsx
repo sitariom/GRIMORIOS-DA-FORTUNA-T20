@@ -3,10 +3,13 @@ import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType, ItemRarity } from '../types';
 import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS } from '../constants';
-import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown } from 'lucide-react';
+import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const InventoryPage: React.FC = () => {
-  const { items, members, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems } = useGuild();
+  const { items, members, addItem, updateItem, sellItem, sellBatchItems, withdrawItem, deleteItem, deleteBatchItems, isLoading } = useGuild();
   
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'sell' | 'withdraw' | 'delete' | 'bulkSell' | 'bulkDelete' | null>(null);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
@@ -109,6 +112,16 @@ const InventoryPage: React.FC = () => {
       return sortDirection === 'asc' ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />;
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-10 pb-20 font-serif relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 pb-20 font-serif relative">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -121,7 +134,7 @@ const InventoryPage: React.FC = () => {
                  <span className="text-[9px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50 tracking-widest">Patrimônio em Bens</span>
                  <span className="text-2xl font-medieval text-fantasy-gold">T$ {totalAssetsValue.toLocaleString()}</span>
              </div>
-             <button onClick={openAdd} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
+             <button onClick={openAdd} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
                 <PackagePlus size={24} /> Novo Registro
              </button>
         </div>
@@ -132,10 +145,10 @@ const InventoryPage: React.FC = () => {
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-[#1a0f08] border-2 border-fantasy-gold text-fantasy-parchment px-8 py-4 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.8)] flex items-center gap-6 animate-slide-up">
               <span className="font-black uppercase tracking-widest text-xs">{selectedIds.size} Selecionados</span>
               <div className="h-6 w-px bg-fantasy-gold/30"></div>
-              <button onClick={() => setModalMode('bulkSell')} className="flex items-center gap-2 hover:text-emerald-400 transition-colors uppercase font-medieval tracking-widest text-sm"><ShoppingBag size={18}/> Vender Lote</button>
-              <button onClick={() => setModalMode('bulkDelete')} className="flex items-center gap-2 hover:text-red-500 transition-colors uppercase font-medieval tracking-widest text-sm"><Trash2 size={18}/> Queimar</button>
+              <button onClick={() => setModalMode('bulkSell')} className="flex items-center gap-2 hover:text-emerald-400 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><ShoppingBag size={18}/> Vender Lote</button>
+              <button onClick={() => setModalMode('bulkDelete')} className="flex items-center gap-2 hover:text-red-500 transition-colors active:scale-95 uppercase font-medieval tracking-widest text-sm"><Trash2 size={18}/> Queimar</button>
               <div className="h-6 w-px bg-fantasy-gold/30"></div>
-              <button onClick={() => setSelectedIds(new Set())} className="hover:text-white transition-colors"><X size={20}/></button>
+              <button onClick={() => setSelectedIds(new Set())} className="hover:text-white transition-colors active:scale-95"><X size={20}/></button>
           </div>
       )}
 
@@ -145,19 +158,16 @@ const InventoryPage: React.FC = () => {
               <input type="text" placeholder="Buscar por nome..." className="w-full bg-white/20 dark:bg-black/30 border-2 border-fantasy-wood/10 dark:border-white/5 rounded-2xl pl-16 pr-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg focus:outline-none focus:border-fantasy-gold transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
-              <button onClick={() => setFilterType('Todos')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === 'Todos' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
+              <button onClick={() => setFilterType('Todos')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === 'Todos' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
               {ITEM_TYPES.map(t => (
-                  <button key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
+                  <button key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
               ))}
           </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         {filteredItems.length === 0 ? (
-          <div className="parchment-card p-36 rounded-[60px] border-4 border-dashed border-fantasy-wood/10 dark:border-fantasy-parchment/10 text-center opacity-60">
-             <Shield size={100} className="mx-auto mb-10 text-fantasy-wood/20 dark:text-fantasy-parchment/10"/>
-             <p className="font-medieval text-4xl uppercase italic text-fantasy-wood dark:text-fantasy-parchment">O arsenal está vazio ou nenhum item encontrado...</p>
-          </div>
+          <EmptyState icon={Package} title="Nenhum item encontrado..." description="Adicione itens ao arsenal da guilda." />
         ) : (
           <div className="parchment-card rounded-[60px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
             <div className="overflow-x-auto">
@@ -165,35 +175,36 @@ const InventoryPage: React.FC = () => {
                 <thead className="bg-fantasy-wood/5 dark:bg-black/20 border-b-2 border-fantasy-wood/20 dark:border-white/10">
                   <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em]">
                     <th className="px-6 py-8 text-center w-16">
-                        <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity">
+                        <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity active:scale-95">
                             {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
                         </button>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('name')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('name')}>
                         Relíquia / Bem <SortIcon field="name"/>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('type')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('type')}>
                         Essência <SortIcon field="type"/>
                     </th>
                     <th className="px-6 py-8 text-center">Espaço</th>
-                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('quantity')}>
+                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('quantity')}>
                         Qtd <SortIcon field="quantity"/>
                     </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none" onClick={() => handleSort('value')}>
+                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95" onClick={() => handleSort('value')}>
                         Valor Estimado <SortIcon field="value"/>
                     </th>
                     <th className="px-6 py-8 text-right">Ações de Gestão</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
-                  {sortedItems.map(item => {
+                  {sortedItems.map((item, index) => {
                     const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
                     const isSelected = selectedIds.has(item.id);
                     
                     return (
-                    <tr key={item.id} className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'}`}>
+                    <AnimatedCard key={item.id} delay={index * 60}>
+                      <tr className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
                       <td className="px-6 py-8 text-center">
-                          <button onClick={() => toggleSelection(item.id)} className={`transition-all ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
+                          <button onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
                               {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
                           </button>
                       </td>
@@ -228,22 +239,23 @@ const InventoryPage: React.FC = () => {
                           {item.isNonNegotiable ? (
                              <div className="p-4 opacity-50 cursor-not-allowed" title="Item Inalienável"><Ban size={20} className="text-red-900 dark:text-red-500"/></div>
                           ) : (
-                             <button onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all">
+                             <button onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all active:scale-95">
                                 <ShoppingBag size={20} />
                              </button>
                           )}
-                          <button onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all">
+                          <button onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all active:scale-95">
                             <ArrowRightLeft size={20} />
                           </button>
-                          <button onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all">
+                          <button onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
                             <Edit size={20} />
                           </button>
-                          <button onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all">
+                          <button onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all active:scale-95">
                             <Trash2 size={20} />
                           </button>
                         </div>
                       </td>
                     </tr>
+                    </AnimatedCard>
                   )})}
                 </tbody>
               </table>
@@ -255,7 +267,7 @@ const InventoryPage: React.FC = () => {
       {modalMode && (
         <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[150] p-4 backdrop-blur-xl animate-fade-in">
           <div className="parchment-card p-14 rounded-[80px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onClick={closeModal} className="absolute top-10 right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={32}/></button>
+            <button onClick={closeModal} className="absolute top-10 right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={32}/></button>
 
             {(modalMode === 'add' || modalMode === 'edit') && (
                 <form onSubmit={handleSaveItem} className="space-y-10">
@@ -338,7 +350,7 @@ const InventoryPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-fantasy-blood text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
+                    <button type="submit" className="w-full bg-fantasy-blood text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                         {modalMode === 'add' ? 'Lacrar Arsenal' : 'Atualizar Registro'}
                     </button>
                 </form>
@@ -397,7 +409,7 @@ const InventoryPage: React.FC = () => {
                          )}
                     </div>
 
-                    <button type="submit" className="w-full bg-emerald-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-emerald-950 transition-all active:translate-y-2 active:border-b-0">
+                    <button type="submit" className="w-full bg-emerald-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-emerald-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                         Confirmar Transação
                     </button>
                 </form>
@@ -440,7 +452,7 @@ const InventoryPage: React.FC = () => {
                          </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-blue-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-blue-950 transition-all active:translate-y-2 active:border-b-0">
+                    <button type="submit" className="w-full bg-blue-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-blue-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                         Autorizar Entrega
                     </button>
                  </form>
@@ -472,8 +484,8 @@ const InventoryPage: React.FC = () => {
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-6">
-                        <button onClick={closeModal} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-black/5 dark:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment transition-all hover:bg-black/10">Manter Relíquia</button>
-                        <button onClick={() => { if(modalMode === 'bulkDelete') handleBulkDelete(); else if (activeItem) deleteItem(activeItem.id, opQty); closeModal(); }} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-fantasy-blood text-white shadow-2xl transition-all hover:scale-105">Queimar Registro</button>
+                        <button onClick={closeModal} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-black/5 dark:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment transition-all hover:bg-black/10 active:scale-95">Manter Relíquia</button>
+                        <button onClick={() => { if(modalMode === 'bulkDelete') handleBulkDelete(); else if (activeItem) deleteItem(activeItem.id, opQty); closeModal(); }} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-fantasy-blood text-white shadow-2xl transition-all hover:scale-105 active:scale-95">Queimar Registro</button>
                     </div>
                 </div>
             )}

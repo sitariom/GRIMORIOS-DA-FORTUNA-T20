@@ -3,6 +3,9 @@ import { useGuild } from '../context/GuildContext';
 import { PORTE_DATA, TYPE_DATA, BUSINESS_LEVELS, BUSINESS_ASSETS, MAX_BUSINESS_LEVEL } from '../constants';
 import { BasePorte, BaseType, Base, Room } from '../types';
 import { Hammer, Coins, Home, Trash2, Bed, Plus, X, ShieldCheck, Map, Castle, Info, TrendingUp, RotateCcw, AlertTriangle, Sparkles, Store, ArrowUp, Briefcase, List, ScrollText } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const PORTES: BasePorte[] = ['Minima', 'Modesta', 'Basica', 'Formidavel', 'Grandiosa', 'Suprema'];
 
@@ -109,7 +112,7 @@ const calculateBaseSecurity = (base: Base): number => {
 
 const BasesPage: React.FC = () => {
   const { 
-    bases, addBase, upgradeBase, reformBase, repairRoom, payBaseMaintenance, 
+    bases, isLoading, addBase, upgradeBase, reformBase, repairRoom, payBaseMaintenance, 
     collectBaseIncome, demolishBase, addRoom, removeRoom, addFurniture, removeFurniture,
     moveFurniture, addGargula, removeGargula
   } = useGuild();
@@ -185,21 +188,24 @@ const BasesPage: React.FC = () => {
           <p className="text-xs md:text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Cidadelas sob seu estandarte nos Reinos.</p>
         </div>
         <div className="flex gap-4 w-full md:w-auto">
-          <button onClick={() => setModalMode('buy')} className="flex-1 md:flex-none bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
+          <button onClick={() => setModalMode('buy')} className="flex-1 md:flex-none bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
              <Home size={24} /> Reclamar Território
           </button>
-          <button onClick={() => setModalMode('createBusiness')} className="flex-1 md:flex-none bg-amber-800 hover:bg-amber-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-amber-950 transition-all active:translate-y-1">
+          <button onClick={() => setModalMode('createBusiness')} className="flex-1 md:flex-none bg-amber-800 hover:bg-amber-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-amber-950 transition-all active:translate-y-1 active:scale-95">
              <Store size={24} /> Fundar Negócio
           </button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 gap-12">
-         {bases.length === 0 ? (
-            <div className="parchment-card p-16 md:p-36 rounded-[60px] border-4 border-dashed border-fantasy-wood/10 dark:border-white/10 text-center opacity-60">
-               <Map size={80} className="mx-auto mb-10 text-fantasy-wood/20 dark:text-fantasy-parchment/10"/>
-               <p className="font-medieval text-2xl md:text-4xl uppercase tracking-widest italic text-fantasy-wood dark:text-fantasy-parchment">Nenhuma sede estabelecida ainda...</p>
-            </div>
+         {isLoading ? (
+            <>
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </>
+         ) : bases.length === 0 ? (
+            <EmptyState icon={Castle} title="Nenhuma base construida..." description="Construa ou compre uma base para sua guilda." />
          ) : (
             bases.map((base, idx) => {
               const porteData = PORTE_DATA[base.porte];
@@ -208,7 +214,8 @@ const BasesPage: React.FC = () => {
               const securityVal = calculateBaseSecurity(base);
 
               return (
-                <div key={base.id} className="parchment-card rounded-[60px] border-4 border-fantasy-gold/20 shadow-5xl overflow-hidden animate-slide-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                 <AnimatedCard key={base.id} delay={idx * 100}>
+                 <div className="parchment-card rounded-[32px] border-4 border-fantasy-gold/20 shadow-5xl overflow-hidden animate-slide-up hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                    <div className="bg-fantasy-wood/10 dark:bg-black/20 p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                        <div className="flex items-center gap-8">
                            <div className="wax-seal w-20 h-20 md:w-24 md:h-24 flex items-center justify-center animate-float shrink-0">
@@ -223,13 +230,13 @@ const BasesPage: React.FC = () => {
                            </div>
                        </div>
                        <div className="flex gap-4 self-end md:self-auto">
-                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('upgrade'); }} title="Expandir Porte" className="p-4 md:p-5 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold rounded-3xl transition-all border border-fantasy-gold/30">
+                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('upgrade'); }} title="Expandir Porte" className="p-4 md:p-5 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold rounded-3xl transition-all border border-fantasy-gold/30 active:scale-95">
                             <Hammer size={24}/>
                          </button>
-                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('reform'); setNewType(base.type); }} title="Reformar Sede (Mudar Tipo)" className="p-4 md:p-5 bg-indigo-700/10 hover:bg-indigo-700/20 text-indigo-700 dark:text-indigo-400 rounded-3xl transition-all border border-indigo-700/30">
+                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('reform'); setNewType(base.type); }} title="Reformar Sede (Mudar Tipo)" className="p-4 md:p-5 bg-indigo-700/10 hover:bg-indigo-700/20 text-indigo-700 dark:text-indigo-400 rounded-3xl transition-all border border-indigo-700/30 active:scale-95">
                             <RotateCcw size={24}/>
                          </button>
-                         <button onClick={() => { if(confirm("Deseja mesmo abandonar esta sede? Todos os cômodos e mobílias serão perdidos.")) demolishBase(base.id); }} title="Abandonar Base" className="p-4 md:p-5 bg-red-800/10 dark:bg-red-400/10 hover:bg-red-800/20 text-red-900 dark:text-red-400 rounded-3xl transition-all">
+                         <button onClick={() => { if(confirm("Deseja mesmo abandonar esta sede? Todos os cômodos e mobílias serão perdidos.")) demolishBase(base.id); }} title="Abandonar Base" className="p-4 md:p-5 bg-red-800/10 dark:bg-red-400/10 hover:bg-red-800/20 text-red-900 dark:text-red-400 rounded-3xl transition-all active:scale-95">
                             <Trash2 size={24}/>
                          </button>
                        </div>
@@ -264,21 +271,21 @@ const BasesPage: React.FC = () => {
                                 <Info size={16} className="text-fantasy-gold shrink-0"/>
                                 <p className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest italic">{typeData.bonus}</p>
                               </div>
-                              <button onClick={() => { setActiveBaseId(base.id); setModalMode('bonuses'); }} className="w-full bg-violet-800/80 hover:bg-violet-700 text-white py-3.5 rounded-full font-medieval text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 border-b-4 border-violet-950 active:translate-y-1 active:border-b-0">
+                              <button onClick={() => { setActiveBaseId(base.id); setModalMode('bonuses'); }} className="w-full bg-violet-800/80 hover:bg-violet-700 text-white py-3.5 rounded-full font-medieval text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 border-b-4 border-violet-950 active:translate-y-1 active:border-b-0 active:scale-95">
                                 <Sparkles size={16}/> Ver Bônus
                               </button>
                             </div>
                           </div>
                           <div className="space-y-4">
-                            <button onClick={() => { setActiveBaseId(base.id); setModalMode('collectBusinessIncome'); }} className="w-full bg-fantasy-gold hover:bg-[#bfa030] text-black py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 transition-all flex items-center justify-center gap-3">
+                            <button onClick={() => { setActiveBaseId(base.id); setModalMode('collectBusinessIncome'); }} className="w-full bg-fantasy-gold hover:bg-[#bfa030] text-black py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 active:scale-95 transition-all flex items-center justify-center gap-3">
                               <TrendingUp size={24}/> Coletar Lucros
                             </button>
                             {(base.businessLevel || 1) < MAX_BUSINESS_LEVEL && (
-                              <button onClick={() => { setActiveBaseId(base.id); setModalMode('levelUpBusiness'); }} className="w-full bg-amber-700 text-white py-4 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 transition-all flex items-center justify-center gap-3">
+                              <button onClick={() => { setActiveBaseId(base.id); setModalMode('levelUpBusiness'); }} className="w-full bg-amber-700 text-white py-4 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all flex items-center justify-center gap-3">
                                 <ArrowUp size={20}/> Evoluir Negócio
                               </button>
                             )}
-                            <button onClick={() => { setActiveBaseId(base.id); setModalMode('addAsset'); }} disabled={(base.businessAssetNames || []).length >= (base.businessLevel || 1)} className="w-full bg-emerald-700 hover:bg-emerald-600 text-white py-4 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-lg border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all disabled:opacity-30 flex items-center justify-center gap-3">
+                            <button onClick={() => { setActiveBaseId(base.id); setModalMode('addAsset'); }} disabled={(base.businessAssetNames || []).length >= (base.businessLevel || 1)} className="w-full bg-emerald-700 hover:bg-emerald-600 text-white py-4 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-lg border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3">
                               <Plus size={20}/> Adquirir Ativo
                             </button>
                           </div>
@@ -304,7 +311,7 @@ const BasesPage: React.FC = () => {
                                   <div key={assetName} className="bg-white/50 dark:bg-black/20 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[40px] p-6 hover:border-fantasy-gold/40 transition-all shadow-md group">
                                     <div className="flex justify-between items-start mb-3">
                                       <h5 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-parchment">{assetName}</h5>
-                                      <button onClick={() => { if(confirm(`Remover ativo "${assetName}"?`)) removeBusinessAsset(base.id, assetName); }} className="opacity-0 group-hover:opacity-100 text-red-700 dark:text-red-400 hover:text-red-500 transition-all" title="Remover Ativo">
+                                      <button onClick={() => { if(confirm(`Remover ativo "${assetName}"?`)) removeBusinessAsset(base.id, assetName); }} className="opacity-0 group-hover:opacity-100 text-red-700 dark:text-red-400 hover:text-red-500 transition-all active:scale-95" title="Remover Ativo">
                                         <X size={16}/>
                                       </button>
                                     </div>
@@ -373,11 +380,11 @@ const BasesPage: React.FC = () => {
                                        </div>
                                        {['Formidavel', 'Grandiosa', 'Suprema'].includes(base.porte) && (
                                          <div className="flex gap-2 mt-2">
-                                           <button onClick={() => addGargula(base.id, true)} className="flex-1 text-[9px] font-black uppercase bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-2 rounded-full transition-colors tracking-widest shadow">
+                                           <button onClick={() => addGargula(base.id, true)} className="flex-1 text-[9px] font-black uppercase bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-2 rounded-full transition-colors tracking-widest shadow active:scale-95">
                                               Contratar (T$ 10k)
                                            </button>
                                            {(base.gargulas || 0) > 0 && (
-                                             <button onClick={() => removeGargula(base.id)} className="text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded-full transition-colors tracking-widest shadow">
+                                             <button onClick={() => removeGargula(base.id)} className="text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded-full transition-colors tracking-widest shadow active:scale-95">
                                                 Remover
                                              </button>
                                            )}
@@ -390,7 +397,7 @@ const BasesPage: React.FC = () => {
                                         <p className="text-[10px] font-black uppercase text-fantasy-gold tracking-widest italic">{typeData.bonus}</p>
                                     </div>
 
-                                    <button onClick={() => { setActiveBaseId(base.id); setModalMode('bonuses'); }} className="w-full bg-violet-800/80 hover:bg-violet-700 text-white py-3.5 rounded-full font-medieval text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 border-b-4 border-violet-950 active:translate-y-1 active:border-b-0">
+                                    <button onClick={() => { setActiveBaseId(base.id); setModalMode('bonuses'); }} className="w-full bg-violet-800/80 hover:bg-violet-700 text-white py-3.5 rounded-full font-medieval text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 border-b-4 border-violet-950 active:translate-y-1 active:border-b-0 active:scale-95">
                                         <Sparkles size={16}/> Ver Bônus
                                     </button>
                                 </div>
@@ -398,15 +405,15 @@ const BasesPage: React.FC = () => {
                             
                             <div className="space-y-4">
                               {base.type === 'Empreendimento' && (
-                                  <button onClick={() => { setActiveBaseId(base.id); setModalMode('income'); }} className="w-full bg-fantasy-gold hover:bg-[#bfa030] text-black py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 transition-all flex items-center justify-center gap-3">
+                                  <button onClick={() => { setActiveBaseId(base.id); setModalMode('income'); }} className="w-full bg-fantasy-gold hover:bg-[#bfa030] text-black py-5 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 active:scale-95 transition-all flex items-center justify-center gap-3">
                                       <TrendingUp size={24}/> Coletar Lucros
                                   </button>
                               )}
                               <div className="flex gap-3">
-                                <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance, false)} className="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all">
+                                <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance, false)} className="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                                     Pagar
                                 </button>
-                                <button onClick={() => { if(confirm("Negligenciar manutenção danificará um cômodo aleatório. Confirmar?")) payBaseMaintenance(base.id, 'Regular', porteData.maintenance, true); }} className="flex-1 bg-amber-800 hover:bg-amber-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 transition-all">
+                                <button onClick={() => { if(confirm("Negligenciar manutenção danificará um cômodo aleatório. Confirmar?")) payBaseMaintenance(base.id, 'Regular', porteData.maintenance, true); }} className="flex-1 bg-amber-800 hover:bg-amber-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                                     Negligenciar
                                 </button>
                               </div>
@@ -416,13 +423,13 @@ const BasesPage: React.FC = () => {
                         <div className="lg:col-span-2 space-y-8">
                             <div className="flex flex-col md:flex-row justify-between items-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6 gap-4">
                                <h4 className="text-2xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Planta do Edifício</h4>
-                               <button disabled={isFull} onClick={() => { setActiveBaseId(base.id); setModalMode('addRoom'); }} className="w-full md:w-auto bg-indigo-700 hover:bg-indigo-600 text-white px-8 py-3 rounded-full font-medieval uppercase text-sm tracking-widest shadow-2xl disabled:opacity-20 transition-all flex items-center justify-center gap-3">
+                               <button disabled={isFull} onClick={() => { setActiveBaseId(base.id); setModalMode('addRoom'); }} className="w-full md:w-auto bg-indigo-700 hover:bg-indigo-600 text-white px-8 py-3 rounded-full font-medieval uppercase text-sm tracking-widest shadow-2xl disabled:opacity-20 transition-all flex items-center justify-center gap-3 active:scale-95">
                                  <Plus size={18}/> Novo Cômodo
                                </button>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 md:pr-4">
-                               {base.rooms.map(room => (
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 md:pr-4 animate-fade-in">
+                                {base.rooms.map(room => (
                                   <div key={room.id} className={`bg-white/50 dark:bg-black/20 border-2 rounded-[40px] p-8 group/room hover:border-fantasy-gold/40 transition-all shadow-md ${room.isDamaged ? 'border-red-600/40 bg-red-950/5 dark:bg-red-950/10' : 'border-fantasy-wood/10 dark:border-white/10'}`}>
                                      <div className="flex justify-between items-start mb-6">
                                         <div className="flex items-center gap-4">
@@ -434,7 +441,7 @@ const BasesPage: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                            {room.isDamaged && (
-                                              <button onClick={() => { if(confirm(`Confirmar reparo por T$ ${Math.floor((room.cost || 0)/2)}?`)) repairRoom(base.id, room.id, true); }} className="text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-3 py-1.5 rounded-full transition-colors tracking-widest shadow">
+                                              <button onClick={() => { if(confirm(`Confirmar reparo por T$ ${Math.floor((room.cost || 0)/2)}?`)) repairRoom(base.id, room.id, true); }} className="text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-3 py-1.5 rounded-full transition-colors tracking-widest shadow active:scale-95">
                                                  Reparar (T$ {Math.floor((room.cost || 0)/2)})
                                               </button>
                                            )}
@@ -446,14 +453,14 @@ const BasesPage: React.FC = () => {
                                                   : `Demolir o cômodo "${room.name}"?\n\nEsta ação não pode ser desfeita.`;
                                                 if (confirm(msg)) removeRoom(base.id, room.id);
                                               }} 
-                                              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest text-red-700 dark:text-red-400 hover:bg-red-700 hover:text-white dark:hover:bg-red-800 border border-red-700/30 dark:border-red-400/30 transition-all opacity-70 hover:opacity-100"
+                                              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest text-red-700 dark:text-red-400 hover:bg-red-700 hover:text-white dark:hover:bg-red-800 border border-red-700/30 dark:border-red-400/30 transition-all opacity-70 hover:opacity-100 active:scale-95"
                                               title="Demolir Cômodo"
                                             >
                                               <X size={12}/> Demolir
                                             </button>
                                         </div>
                                      </div>
-                                     <div className="space-y-3 border-l-4 border-fantasy-gold/10 dark:border-white/10 pl-8 ml-3">
+                                     <div className="space-y-3 border-l-4 border-fantasy-gold/10 dark:border-white/10 pl-8 ml-3 animate-fade-in">
                                         {room.furnitures.map(f => (
                                            <div key={f.id} className="flex justify-between items-center group/furn py-1 border-b border-fantasy-wood/5 dark:border-white/5">
                                               <span className="text-xs font-bold text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase tracking-tight">• {f.name}</span>
@@ -475,14 +482,14 @@ const BasesPage: React.FC = () => {
                                                      }
                                                      const targetRoom = otherRooms[index];
                                                      moveFurniture(base.id, room.id, targetRoom.id, f.id);
-                                                  }} title="Mover Mobília" className="opacity-100 lg:opacity-0 group-hover/furn:opacity-100 text-indigo-700 dark:text-indigo-400 hover:opacity-70 mr-2 text-[10px] font-black uppercase tracking-wider">
+                                                  }} title="Mover Mobília" className="opacity-100 lg:opacity-0 group-hover/furn:opacity-100 text-indigo-700 dark:text-indigo-400 hover:opacity-70 mr-2 text-[10px] font-black uppercase tracking-wider active:scale-95">
                                                      Mover
                                                   </button>
-                                                  <button onClick={() => removeFurniture(base.id, room.id, f.id)} className="opacity-100 lg:opacity-0 group-hover/furn:opacity-100 text-red-800 dark:text-red-400"><X size={14}/></button>
+                                                  <button onClick={() => removeFurniture(base.id, room.id, f.id)} className="opacity-100 lg:opacity-0 group-hover/furn:opacity-100 text-red-800 dark:text-red-400 active:scale-95"><X size={14}/></button>
                                                </div>
                                            </div>
                                         ))}
-                                        <button disabled={room.isDamaged} onClick={() => { setActiveBaseId(base.id); setActiveRoomId(room.id); setModalMode('addFurn'); }} className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 hover:opacity-70 pt-4 tracking-widest flex items-center gap-2 disabled:opacity-30">
+                                        <button disabled={room.isDamaged} onClick={() => { setActiveBaseId(base.id); setActiveRoomId(room.id); setModalMode('addFurn'); }} className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 hover:opacity-70 pt-4 tracking-widest flex items-center gap-2 disabled:opacity-30 active:scale-95">
                                           <Plus size={12}/> Adicionar Mobília
                                         </button>
                                      </div>
@@ -493,16 +500,17 @@ const BasesPage: React.FC = () => {
                       </>
                     )}
                     </div>
-                </div>
-              );
-            })
-         )}
-      </div>
+                 </div>
+                 </AnimatedCard>
+               );
+             })
+          )}
+       </div>
 
       {modalMode && (
          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
             <div className="parchment-card p-6 md:p-14 rounded-[40px] md:rounded-[80px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-                <button onClick={resetModal} className="absolute top-6 right-6 md:top-12 md:right-12 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 md:p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+                <button onClick={resetModal} className="absolute top-6 right-6 md:top-12 md:right-12 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 md:p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
                 
                 {modalMode === 'buy' && (
                    <form onSubmit={(e) => { e.preventDefault(); addBase(newName, newPorte, newType, acquisitionMethod, rollResult === '' ? undefined : Number(rollResult)); resetModal(); }} className="space-y-8 md:space-y-12">
@@ -571,7 +579,7 @@ const BasesPage: React.FC = () => {
                               </div>
                           )}
                        </div>
-                       <button type="submit" className="w-full bg-fantasy-blood text-white py-6 md:py-10 rounded-[56px] font-medieval text-2xl md:text-3xl uppercase tracking-[0.3em] shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
+                       <button type="submit" className="w-full bg-fantasy-blood text-white py-6 md:py-10 rounded-[56px] font-medieval text-2xl md:text-3xl uppercase tracking-[0.3em] shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                            Confirmar Escritura
                        </button>
                    </form>
@@ -646,7 +654,7 @@ const BasesPage: React.FC = () => {
                               </div>
                           )}
                        </div>
-                       <button type="submit" className="w-full bg-indigo-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-indigo-950 active:translate-y-2 active:border-b-0 transition-all">
+                       <button type="submit" className="w-full bg-indigo-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-indigo-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                            Efetivar Projeto
                        </button>
                    </form>
@@ -708,7 +716,7 @@ const BasesPage: React.FC = () => {
                              </label>
                           </div>
                        </div>
-                       <button type="submit" className="w-full bg-fantasy-gold text-black py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all">
+                       <button type="submit" className="w-full bg-fantasy-gold text-black py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                            Instalar Peça
                        </button>
                    </form>
@@ -774,7 +782,7 @@ const BasesPage: React.FC = () => {
                        )}
 
                        {getNextUpgradePorte() !== null && (
-                           <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 transition-all">
+                           <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                                Finalizar Expansão
                            </button>
                        )}
@@ -829,7 +837,7 @@ const BasesPage: React.FC = () => {
                               </div>
                           )}
                        </div>
-                       <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 transition-all">
+                       <button type="submit" className="w-full bg-blue-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-blue-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                            Executar Reforma
                        </button>
                    </form>
@@ -856,7 +864,7 @@ const BasesPage: React.FC = () => {
                               />
                            </div>
                         </div>
-                        <button type="submit" className="w-full bg-emerald-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all">
+                        <button type="submit" className="w-full bg-emerald-800 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                             Confirmar Recebimento
                         </button>
                     </form>
@@ -887,7 +895,7 @@ const BasesPage: React.FC = () => {
                               </ul>
                            </div>
                         </div>
-                        <button type="submit" className="w-full bg-amber-800 text-white py-6 md:py-10 rounded-[56px] font-medieval text-2xl md:text-3xl uppercase tracking-[0.3em] shadow-5xl border-b-8 border-amber-950 transition-all active:translate-y-2 active:border-b-0">
+                        <button type="submit" className="w-full bg-amber-800 text-white py-6 md:py-10 rounded-[56px] font-medieval text-2xl md:text-3xl uppercase tracking-[0.3em] shadow-5xl border-b-8 border-amber-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                             Estabelecer Negócio
                         </button>
                     </form>
@@ -923,7 +931,7 @@ const BasesPage: React.FC = () => {
                           </div>
                         )}
                         {(activeBase.businessLevel || 1) < MAX_BUSINESS_LEVEL && (
-                          <button type="submit" className="w-full bg-amber-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 transition-all">
+                          <button type="submit" className="w-full bg-amber-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                               Evoluir para Nível {(activeBase.businessLevel || 1) + 1}
                           </button>
                         )}
@@ -971,7 +979,7 @@ const BasesPage: React.FC = () => {
                             ) : null;
                           })()}
                         </div>
-                        <button type="submit" disabled={!bizAssetName} className="w-full bg-emerald-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 transition-all disabled:opacity-30">
+                        <button type="submit" disabled={!bizAssetName} className="w-full bg-emerald-700 text-white py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all disabled:opacity-30">
                             Adquirir Ativo
                         </button>
                     </form>
@@ -1017,7 +1025,7 @@ const BasesPage: React.FC = () => {
                             <p className="text-5xl font-medieval text-emerald-900 dark:text-emerald-400 mt-2">T$ {finalIncome}</p>
                           </div>
                         </div>
-                        <button type="submit" className="w-full bg-fantasy-gold text-black py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 transition-all">
+                        <button type="submit" className="w-full bg-fantasy-gold text-black py-6 md:py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-2xl border-b-8 border-[#8c7320] active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                             Coletar Renda
                         </button>
                     </form>

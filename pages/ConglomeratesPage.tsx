@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { LandPlot, Crown, Shield, Globe, Users, Swords, AlertTriangle, Plus, X, Building2, Coins, HeartHandshake, Skull, TrendingDown, ChevronRight, Trash2, ShieldCheck, Zap, Pause, Play, History } from 'lucide-react';
 import { ConglomerateType, ConglomerateRole, ConglomerateAffinity } from '../types';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const ConglomeratesPage: React.FC = () => {
   const {
     domains, conglomerates, members, npcs,
-    createConglomerate, addDomainToConglomerate, removeDomainFromConglomerate,
+    isLoading, createConglomerate, addDomainToConglomerate, removeDomainFromConglomerate,
     subjugateDomain, disbandConglomerate, setDomainRole,
     inactivateConglomerate, reactivateConglomerate, setConglomerateAffinity, notify
   } = useGuild();
@@ -67,19 +70,20 @@ const ConglomeratesPage: React.FC = () => {
           <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Alianças & Impérios</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Conglomerados de domínios sob um único estandarte.</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1">
+        <button onClick={() => setShowCreate(true)} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
           <Plus size={24} /> Novo Conglomerado
         </button>
       </header>
 
-      {conglomerates.length === 0 ? (
-        <div className="parchment-card p-36 rounded-[60px] border-4 border-dashed border-fantasy-wood/10 dark:border-fantasy-parchment/10 text-center opacity-60">
-          <Globe size={100} className="mx-auto mb-10 text-fantasy-wood/20 dark:text-fantasy-parchment/10" />
-          <p className="font-medieval text-4xl uppercase italic text-fantasy-wood dark:text-fantasy-parchment">Nenhuma aliança ou império formado ainda...</p>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-8">
+          {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
+      ) : conglomerates.length === 0 ? (
+        <EmptyState icon={Globe} title="Nenhuma alianca ou imperio..." description="Una dominios sob uma bandeira comum." />
       ) : (
         <div className="grid grid-cols-1 gap-8">
-          {conglomerates.map(c => {
+          {conglomerates.map((c, index) => {
             const isExpanded = expandedId === c.id;
             const capital = domains.find(d => d.id === c.capitalDomainId);
             const members = c.memberDomainIds.map(id => domains.find(d => d.id === id)).filter(Boolean);
@@ -87,7 +91,8 @@ const ConglomeratesPage: React.FC = () => {
             const subjugatedCount = c.subjugatedIds.length;
 
             return (
-              <div key={c.id} className={`parchment-card rounded-[60px] overflow-hidden shadow-5xl border-4 ${c.active ? 'border-fantasy-gold/20' : 'border-stone-600/20 opacity-70'}`}>
+              <AnimatedCard key={c.id} delay={index * 100}>
+              <div className={`parchment-card rounded-[32px] overflow-hidden shadow-5xl border-4 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ${c.active ? 'border-fantasy-gold/20' : 'border-stone-600/20 opacity-70'}`}>
                 <div className="bg-fantasy-wood/5 dark:bg-black/20 p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10">
                   <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                     <div className="flex items-center gap-6">
@@ -152,33 +157,33 @@ const ConglomeratesPage: React.FC = () => {
 
                   <div className="flex gap-3 mt-6 flex-wrap">
                     <button onClick={() => { setExpandedId(isExpanded ? null : c.id); setShowAddDomain(null); setShowSubjugate(null); }}
-                      className="flex items-center gap-2 px-4 py-2 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 rounded-xl text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment transition-all">
+                      className="flex items-center gap-2 px-4 py-2 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 rounded-xl text-xs font-black uppercase tracking-widest text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
                       <ChevronRight size={16} className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} /> Detalhes
                     </button>
                     {c.active && (
                       <>
                         <button onClick={() => { setExpandedId(c.id); setShowAddDomain(c.id); setShowSubjugate(null); }}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-900/10 hover:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95">
                           <Plus size={14} /> Adicionar Domínio
                         </button>
                         <button onClick={() => { setExpandedId(c.id); setShowSubjugate(c.id); setShowAddDomain(null); }}
-                          className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95">
                           <Skull size={14} /> Subjugar
                         </button>
                         <button onClick={() => { if (window.confirm(`Inativar "${c.name}"? Os domínios serão liberados e o conglomerado arquivado.`)) inactivateConglomerate(c.id); }}
-                          className="flex items-center gap-2 px-4 py-2 bg-amber-900/10 hover:bg-amber-900/20 text-amber-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                          className="flex items-center gap-2 px-4 py-2 bg-amber-900/10 hover:bg-amber-900/20 text-amber-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95">
                           <Pause size={14} /> Inativar
                         </button>
                       </>
                     )}
                     {!c.active && (
                       <button onClick={() => reactivateConglomerate(c.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-900/10 hover:bg-green-900/20 text-green-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                        className="flex items-center gap-2 px-4 py-2 bg-green-900/10 hover:bg-green-900/20 text-green-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95">
                         <Play size={14} /> Reativar
                       </button>
                     )}
                     <button onClick={() => { if (window.confirm(`Dissolver "${c.name}"? Esta ação removerá permanentemente o conglomerado.`)) disbandConglomerate(c.id); }}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-900/10 hover:bg-gray-900/20 text-gray-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all ml-auto">
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-900/10 hover:bg-gray-900/20 text-gray-600 rounded-xl text-xs font-black uppercase tracking-widest transition-all ml-auto active:scale-95">
                       <Trash2 size={14} /> Dissolver
                     </button>
                   </div>
@@ -201,7 +206,7 @@ const ConglomeratesPage: React.FC = () => {
                           <input type="number" min="0" placeholder="Suborno (LO)" className="w-40 bg-white/40 dark:bg-black/40 rounded-2xl px-6 py-4 font-medieval text-lg outline-none text-center"
                             value={bribeAmount} onChange={e => setBribeAmount(e.target.value)} />
                           <button onClick={() => { if (selectedDomain) { addDomainToConglomerate(c.id, selectedDomain, bribeAmount ? Number(bribeAmount) : undefined); setSelectedDomain(''); setBribeAmount(''); } }}
-                            className="bg-blue-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-blue-950 active:translate-y-1 transition-all">
+                            className="bg-blue-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-blue-950 active:translate-y-1 active:scale-95 transition-all">
                             Aliar
                           </button>
                         </div>
@@ -230,7 +235,7 @@ const ConglomeratesPage: React.FC = () => {
                             })}
                           </select>
                           <button onClick={() => { if (selectedDomain) { subjugateDomain(c.id, selectedDomain); setSelectedDomain(''); } }}
-                            className="bg-red-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-red-950 active:translate-y-1 transition-all">
+                            className="bg-red-800 text-white px-8 py-4 rounded-2xl font-medieval uppercase tracking-widest shadow-xl border-b-4 border-red-950 active:translate-y-1 active:scale-95 transition-all">
                             Conquistar
                           </button>
                         </div>
@@ -330,7 +335,7 @@ const ConglomeratesPage: React.FC = () => {
                             </div>
                             {affinity !== 'Subjugado' && affinity !== 'Vassalo' && !(d.id === c.capitalDomainId && c.memberDomainIds.length <= 1) && (
                               <button onClick={() => { if (window.confirm(`Remover "${d.name}" do conglomerado?`)) removeDomainFromConglomerate(c.id, d.id); }}
-                                className="mt-2 text-[9px] text-gray-500 hover:text-red-500 font-black uppercase tracking-widest transition-colors">
+                                className="mt-2 text-[9px] text-gray-500 hover:text-red-500 font-black uppercase tracking-widest transition-colors active:scale-95">
                                 Remover
                               </button>
                             )}
@@ -342,6 +347,7 @@ const ConglomeratesPage: React.FC = () => {
                   </div>
                 )}
               </div>
+              </AnimatedCard>
             );
           })}
         </div>
@@ -350,7 +356,7 @@ const ConglomeratesPage: React.FC = () => {
       {showCreate && (
         <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[150] p-4 backdrop-blur-xl animate-fade-in">
           <div className="parchment-card p-14 rounded-[80px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
-            <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={32} /></button>
+            <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={32} /></button>
 
             <form onSubmit={handleCreate} className="space-y-10">
               <div className="flex flex-col items-center text-center">
@@ -371,13 +377,13 @@ const ConglomeratesPage: React.FC = () => {
                   <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Tipo</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button type="button" onClick={() => setNewType('Alianca')}
-                      className={`p-6 rounded-3xl border-2 text-center transition-all ${newType === 'Alianca' ? 'bg-emerald-900/20 border-emerald-600 text-emerald-600' : 'border-fantasy-wood/10 text-fantasy-wood/60'}`}>
+                      className={`p-6 rounded-3xl border-2 text-center transition-all active:scale-95 ${newType === 'Alianca' ? 'bg-emerald-900/20 border-emerald-600 text-emerald-600' : 'border-fantasy-wood/10 text-fantasy-wood/60'}`}>
                       <HeartHandshake size={32} className="mx-auto mb-2" />
                       <div className="font-medieval text-lg">Aliança</div>
                       <div className="text-[8px] font-black uppercase tracking-widest mt-1">União voluntária</div>
                     </button>
                     <button type="button" onClick={() => setNewType('Imperio')}
-                      className={`p-6 rounded-3xl border-2 text-center transition-all ${newType === 'Imperio' ? 'bg-red-900/20 border-red-600 text-red-600' : 'border-fantasy-wood/10 text-fantasy-wood/60'}`}>
+                      className={`p-6 rounded-3xl border-2 text-center transition-all active:scale-95 ${newType === 'Imperio' ? 'bg-red-900/20 border-red-600 text-red-600' : 'border-fantasy-wood/10 text-fantasy-wood/60'}`}>
                       <Skull size={32} className="mx-auto mb-2" />
                       <div className="font-medieval text-lg">Império</div>
                       <div className="text-[8px] font-black uppercase tracking-widest mt-1">Domínio Central</div>
@@ -394,7 +400,7 @@ const ConglomeratesPage: React.FC = () => {
                 </div>
               </div>
 
-              <button type="submit" className="w-full bg-fantasy-blood text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
+              <button type="submit" className="w-full bg-fantasy-blood text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
                 Formar {newType === 'Alianca' ? 'Aliança' : 'Império'}
               </button>
             </form>

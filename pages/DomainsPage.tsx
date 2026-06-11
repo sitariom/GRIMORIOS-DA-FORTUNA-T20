@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, Map as MapIcon, Settings, UserCircle, Swords, TrendingUp, TrendingDown, Dices, ArrowLeftRight, Heart, AlertTriangle, Users, ShoppingCart, Scale, Hand, Sparkles, RotateCcw, Scroll } from 'lucide-react';
+import { LandPlot, Castle, Shield, Crown, Building2, Coins, Plus, Trash2, X, Zap, Gavel, Globe, Map as MapIcon, Settings, UserCircle, Swords, TrendingUp, TrendingDown, Dices, ArrowLeftRight, Heart, AlertTriangle, Users, ShoppingCart, Scale, Hand, Sparkles, RotateCcw, Scroll } from 'lucide-react';
 import { POPULARITY_LEVELS, TERRAIN_TYPES, COURT_DATA, CRISIS_EVENTS, DOMAIN_BUILDINGS_CATALOG, DOMAIN_UNITS_CATALOG, RANDOM_EVENTS_TABLE, TAX_TABLE, TERRAIN_MAX_LEVEL, POPULARITY_MODIFIERS } from '../constants';
 import { PopularityType, CourtType, DomainActionType, ActionResult, DomainUnit, DomainBuilding, TaskStatus, AdvisorRole } from '../types';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const DomainsPage: React.FC = () => {
   const { 
@@ -12,7 +15,7 @@ const DomainsPage: React.FC = () => {
     executeDomainAction, payMaintenance, getMaintenanceCost, applyEvent, applyRandomEvent, resolveRevolt,
     applyBattleOutcome, resolveCaravan, withdraw,
     addPendingTask, updatePendingTask, removePendingTask, addAdvisor, removeAdvisor, updateAdvisor,
-    resetDomainTurn, resetAllDomainsTurns, members, npcs,
+    resetDomainTurn, resetAllDomainsTurns, members, npcs, isLoading,
     getDomainMaxLevel, getDomainMagicPotential
   } = useGuild();
   
@@ -737,8 +740,8 @@ const DomainsPage: React.FC = () => {
           <button onClick={() => {
             resetAllDomainsTurns();
           }}
-            className="bg-fantasy-wood/10 hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment px-6 py-4 rounded-[32px] flex items-center gap-3 font-medieval uppercase tracking-widest text-sm border-2 border-fantasy-wood/20 transition-all">
-            <RotateCcw size={18} /> Reiniciar Turno
+            className="bg-fantasy-wood/10 hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment px-6 py-4 rounded-[32px] flex items-center gap-3 font-medieval uppercase tracking-widest text-sm border-2 border-fantasy-wood/20 transition-all active:scale-95">
+             <RotateCcw size={18} /> Reiniciar Turno
           </button>
           <button onClick={() => setShowAddModal(true)}
             className="bg-fantasy-blood hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-6 rounded-[32px] flex items-center gap-4 font-medieval uppercase tracking-widest shadow-2xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
@@ -748,11 +751,10 @@ const DomainsPage: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 gap-12">
-          {domains.length === 0 ? (
-             <div className="parchment-card p-24 md:p-36 rounded-[60px] border-4 border-dashed border-fantasy-wood/10 dark:border-white/10 text-center opacity-60">
-                <MapIcon size={80} className="mx-auto mb-10 text-fantasy-wood/20 dark:text-fantasy-parchment/10"/>
-                <p className="font-medieval text-3xl md:text-4xl uppercase tracking-widest italic text-fantasy-wood dark:text-fantasy-parchment">O mapa está em branco...</p>
-             </div>
+          {isLoading ? (
+             <><CardSkeleton /><CardSkeleton /><CardSkeleton /></>
+          ) : domains.length === 0 ? (
+             <EmptyState icon={Globe} title="Nenhum domínio reivindicado..." description="Reivindique seu primeiro domínio." />
           ) : (
              domains.map((domain, idx) => {
                 const totalMaint = getMaintenanceCost(domain);
@@ -763,7 +765,7 @@ const DomainsPage: React.FC = () => {
                 const hasCaravanserai = domain.buildings.some((b: any) => b.name === 'Caravançará');
                 const domainActions = domain.actionsRemaining !== undefined ? domain.actionsRemaining : (domain.court === 'Rica' ? 3 : 2);
                 return (
-                <div key={domain.id} className={`parchment-card rounded-[60px] shadow-5xl overflow-hidden border-4 ${revolt ? 'border-red-600/50 animate-pulse' : 'border-fantasy-gold/20'} animate-slide-up`} style={{ animationDelay: `${idx*100}ms` }}>
+                <AnimatedCard key={domain.id} delay={idx * 100} className={`parchment-card rounded-[32px] shadow-5xl overflow-hidden border-4 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ${revolt ? 'border-red-600/50 animate-pulse' : 'border-fantasy-gold/20'}`}>
                     {/* Header */}
                     <div className={`${revolt ? 'bg-red-900/20' : domain.isMystic ? 'bg-purple-900/20' : 'bg-fantasy-wood/10 dark:bg-black/20'} p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8`}>
                        <div className="flex items-center gap-6 md:gap-8">
@@ -795,29 +797,29 @@ const DomainsPage: React.FC = () => {
                           </div>
                        </div>
                        <div className="flex flex-wrap gap-3">
-                          <button onClick={() => { setActiveDomainId(domain.id); setModalMode('finance'); }} className="px-6 py-3 rounded-2xl bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black hover:bg-amber-600 dark:hover:bg-fantasy-gold/90 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
-                             <Coins size={18}/> Tesouro
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('finance'); }} className="px-6 py-3 rounded-2xl bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black hover:bg-amber-600 dark:hover:bg-fantasy-gold/90 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
+                              <Coins size={18}/> Tesouro
                           </button>
-                          <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-6 py-3 rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-700 dark:hover:bg-amber-700 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
-                             <Dices size={18}/> Eventos
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-6 py-3 rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-700 dark:hover:bg-amber-700 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
+                              <Dices size={18}/> Eventos
                           </button>
-                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-6 py-3 rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold">
-                              <Zap size={18}/> Crise
+                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-6 py-3 rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
+                               <Zap size={18}/> Crise
                            </button>
-                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('levelup'); }} className="px-6 py-3 rounded-2xl bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 hover:bg-purple-800 dark:hover:bg-purple-800 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold" title="Concessão do Mestre — evolução gratuita sem custo de ação">
-                              <Sparkles size={18}/> Mestre
+                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('levelup'); }} className="px-6 py-3 rounded-2xl bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 hover:bg-purple-800 dark:hover:bg-purple-800 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95" title="Concessão do Mestre — evolução gratuita sem custo de ação">
+                               <Sparkles size={18}/> Mestre
                            </button>
-                           <button onClick={() => openStatsModal(domain)} className="px-4 py-3 rounded-2xl bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-all border border-stone-300 dark:border-stone-700 shadow-md">
-                              <Settings size={20}/>
+                            <button onClick={() => openStatsModal(domain)} className="px-4 py-3 rounded-2xl bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-all border border-stone-300 dark:border-stone-700 shadow-md active:scale-95">
+                               <Settings size={20}/>
+                            </button>
+                           {(domain.court === 'Comum' || domain.court === 'Rica') && (
+                              <button onClick={() => { setActiveDomainId(domain.id); setModalMode('advisors'); }} className="px-4 py-3 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-all border border-purple-200 dark:border-purple-900/50 shadow-md active:scale-95" title="Conselheiros da Corte">
+                                 <Crown size={20}/>
+                              </button>
+                           )}
+                           <button onClick={() => { if(confirm("Abandonar este domínio?")) demolishDomain(domain.id); }} className="px-4 py-3 rounded-2xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all border border-red-200 dark:border-red-900/50 shadow-md active:scale-95">
+                              <Trash2 size={20}/>
                            </button>
-                          {(domain.court === 'Comum' || domain.court === 'Rica') && (
-                             <button onClick={() => { setActiveDomainId(domain.id); setModalMode('advisors'); }} className="px-4 py-3 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-all border border-purple-200 dark:border-purple-900/50 shadow-md" title="Conselheiros da Corte">
-                                <Crown size={20}/>
-                             </button>
-                          )}
-                          <button onClick={() => { if(confirm("Abandonar este domínio?")) demolishDomain(domain.id); }} className="px-4 py-3 rounded-2xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all border border-red-200 dark:border-red-900/50 shadow-md">
-                             <Trash2 size={20}/>
-                          </button>
                        </div>
                     </div>
 
@@ -828,8 +830,8 @@ const DomainsPage: React.FC = () => {
                           <AlertTriangle size={20} className="text-red-500" />
                           <span className="text-sm font-medieval text-red-700 dark:text-red-400">REVOLTA — Impostos zerados, construções em risco. Aumente a popularidade para sufocar a revolta.</span>
                         </div>
-                        <button onClick={() => { setActiveDomainId(domain.id); setModalMode('resolveRevolt'); }} className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all">
-                          Tentar Sufocar
+                        <button onClick={() => { setActiveDomainId(domain.id); setModalMode('resolveRevolt'); }} className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95">
+                           Tentar Sufocar
                         </button>
                       </div>
                     )}
@@ -911,7 +913,7 @@ const DomainsPage: React.FC = () => {
                        <div className="space-y-8">
                           <div className="flex justify-between items-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
                              <h4 className="text-2xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tight flex items-center gap-3"><Building2 size={24}/> Infraestrutura <span className="text-xs text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-mono">({domain.buildings.length}/{domain.level * 3})</span></h4>
-                             <button onClick={() => { setActiveDomainId(domain.id); setModalMode('building'); }} disabled={domainActions <= 0 || revolt} className={`p-3 bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black rounded-full transition-all shadow-lg ${domainActions <= 0 || revolt ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}><Plus size={16}/></button>
+                              <button onClick={() => { setActiveDomainId(domain.id); setModalMode('building'); }} disabled={domainActions <= 0 || revolt} className={`p-3 bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black rounded-full transition-all shadow-lg ${domainActions <= 0 || revolt ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}><Plus size={16}/></button>
                           </div>
                           <div className="space-y-4">
                              {domain.buildings.length === 0 && <p className="text-center py-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 italic font-serif">Nenhuma construção erguida.</p>}
@@ -927,7 +929,7 @@ const DomainsPage: React.FC = () => {
                              ))}
                           </div>
                           {domain.level < maxLevel && (
-                              <button onClick={() => openActionModal(domain.id, 'govern')} className="w-full py-4 border-2 border-dashed border-fantasy-wood/40 dark:border-white/20 rounded-3xl text-xs font-black uppercase tracking-widest text-fantasy-wood/70 dark:text-fantasy-parchment/70 hover:bg-fantasy-gold/15 hover:border-fantasy-gold/50 hover:text-fantasy-gold bg-black/5 dark:bg-white/5 transition-all shadow-inner">
+                              <button onClick={() => openActionModal(domain.id, 'govern')} className="w-full py-4 border-2 border-dashed border-fantasy-wood/40 dark:border-white/20 rounded-3xl text-xs font-black uppercase tracking-widest text-fantasy-wood/70 dark:text-fantasy-parchment/70 hover:bg-fantasy-gold/15 hover:border-fantasy-gold/50 hover:text-fantasy-gold bg-black/5 dark:bg-white/5 transition-all shadow-inner active:scale-95">
                                   Ação Governar: {domain.level * 20} LO (consome 1 ação)
                               </button>
                           )}
@@ -937,7 +939,7 @@ const DomainsPage: React.FC = () => {
                        <div className="space-y-8">
                           <div className="flex justify-between items-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
                              <h4 className="text-2xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tight flex items-center gap-3"><Swords size={24}/> Poder Militar <span className="text-xs text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-mono">({domain.units.length}/{domain.level})</span></h4>
-                             <button onClick={() => { setActiveDomainId(domain.id); setModalMode('unit'); }} disabled={domainActions <= 0 || revolt} className={`p-3 bg-indigo-900 dark:bg-indigo-500 text-white rounded-full transition-all shadow-lg ${domainActions <= 0 || revolt ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}><Plus size={16}/></button>
+                              <button onClick={() => { setActiveDomainId(domain.id); setModalMode('unit'); }} disabled={domainActions <= 0 || revolt} className={`p-3 bg-indigo-900 dark:bg-indigo-500 text-white rounded-full transition-all shadow-lg ${domainActions <= 0 || revolt ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}><Plus size={16}/></button>
                           </div>
                           <div className="space-y-4">
                              {domain.units.length === 0 && <p className="text-center py-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 italic font-serif">Nenhuma tropa alistada.</p>}
@@ -953,8 +955,8 @@ const DomainsPage: React.FC = () => {
                           </div>
                        </div>
                     </div>
-                </div>
-             )})
+                 </AnimatedCard>
+              )})
           )}
       </div>
 

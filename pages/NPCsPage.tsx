@@ -6,6 +6,9 @@ import {
   Zap, Crosshair, Users, Activity, Crown, Search, UserCheck
 } from 'lucide-react';
 import { NPCLocationType, NPC, NPCRelationship, MemberStatus } from '../types';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { CardSkeleton } from '../components/LoadingSkeleton';
 
 const RELATIONSHIP_CONFIG: Record<NPCRelationship, { label: string, color: string, bg: string, icon: React.ElementType }> = {
     'Contratado': { label: 'Contratado', color: 'text-fantasy-gold', bg: 'bg-fantasy-gold/10 border-fantasy-gold/20', icon: Coins },
@@ -34,7 +37,7 @@ const NPCsPage: React.FC = () => {
   const { 
     bases, domains, npcs, members, addNPC, updateNPC, removeNPC, 
     payAllNPCs, paySingleNPC, interactWithNPC, decreaseAffinity, toggleActiveAffinity, 
-    completeUltimateQuest, notify, wallet 
+    completeUltimateQuest, notify, wallet, isLoading 
   } = useGuild();
 
   const [showAdd, setShowAdd] = useState(false);
@@ -265,6 +268,18 @@ const NPCsPage: React.FC = () => {
     'Médico', 'Familiar', 'Familiar Especial', 'Montaria', 'Montaria Especial', 'Parceiro Especial'
   ];
 
+  if (isLoading) {
+    return (
+      <div className="space-y-12 pb-20 font-serif">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 pt-20">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-20 font-serif">
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
@@ -277,13 +292,13 @@ const NPCsPage: React.FC = () => {
             <button 
               disabled={!canPayTotal}
               onClick={() => { if(canPayTotal && confirm(`Confirmar pagamento total da folha: T$ ${totalPayroll}?`)) payAllNPCs(); }} 
-              className={`flex-1 lg:flex-none px-8 py-5 rounded-[28px] flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-xl border-b-4 transition-all active:translate-y-1 active:border-b-0 ${canPayTotal ? 'bg-emerald-800 hover:bg-emerald-700 text-white border-emerald-950' : 'bg-gray-700 text-gray-400 border-gray-900 cursor-not-allowed'}`}
+              className={`flex-1 lg:flex-none px-8 py-5 rounded-[28px] flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-xl border-b-4 transition-all active:translate-y-1 active:border-b-0 active:scale-95 ${canPayTotal ? 'bg-emerald-800 hover:bg-emerald-700 text-white border-emerald-950' : 'bg-gray-700 text-gray-400 border-gray-900 cursor-not-allowed'}`}
             >
                <Coins size={20} /> 
                {canPayTotal ? `Pagar Folha (T$ ${totalPayroll})` : `Falta Saldo (Req: T$ ${totalPayroll})`}
             </button>
           )}
-          <button onClick={() => setShowAdd(true)} className="flex-1 lg:flex-none bg-fantasy-blood hover:bg-red-700 text-white px-8 py-5 rounded-[28px] flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-xl border-b-4 border-red-950 transition-all active:translate-y-1 active:border-b-0">
+          <button onClick={() => setShowAdd(true)} className="flex-1 lg:flex-none bg-fantasy-blood hover:bg-red-700 text-white px-8 py-5 rounded-[28px] flex items-center justify-center gap-3 font-medieval uppercase tracking-widest shadow-xl border-b-4 border-red-950 transition-all active:translate-y-1 active:border-b-0 active:scale-95">
              <UserPlus size={20} /> Novo Registro
           </button>
         </div>
@@ -389,12 +404,9 @@ const NPCsPage: React.FC = () => {
 
       {/* Render Categorized NPC Cards */}
       <div className="space-y-16">
-         {filteredNpcs.length === 0 ? (
-             <div className="parchment-card py-20 text-center opacity-50 rounded-[48px]">
-                 <Contact size={80} className="mx-auto mb-6 text-fantasy-wood/30 dark:text-white/20"/>
-                 <p className="font-medieval text-3xl text-fantasy-wood dark:text-fantasy-parchment uppercase">Nenhum registro encontrado.</p>
-             </div>
-         ) : (
+          {filteredNpcs.length === 0 ? (
+              <EmptyState icon={Contact} title="Nenhum aliado ou contratado..." description="Adicione NPCs a comitiva da guilda." />
+          ) : (
             <>
                {/* 1. Parceiros Ativos */}
                {partnersSection.length > 0 && (
@@ -403,15 +415,16 @@ const NPCsPage: React.FC = () => {
                         <Crown size={28}/> Parceiros Ativos do Grupo
                      </h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                        {partnersSection.map((npc, idx) => (
-                           <NPCCard 
-                             key={npc.id} 
-                             npc={npc} 
-                             idx={idx} 
-                             onEdit={openEditModal} 
-                             selectedMemberId={selectedMemberId} 
-                           />
-                        ))}
+                         {partnersSection.map((npc, idx) => (
+                            <AnimatedCard key={npc.id} delay={idx * 60}>
+                              <NPCCard 
+                                npc={npc} 
+                                idx={idx} 
+                                onEdit={openEditModal} 
+                                selectedMemberId={selectedMemberId} 
+                              />
+                            </AnimatedCard>
+                         ))}
                      </div>
                   </div>
                )}
@@ -423,15 +436,16 @@ const NPCsPage: React.FC = () => {
                         <Users size={28}/> Comitiva Geral (Em Viagem)
                      </h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                        {groupSection.map((npc, idx) => (
-                           <NPCCard 
-                             key={npc.id} 
-                             npc={npc} 
-                             idx={idx} 
-                             onEdit={openEditModal} 
-                             selectedMemberId={selectedMemberId} 
-                           />
-                        ))}
+                         {groupSection.map((npc, idx) => (
+                            <AnimatedCard key={npc.id} delay={idx * 60}>
+                              <NPCCard 
+                                npc={npc} 
+                                idx={idx} 
+                                onEdit={openEditModal} 
+                                selectedMemberId={selectedMemberId} 
+                              />
+                            </AnimatedCard>
+                         ))}
                      </div>
                   </div>
                )}
@@ -443,15 +457,16 @@ const NPCsPage: React.FC = () => {
                         <MapPin size={28}/> Alocados em Bases
                      </h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                        {basesSection.map((npc, idx) => (
-                           <NPCCard 
-                             key={npc.id} 
-                             npc={npc} 
-                             idx={idx} 
-                             onEdit={openEditModal} 
-                             selectedMemberId={selectedMemberId} 
-                           />
-                        ))}
+                         {basesSection.map((npc, idx) => (
+                            <AnimatedCard key={npc.id} delay={idx * 60}>
+                              <NPCCard 
+                                npc={npc} 
+                                idx={idx} 
+                                onEdit={openEditModal} 
+                                selectedMemberId={selectedMemberId} 
+                              />
+                            </AnimatedCard>
+                         ))}
                      </div>
                   </div>
                )}
@@ -463,15 +478,16 @@ const NPCsPage: React.FC = () => {
                         <Briefcase size={28}/> Alocados em Domínios
                      </h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                        {domainsSection.map((npc, idx) => (
-                           <NPCCard 
-                             key={npc.id} 
-                             npc={npc} 
-                             idx={idx} 
-                             onEdit={openEditModal} 
-                             selectedMemberId={selectedMemberId} 
-                           />
-                        ))}
+                         {domainsSection.map((npc, idx) => (
+                            <AnimatedCard key={npc.id} delay={idx * 60}>
+                              <NPCCard 
+                                npc={npc} 
+                                idx={idx} 
+                                onEdit={openEditModal} 
+                                selectedMemberId={selectedMemberId} 
+                              />
+                            </AnimatedCard>
+                         ))}
                      </div>
                   </div>
                )}
@@ -483,15 +499,16 @@ const NPCsPage: React.FC = () => {
                         <Activity size={28}/> Indisponíveis, Mortos e Localidades Livres
                      </h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                        {inactiveSection.map((npc, idx) => (
-                           <NPCCard 
-                             key={npc.id} 
-                             npc={npc} 
-                             idx={idx} 
-                             onEdit={openEditModal} 
-                             selectedMemberId={selectedMemberId} 
-                           />
-                        ))}
+                         {inactiveSection.map((npc, idx) => (
+                            <AnimatedCard key={npc.id} delay={idx * 60}>
+                              <NPCCard 
+                                npc={npc} 
+                                idx={idx} 
+                                onEdit={openEditModal} 
+                                selectedMemberId={selectedMemberId} 
+                              />
+                            </AnimatedCard>
+                         ))}
                      </div>
                   </div>
                )}
@@ -503,7 +520,7 @@ const NPCsPage: React.FC = () => {
       {showAdd && (
         <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
            <div className="parchment-card p-8 md:p-12 rounded-[60px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-               <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors"><X size={24}/></button>
+                <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
                
                <div className="flex flex-col items-center text-center mb-8">
                    <div className="wax-seal w-20 h-20 mb-4 flex items-center justify-center text-white shadow-2xl"><Contact size={40}/></div>
@@ -523,7 +540,7 @@ const NPCsPage: React.FC = () => {
                                      key={key}
                                      type="button"
                                      onClick={() => { setRelationship(key as NPCRelationship); if(key !== 'Contratado') setNewCost(0); }}
-                                     className={`py-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${isActive ? `${config.bg} border-current ${config.color} shadow-lg scale-105` : 'border-transparent bg-black/5 dark:bg-white/5 opacity-50 hover:opacity-100'}`}
+                                      className={`py-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all active:scale-95 ${isActive ? `${config.bg} border-current ${config.color} shadow-lg scale-105` : 'border-transparent bg-black/5 dark:bg-white/5 opacity-50 hover:opacity-100'}`}
                                    >
                                        <config.icon size={20} />
                                        <span className="text-[10px] font-black uppercase tracking-widest">{config.label}</span>
@@ -609,11 +626,11 @@ const NPCsPage: React.FC = () => {
                        <div className="space-y-3">
                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Alocação Atual</label>
                            <div className="flex flex-wrap gap-2">
-                               <button type="button" onClick={() => { setLocationType('Grupo'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Grupo' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Grupo</button>
-                               <button type="button" onClick={() => { setLocationType('Base'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Base' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Base</button>
-                               <button type="button" onClick={() => { setLocationType('Dominio'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Dominio' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Domínio</button>
-                               <button type="button" onClick={() => { setLocationType('Membro'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Membro' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Membro</button>
-                               <button type="button" onClick={() => { setLocationType('Livre'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${locationType === 'Livre' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Livre</button>
+                                <button type="button" onClick={() => { setLocationType('Grupo'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${locationType === 'Grupo' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Grupo</button>
+                                <button type="button" onClick={() => { setLocationType('Base'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${locationType === 'Base' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Base</button>
+                                <button type="button" onClick={() => { setLocationType('Dominio'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${locationType === 'Dominio' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Domínio</button>
+                                <button type="button" onClick={() => { setLocationType('Membro'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${locationType === 'Membro' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Membro</button>
+                                <button type="button" onClick={() => { setLocationType('Livre'); setTargetId(''); }} className={`flex-1 min-w-[80px] py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${locationType === 'Livre' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-white/40 dark:bg-white/5 text-fantasy-wood/60 dark:text-fantasy-parchment/60'}`}>Livre</button>
                            </div>
                        </div>
 
@@ -655,7 +672,7 @@ const NPCsPage: React.FC = () => {
                        )}
                    </div>
 
-                   <button type="submit" className="w-full bg-emerald-800 text-white py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-[0.2em] shadow-2xl border-b-8 border-emerald-950 active:translate-y-1 active:border-b-0 transition-all">
+                    <button type="submit" className="w-full bg-emerald-800 text-white py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-[0.2em] shadow-2xl border-b-8 border-emerald-950 active:translate-y-1 active:border-b-0 active:scale-95 transition-all">
                        {editingId ? 'Salvar Alterações' : 'Registrar Contato'}
                    </button>
                </form>
@@ -696,7 +713,7 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
 
    return (
       <div 
-        className={`parchment-card p-8 rounded-[48px] border-2 shadow-2xl group/card hover:border-fantasy-gold/50 transition-all flex flex-col justify-between ${
+        className={`parchment-card p-8 rounded-[32px] border-2 shadow-2xl group/card hover:border-fantasy-gold/50 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between ${
           isAffinityActive 
             ? 'border-fantasy-gold/80 bg-fantasy-gold/5 shadow-[0_0_15px_rgba(212,175,55,0.25)]' 
             : 'border-fantasy-wood/10 dark:border-white/10 bg-white/5 dark:bg-black/20'
@@ -715,8 +732,8 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
                       </div>
                   </div>
                   <div className="flex gap-2 opacity-60 group-hover/card:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(npc)} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-gold p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110" title="Editar"><Edit size={16}/></button>
-                      <button onClick={() => { if(confirm(`Excluir ${npc.name}?`)) removeNPC(npc.id); }} className="text-fantasy-blood hover:text-red-500 p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110" title="Excluir"><Trash2 size={16}/></button>
+                      <button onClick={() => onEdit(npc)} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-gold p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Editar"><Edit size={16}/></button>
+                      <button onClick={() => { if(confirm(`Excluir ${npc.name}?`)) removeNPC(npc.id); }} className="text-fantasy-blood hover:text-red-500 p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Excluir"><Trash2 size={16}/></button>
                   </div>
               </div>
 

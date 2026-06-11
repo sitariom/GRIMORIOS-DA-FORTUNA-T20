@@ -3,9 +3,12 @@ import React, { useState } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { LogCategory } from '../types';
 import { NotebookPen, Search, Filter, Download, ArrowDownLeft, ArrowUpRight, ScrollText, History, FileText, Calendar, PlusCircle } from 'lucide-react';
+import AnimatedCard from '../components/AnimatedCard';
+import EmptyState from '../components/EmptyState';
+import { TableSkeleton } from '../components/LoadingSkeleton';
 
 const ChroniclesPage: React.FC = () => {
-  const { logs, guildName, exportLogs } = useGuild();
+  const { logs, guildName, exportLogs, isLoading } = useGuild();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<LogCategory | 'TUDO'>('TUDO');
   
@@ -45,7 +48,7 @@ const ChroniclesPage: React.FC = () => {
           <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Livro de Crônicas</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">A memória imutável das glórias e gastos de {guildName}.</p>
         </div>
-        <button onClick={exportLogs} className="bg-fantasy-wood dark:bg-fantasy-gold hover:bg-[#3d2b1f] dark:hover:bg-fantasy-gold/80 text-fantasy-parchment dark:text-black px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl transition-all border-2 border-fantasy-gold/20">
+        <button onClick={exportLogs} className="bg-fantasy-wood dark:bg-fantasy-gold hover:bg-[#3d2b1f] dark:hover:bg-fantasy-gold/80 text-fantasy-parchment dark:text-black px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl transition-all border-2 border-fantasy-gold/20 active:scale-95">
            <Download size={24} /> Exportar Anais (JSON)
         </button>
       </header>
@@ -76,7 +79,7 @@ const ChroniclesPage: React.FC = () => {
                <button 
                  key={cat} 
                  onClick={() => setFilterCategory(cat)} 
-                 className={`px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${filterCategory === cat ? 'bg-[#1a0f08] dark:bg-fantasy-gold text-fantasy-gold dark:text-black border-black shadow-lg scale-105' : 'bg-[#1a0f08]/5 dark:bg-white/5 text-[#1a0f08]/40 dark:text-fantasy-parchment/40 border-[#1a0f08]/10 dark:border-white/10 hover:bg-[#1a0f08]/10 dark:hover:bg-white/10'}`}
+                 className={`px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${filterCategory === cat ? 'bg-[#1a0f08] dark:bg-fantasy-gold text-fantasy-gold dark:text-black border-black shadow-lg scale-105' : 'bg-[#1a0f08]/5 dark:bg-white/5 text-[#1a0f08]/40 dark:text-fantasy-parchment/40 border-[#1a0f08]/10 dark:border-white/10 hover:bg-[#1a0f08]/10 dark:hover:bg-white/10'}`}
                >
                  {cat}
                </button>
@@ -95,62 +98,69 @@ const ChroniclesPage: React.FC = () => {
            </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-[#1a0f08]/5 dark:bg-black/10 text-[10px] font-black uppercase text-[#1a0f08]/40 dark:text-fantasy-parchment/40 tracking-[0.4em]">
-              <tr>
-                <th className="px-12 py-8">Época</th>
-                <th className="px-12 py-8">Vínculo</th>
-                <th className="px-12 py-8">Crônica</th>
-                <th className="px-12 py-8">Escriba</th>
-                <th className="px-12 py-8 text-right">T$ Eq.</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-[#1a0f08]/10 dark:divide-white/5">
-              {visibleLogs.length === 0 && (
-                  <tr><td colSpan={5} className="px-12 py-20 text-center font-medieval text-3xl text-[#1a0f08]/20 dark:text-white/10 italic">O silêncio reina nestas datas...</td></tr>
-              )}
-              {visibleLogs.map((log) => {
-                const isIncome = log.value > 0;
-                const isZero = log.value === 0;
-                
-                return (
-                  <tr key={log.id} className="hover:bg-fantasy-gold/10 dark:hover:bg-fantasy-gold/5 transition-colors group">
-                    <td className="px-12 py-8">
-                      <div className="font-medieval text-2xl text-[#1a0f08]/80 dark:text-fantasy-parchment leading-none mb-2">{new Date(log.date).toLocaleDateString()}</div>
-                      <div className="text-[10px] font-black text-[#1a0f08]/30 dark:text-fantasy-parchment/30 uppercase tracking-widest">{new Date(log.date).toLocaleTimeString()}</div>
-                    </td>
-                    <td className="px-12 py-8">
-                      <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 tracking-[0.2em] shadow-sm inline-block ${
-                        log.category === 'Deposito' || log.category === 'Venda' ? 'bg-emerald-800/10 border-emerald-800/30 text-emerald-900 dark:text-emerald-400' : 
-                        log.category === 'Saque' || log.category === 'Manutencao' ? 'bg-red-900/10 border-red-900/30 text-red-950 dark:text-red-400' :
-                        'bg-[#1a0f08]/5 border-[#1a0f08]/20 text-[#1a0f08]/60 dark:text-fantasy-parchment/60'
-                      }`}>
-                        {log.category}
-                      </span>
-                    </td>
-                    <td className="px-12 py-8">
-                      <p className="font-serif text-[#1a0f08] dark:text-fantasy-parchment/80 font-bold italic leading-relaxed text-lg">"{log.details}"</p>
-                    </td>
-                    <td className="px-12 py-8">
-                      <span className="text-xs font-black text-[#1a0f08]/70 dark:text-fantasy-parchment/70 uppercase tracking-widest">{log.memberName}</span>
-                    </td>
-                    <td className={`px-12 py-8 text-right font-medieval text-3xl ${isZero ? 'text-[#1a0f08]/40 dark:text-white/10' : isIncome ? 'text-emerald-900 dark:text-emerald-400' : 'text-red-950 dark:text-red-400'}`}>
-                      {isZero ? '--' : `${isIncome ? '+' : '-'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
-                    </td>
+        {isLoading ? (
+          <TableSkeleton rows={5} />
+        ) : visibleLogs.length === 0 ? (
+          <EmptyState icon={ScrollText} title="Nenhuma cronica registrada..." description="As aventuras e transacoes aparecerao aqui." />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-[#1a0f08]/5 dark:bg-black/10 text-[10px] font-black uppercase text-[#1a0f08]/40 dark:text-fantasy-parchment/40 tracking-[0.4em]">
+                  <tr>
+                    <th className="px-12 py-8">Época</th>
+                    <th className="px-12 py-8">Vínculo</th>
+                    <th className="px-12 py-8">Crônica</th>
+                    <th className="px-12 py-8">Escriba</th>
+                    <th className="px-12 py-8 text-right">T$ Eq.</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {visibleCount < filteredLogs.length && (
-            <div className="p-4 bg-[#1a0f08]/5 dark:bg-black/20 border-t border-[#1a0f08]/10 dark:border-white/5 flex justify-center">
-                <button onClick={() => setVisibleCount(prev => prev + 20)} className="flex items-center gap-2 px-8 py-3 bg-[#1a0f08]/10 dark:bg-white/5 hover:bg-[#1a0f08]/20 dark:hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-[#1a0f08] dark:text-fantasy-parchment transition-all">
-                    <PlusCircle size={16}/> Continuar Leitura
-                </button>
+                </thead>
+                <tbody className="divide-y-2 divide-[#1a0f08]/10 dark:divide-white/5">
+                  {visibleLogs.map((log, index) => {
+                    const isIncome = log.value > 0;
+                    const isZero = log.value === 0;
+                    
+                    return (
+                      <AnimatedCard key={log.id} delay={index * 50}>
+                        <tr className="hover:bg-fantasy-gold/10 dark:hover:bg-fantasy-gold/5 transition-colors group">
+                          <td className="px-12 py-8">
+                            <div className="font-medieval text-2xl text-[#1a0f08]/80 dark:text-fantasy-parchment leading-none mb-2">{new Date(log.date).toLocaleDateString()}</div>
+                            <div className="text-[10px] font-black text-[#1a0f08]/30 dark:text-fantasy-parchment/30 uppercase tracking-widest">{new Date(log.date).toLocaleTimeString()}</div>
+                          </td>
+                          <td className="px-12 py-8">
+                            <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 tracking-[0.2em] shadow-sm inline-block ${
+                              log.category === 'Deposito' || log.category === 'Venda' ? 'bg-emerald-800/10 border-emerald-800/30 text-emerald-900 dark:text-emerald-400' : 
+                              log.category === 'Saque' || log.category === 'Manutencao' ? 'bg-red-900/10 border-red-900/30 text-red-950 dark:text-red-400' :
+                              'bg-[#1a0f08]/5 border-[#1a0f08]/20 text-[#1a0f08]/60 dark:text-fantasy-parchment/60'
+                            }`}>
+                              {log.category}
+                            </span>
+                          </td>
+                          <td className="px-12 py-8">
+                            <p className="font-serif text-[#1a0f08] dark:text-fantasy-parchment/80 font-bold italic leading-relaxed text-lg">"{log.details}"</p>
+                          </td>
+                          <td className="px-12 py-8">
+                            <span className="text-xs font-black text-[#1a0f08]/70 dark:text-fantasy-parchment/70 uppercase tracking-widest">{log.memberName}</span>
+                          </td>
+                          <td className={`px-12 py-8 text-right font-medieval text-3xl ${isZero ? 'text-[#1a0f08]/40 dark:text-white/10' : isIncome ? 'text-emerald-900 dark:text-emerald-400' : 'text-red-950 dark:text-red-400'}`}>
+                            {isZero ? '--' : `${isIncome ? '+' : '-'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
+                          </td>
+                        </tr>
+                      </AnimatedCard>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
+
+            {visibleCount < filteredLogs.length && (
+                <div className="p-4 bg-[#1a0f08]/5 dark:bg-black/20 border-t border-[#1a0f08]/10 dark:border-white/5 flex justify-center">
+                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="flex items-center gap-2 px-8 py-3 bg-[#1a0f08]/10 dark:bg-white/5 hover:bg-[#1a0f08]/20 dark:hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-[#1a0f08] dark:text-fantasy-parchment transition-all active:scale-95">
+                        <PlusCircle size={16}/> Continuar Leitura
+                    </button>
+                </div>
+            )}
+          </>
         )}
       </div>
     </div>
