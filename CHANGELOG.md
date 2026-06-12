@@ -3,6 +3,13 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.6.5] — 2026-06-12
+### Corrigido
+- **Fluxo de Caixa — Validação de valor:** 21 operações corrigidas para registrar `value: 0` quando apenas o tesouro do domínio (`domain.treasury`) é alterado, sem movimentação real no cofre da guilda (`wallet.LO`/`wallet.TS`). Isso evita que gráficos de Fluxo de Caixa e Dashboard exibam movimentações fictícias.
+- **Registro de Itens:** `addItem` não é venda — `log.value` alterado para `0` (`useItemActions.ts`).
+- **Ações de Domínio:** `manageDomainTreasury`, `addDomainBuilding`, `addDomainUnit`, `resolveCaravan`, `applyBattleOutcome`, `payMaintenance`, `applyRandomEvent`, `resolveRevolt` e fases de pagamento de `executeDomainAction` (governar, corte, festival, extorquir, convocar, impostos, caravana) — `log.value` alterado para `0` (`useDomainActions.ts`).
+- **Investimentos:** Exibe `--` no lugar de `+0` para entradas sem valor financeiro (`InvestmentsPage.tsx`).
+
 ## [2.6.4] — 2026-06-12
 ### Corrigido
 - **JWT fallback em GET:** Adicionado check `auth.userId === id` no fallback JWT do GET handler (`api/guilds.ts`).
