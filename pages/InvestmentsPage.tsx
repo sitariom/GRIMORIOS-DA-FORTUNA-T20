@@ -127,8 +127,8 @@ const InvestmentsPage: React.FC = () => {
                                               </div>
                                           </div>
                                       </td>
-                                      <td className={`px-10 py-6 text-right font-medieval text-2xl whitespace-nowrap ${isExpense ? 'text-red-900 dark:text-red-400' : 'text-emerald-800 dark:text-emerald-400'}`}>
-                                          {isExpense ? '' : '+'}{log.value.toLocaleString('pt-BR')}
+                                      <td className={`px-10 py-6 text-right font-medieval text-2xl whitespace-nowrap ${log.value === 0 ? 'text-fantasy-wood/30 dark:text-fantasy-parchment/30' : isExpense ? 'text-red-900 dark:text-red-400' : 'text-emerald-800 dark:text-emerald-400'}`}>
+                                          {log.value === 0 ? '--' : `${isExpense ? '' : '+'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
                                       </td>
                               </AnimatedCard>
                           );
