@@ -1,6 +1,6 @@
 # Grimório da Fortuna T20
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.7.0-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.8.0-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 ![Express](https://img.shields.io/badge/Express-5-green)
@@ -17,7 +17,7 @@ Aplicação web full-stack para gestão de tesouraria, inventário, propriedades
 - **Investimentos:** Gestão de aplicações e rendimentos.
 
 ### Gestão de Ativos
-- **Inventário:** Cadastro completo de itens com controle de quantidade, valor, raridade (Comum a Artefato) e tipo (Consumível, Equipamento, Tesouro, Arma, Riqueza).
+- **Inventário:** Cadastro completo de itens com controle de quantidade, valor, raridade (Comum a Artefato), tipo e categoria (Armas, Armaduras, Consumíveis, Itens Gerais, Itens Mágicos, Tesouros, Recursos Naturais) com subcategorias detalhadas.
 - **Venda e Retirada:** Baixa de estoque com cálculo automático de valores.
 - **Histórico de Itens:** Rastreamento de movimentações por item.
 
@@ -261,6 +261,14 @@ grimorio-fortuna-t20/
 ---
 
 ## Changelog
+
+### v2.8.0 — Reorganização de Categorias
+- **Novo:** Categoria `Consumíveis` com subcategorias (Poção, Pergaminho, Alquímico Preparado, Alquímico Catalisador, Alquímico Veneno, Alimentação, Prato Especial)
+- **Atualizado:** Recursos Naturais com os 7 tipos oficiais do T20 (Carapaça, Couro, Fonte, Ingrediente, Mantimento, Osso, Sucata)
+- **Atualizado:** Tesouros agora inclui Material Especial como subcategoria
+- **Atualizado:** Itens Mágicos simplificados (removidos Arma Mágica, Armadura Mágica)
+- **Melhoria:** Seletor único de categoria com auto-derivação do tipo legado (essência)
+- **Melhoria:** Nomes de subcategorias em português correto com espaços e acentos
 
 ### v2.7.0 — Categorização de Itens
 - **Novo:** Sistema de categorias e subcategorias para itens (Armas, Armaduras & Escudos, Itens Gerais, Itens Mágicos, Tesouros, Recursos Naturais)
