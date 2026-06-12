@@ -140,6 +140,15 @@ export const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
   Riqueza: 'Tesouro',
 };
 
+export const CATEGORY_TO_TYPE: Record<ItemCategory, string> = {
+  Arma: 'Arma',
+  ArmaduraEscudo: 'Equipamento',
+  ItemGeral: 'Consumivel',
+  ItemMagico: 'Consumivel',
+  Tesouro: 'Tesouro',
+  RecursoNatural: 'Equipamento',
+};
+
 // Regras de Carga (Tormenta20)
 export const BASE_CARRY = 10;
 export const CARRY_PER_STR = 2;

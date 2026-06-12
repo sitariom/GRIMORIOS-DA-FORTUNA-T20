@@ -4,7 +4,7 @@ import { useGuild } from '../context/GuildContext';
 import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle, Users } from 'lucide-react';
 import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, ItemCategory, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
-import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY, calcTotalCarryLimit, calcCarryBonus } from '../constants';
+import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, CATEGORY_TO_TYPE, calcTotalCarryLimit, calcCarryBonus } from '../constants';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
 import { CardSkeleton } from '../components/LoadingSkeleton';
@@ -42,7 +42,7 @@ const MembersPage: React.FC = () => {
 
   // States for New Item
   const [newItemData, setNewItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined,
+      rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined, type: 'Tesouro',
   });
 
   // State for Item Action (Transfer/Delete quantity)
@@ -87,7 +87,7 @@ const MembersPage: React.FC = () => {
       if(!activeMember) return;
       createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
       setShowAddItem(false);
-      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined });
+      setNewItemData({ rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined, type: 'Tesouro' });
   };
 
   const confirmItemAction = (e: React.FormEvent) => {
@@ -354,22 +354,18 @@ const MembersPage: React.FC = () => {
                             <form onSubmit={handleCreateItem} className="bg-fantasy-wood/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fade-in border border-fantasy-wood/10">
                                 <input className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval" required value={newItemData.name} onChange={e => setNewItemData({...newItemData, name: e.target.value})} placeholder="Nome do Item" />
                                 <div className="flex gap-2">
-                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.type} onChange={e => {
-                                        const newType = e.target.value as ItemType;
-                                        const newCat = TYPE_TO_CATEGORY[newType];
-                                        setNewItemData({...newItemData, type: newType, category: newCat || newItemData.category, subcategory: undefined});
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.category || ''} onChange={e => {
+                                        const cat = e.target.value as ItemCategory;
+                                        setNewItemData({...newItemData, category: cat || undefined, type: cat ? (CATEGORY_TO_TYPE[cat] || newItemData.type) : newItemData.type, subcategory: undefined});
                                     }}>
-                                        {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <option value="">Categoria</option>
+                                        {ITEM_CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>)}
                                     </select>
                                     <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.rarity} onChange={e => setNewItemData({...newItemData, rarity: e.target.value as ItemRarity})}>
                                         {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r}>{r}</option>)}
                                     </select>
                                 </div>
                                 <div className="flex gap-2">
-                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.category || ''} onChange={e => setNewItemData({...newItemData, category: e.target.value as ItemCategory || undefined, subcategory: undefined})}>
-                                        <option value="">Sem categoria</option>
-                                        {ITEM_CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>)}
-                                    </select>
                                     {newItemData.category && CATEGORY_CONFIG[newItemData.category]?.subcategories.length > 0 && (
                                         <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.subcategory || ''} onChange={e => setNewItemData({...newItemData, subcategory: e.target.value || undefined})}>
                                             <option value="">Subcategoria</option>

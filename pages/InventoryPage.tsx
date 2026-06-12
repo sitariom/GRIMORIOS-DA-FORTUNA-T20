@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemType, ItemRarity, ItemCategory } from '../types';
-import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY } from '../constants';
+import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY, CATEGORY_TO_TYPE } from '../constants';
 import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
@@ -14,7 +14,7 @@ const InventoryPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'sell' | 'withdraw' | 'delete' | 'bulkSell' | 'bulkDelete' | null>(null);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [tempItemData, setTempItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined,
+      rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined, type: 'Tesouro',
   });
   
   const [opQty, setOpQty] = useState(1);
@@ -34,7 +34,7 @@ const InventoryPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const openAdd = () => {
-      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined });
+      setTempItemData({ rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined, type: 'Tesouro' });
       setModalMode('add');
   };
 
@@ -291,20 +291,12 @@ const InventoryPage: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Essência / Categoria</label>
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Categoria</label>
                                 <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
-                                    value={tempItemData.type} onChange={e => {
-                                        const newType = e.target.value as ItemType;
-                                        const newCat = TYPE_TO_CATEGORY[newType];
-                                        setTempItemData({...tempItemData, type: newType, category: newCat || tempItemData.category, subcategory: undefined});
+                                    value={tempItemData.category || ''} onChange={e => {
+                                        const cat = e.target.value as ItemCategory;
+                                        setTempItemData({...tempItemData, category: cat || undefined, type: cat ? (CATEGORY_TO_TYPE[cat] || tempItemData.type) : tempItemData.type, subcategory: undefined});
                                     }}>
-                                    {ITEM_TYPES.map(t => <option key={t} value={t} className="dark:bg-black">{t}</option>)}
-                                </select>
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Categoria Detalhada</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
-                                    value={tempItemData.category || ''} onChange={e => setTempItemData({...tempItemData, category: e.target.value as ItemCategory || undefined, subcategory: undefined})}>
                                     <option value="" className="dark:bg-black">Sem categoria</option>
                                     {ITEM_CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-black">{CATEGORY_CONFIG[c].label}</option>)}
                                 </select>
