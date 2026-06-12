@@ -441,7 +441,12 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         versionRef.current = versionedState.version;
         setActiveGuild(versionedState);
 
-        if (!isAuthenticated || !sessionKey) return;
+        if (!isAuthenticated || !sessionKey) {
+            console.log('[DEBUG triggerSave] SKIP | isAuthenticated:', isAuthenticated, ' | sessionKey length:', sessionKey?.length);
+            return;
+        }
+
+        console.log('[DEBUG triggerSave] ENQUEUE | version:', versionedState.version, ' | sessionKey (first 20 chars):', sessionKey.substring(0, 20), ' | quests:', versionedState.quests?.length, ' | activeGuild.id:', activeGuild.id);
 
         const epoch = saveEpochRef.current;
         saveChainRef.current = saveChainRef.current
@@ -450,11 +455,18 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 const payload = versionedState.logs.length > MAX_LOGS
                     ? { ...versionedState, logs: versionedState.logs.slice(0, MAX_LOGS) }
                     : versionedState;
-                await dbService.saveGuild(payload, sessionKey);
+                console.log('[DEBUG triggerSave] SENDING | version:', payload.version, ' | quests:', payload.quests?.length, ' | quests data:', JSON.stringify(payload.quests));
+                try {
+                    await dbService.saveGuild(payload, sessionKey);
+                    console.log('[DEBUG triggerSave] SUCCESS | version:', payload.version);
+                } catch (e: any) {
+                    console.log('[DEBUG triggerSave] FAIL | version:', payload.version, ' | status:', e.status, ' | message:', e.message);
+                    throw e;
+                }
             })
             .catch(async (e: any) => {
                 if (saveEpochRef.current !== epoch) return;
-                console.error("Save failed", e);
+                console.error("[DEBUG triggerSave] CATCH", e);
 
                 if (e.status === 409) {
                     saveEpochRef.current++;

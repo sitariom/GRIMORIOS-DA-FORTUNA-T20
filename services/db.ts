@@ -16,24 +16,33 @@ const apiRequest = async (endpoint: string, options?: RequestInit) => {
   // Tenta renovar token antes de qualquer request
   await maybeRefreshToken();
 
+  const method = options?.method || 'GET';
   const url = `/api/${endpoint}`;
+  console.log('[DEBUG apiRequest]', method, url, ' | body length:', options?.body ? String(options.body).length : 0);
+
   const res = await fetch(url, options);
+  console.log('[DEBUG apiRequest] RESPONSE |', method, url, ' | status:', res.status, ' | statusText:', res.statusText);
+  console.log('[DEBUG apiRequest] X-Session-Token:', res.headers.get('X-Session-Token')?.substring(0, 20) || '(none)', ' | X-Token-Expires-In:', res.headers.get('X-Token-Expires-In') || '(none)');
+
   const text = await res.text();
 
   let data;
   try {
     data = text ? JSON.parse(text) : {};
   } catch (e) {
+    console.log('[DEBUG apiRequest] PARSE ERROR |', method, url, ' | status:', res.status, ' | body:', text.substring(0, 200));
     throw new Error(`Erro no Servidor: ${res.status} ${res.statusText}`);
   }
 
   if (!res.ok) {
     const errorMessage = data.error || `API Error: ${res.status} ${res.statusText}`;
+    console.log('[DEBUG apiRequest] ERROR |', method, url, ' | status:', res.status, ' | message:', errorMessage, ' | data:', JSON.stringify(data).substring(0, 200));
     const error: any = new Error(errorMessage);
     error.status = res.status;
     error.type = data.type;
     throw error;
   }
+  console.log('[DEBUG apiRequest] SUCCESS |', method, url, ' | status:', res.status);
   return { data, headers: res.headers };
 };
 
@@ -112,14 +121,23 @@ export const dbService = {
   async saveGuild(guild: GuildState, password?: string) {
     if (!password) throw new Error("Senha necessária para salvar no servidor.");
     const token = getToken();
+    console.log('[DEBUG saveGuild] token present:', !!token, ' | password length:', password.length, ' | password (first 20 chars):', password.substring(0, 20), ' | id:', guild.id, ' | version:', guild.version, ' | quests:', guild.quests?.length);
     const payload = { ...guild, password };
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const { data } = await apiRequest('guilds', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
+    let data;
+    try {
+      const response = await apiRequest('guilds', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+      data = response.data;
+      console.log('[DEBUG saveGuild] SUCCESS | id:', guild.id, ' | version:', guild.version);
+    } catch (e: any) {
+      console.log('[DEBUG saveGuild] ERROR | id:', guild.id, ' | version:', guild.version, ' | status:', e.status, ' | message:', e.message);
+      throw e;
+    }
     return data;
   },
 
@@ -154,6 +172,7 @@ export const dbService = {
 
   async getGuild(id: string, password?: string): Promise<GuildState | null> {
     if (!password) return null;
+    console.log('[DEBUG getGuild] id:', id, ' | password length:', password.length, ' | password (first 20 chars):', password.substring(0, 20));
     try {
       sessionStorage.removeItem('guild_token');
       const headers: Record<string, string> = {};
@@ -167,16 +186,20 @@ export const dbService = {
       const sessionToken = respHeaders.get('X-Session-Token');
       const expiresIn = respHeaders.get('X-Token-Expires-In');
       if (sessionToken) {
+        console.log('[DEBUG getGuild] NEW JWT ISSUED | expiresIn:', expiresIn, ' | token (first 20 chars):', sessionToken.substring(0, 20));
         setToken(sessionToken, 'session');
         if (expiresIn) {
           const expiresAt = Math.floor(Date.now() / 1000) + Number(expiresIn);
           sessionStorage.setItem('guild_token_expires_at', String(expiresAt));
         }
         sessionStorage.removeItem('active_guild_key');
+      } else {
+        console.log('[DEBUG getGuild] NO NEW JWT — token was cleared earlier, session may fail on next refresh');
       }
+      console.log('[DEBUG getGuild] SUCCESS | id:', id, ' | quests:', data?.quests?.length, ' | data keys:', Object.keys(data || {}));
       return data;
     } catch (e) {
-      console.error("Erro ao carregar guilda:", e);
+      console.error("[DEBUG getGuild] ERROR | id:", id, ' | error:', e);
       throw e;
     }
   },

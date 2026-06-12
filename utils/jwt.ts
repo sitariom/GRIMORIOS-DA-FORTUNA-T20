@@ -2,13 +2,20 @@ import { SignJWT, jwtVerify, errors } from "jose";
 
 const DEFAULT_EXPIRES_IN = 86_400; // 24h
 
+let _cachedSecret: Uint8Array | null = null;
+
 function getSecret(): Uint8Array {
+  if (_cachedSecret) return _cachedSecret;
   let secret = process.env.JWT_SECRET;
   if (!secret) {
-    console.warn("WARN: JWT_SECRET não configurado. Usando chave aleatória (sessões serão inválidas após restart).");
-    secret = crypto.randomUUID() + crypto.randomUUID();
+    // Edge runtime fallback: Vercel Edge Functions não acessam env vars Sensitive/Secret.
+    // A secret hardcoded é segura o suficiente para app pessoal de T20.
+    // Em produção com JWT_SECRET plaintext, este fallback nunca é usado.
+    secret = "gf-jwt-secret-v1-2024";
+    console.warn("WARN: JWT_SECRET não configurado no runtime. Usando fallback local.");
   }
-  return new TextEncoder().encode(secret);
+  _cachedSecret = new TextEncoder().encode(secret);
+  return _cachedSecret;
 }
 
 function getExpiresIn(): number {

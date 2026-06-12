@@ -3,6 +3,34 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.6.4] — 2026-06-12
+### Corrigido
+- **JWT fallback em GET:** Adicionado check `auth.userId === id` no fallback JWT do GET handler (`api/guilds.ts`).
+- **JWT fallback em POST/DELETE:** Handlers de salvamento autenticam via JWT com `userId === id || role === 'admin'` e preservam hash armazenado (`api/guilds.ts`, `server.ts`).
+- **Runtime Edge + JWT secret:** Restaurado `runtime: 'edge'` com fallback de JWT secret hardcoded (`utils/jwt.ts`); Edge Functions não acessam env vars sensíveis.
+- **Rota de sub-recurso:** Parâmetro opcional `:subResource?` dividido em duas rotas explícitas (`server.ts`); `path-to-regexp` v8 não suporta `?`.
+- **Modal de criação de missões no estado vazio:** Modal só existia no bloco Kanban — extraído para variável `questModal` e referenciado em ambos os branches (`QuestBoardPage.tsx`). ~110 linhas duplicadas eliminadas.
+
+### Alterado
+- **Debug logging:** `[DEBUG]` prefix adicionado em `QuestBoardPage.tsx`, `GuildContext.tsx` (triggerSave) e `services/db.ts` (apiRequest, getGuild, saveGuild) para diagnóstico.
+
+## [2.6.3] — 2026-06-10
+### Corrigido
+- **Marcadores de conflito merge:** Removidos `<<<<<<<`/`=======`/`>>>>>>>` em `api/guilds.ts` que quebravam toda persistência de dados.
+
+## [2.6.2] — 2026-06-10
+### Corrigido
+- **AnimatedCard em tabelas:** Componente `AnimatedCard` usa `as='tr'` em páginas com `<tbody>` para validade HTML.
+
+## [2.6.1] — 2026-06-10
+### Corrigido
+- **Alinhamento Arsenal:** Cabeçalho de tabela e `type="button"` em todos os botões da página de Arsenal.
+
+## [2.6.0] — 2026-06-10
+### Adicionado
+- **Animações em todas as 17 páginas:** Componentes `AnimatedCard`, `EmptyState`, `CardSkeleton` com fade-in, hover effects e `parchment-card rounded-[32px]`.
+- **Identidade visual refinada:** Efeitos `active:scale-95` consistentes em todos os botões interativos.
+
 ## [2.5.0] — 2026-06-10
 ### Adicionado
 - **JWT com jose:** Login de admin e guilda emite token JWT (HS256, Edge Runtime) no lugar de expor a senha. Suporte a renovação silenciosa (`/api/auth/refresh`) e revogação via `token_version`.
