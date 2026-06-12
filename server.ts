@@ -280,65 +280,76 @@ async function startServer() {
   });
 
   // --- GUILDS API ---
-  app.get("/api/guilds/:id/:subResource?", async (req, res) => {
+  // Sub-resource requests: /api/guilds/:id/members, /api/guilds/:id/domains, etc.
+  app.get("/api/guilds/:id/:subResource", async (req, res) => {
     let dbWrapper;
     try {
       dbWrapper = await getDbClient();
       const { id, subResource } = req.params;
       const statusFilter = req.query.status as string | undefined;
 
-      if (subResource) {
-        // Partial endpoint
-        let auth;
-        try {
-          auth = await authenticateExpress(req, { allowAdmin: true });
-        } catch (err: any) {
-          res.status(err.status || 401).json({ error: err.message });
-          return;
-        }
-
-        if (auth.userId !== id && auth.role !== "admin") {
-          res.status(403).json({ error: "Acesso negado" });
-          return;
-        }
-
-        const fullResult = await dbWrapper.sql`SELECT data FROM guilds WHERE id = ${id}`;
-        if (fullResult.rowCount === 0) {
-          res.status(404).json({ error: "Guilda não encontrada" });
-          return;
-        }
-        const guildData = fullResult.rows[0].data as any;
-
-        switch (subResource) {
-          case "members":
-            if (statusFilter) {
-              const valid = ["Ativo", "Inativo", "Morto", "Ferido", "Em Missao", "Viajando"];
-              if (!valid.includes(statusFilter)) {
-                res.status(400).json({ error: `Status inválido. Valores: ${valid.join(", ")}` });
-                return;
-              }
-              const members = (guildData?.members || []).filter((m: any) => m.status === statusFilter);
-              res.status(200).json(members);
-              return;
-            }
-            res.status(200).json(guildData?.members || []);
-            return;
-          case "domains":
-            res.status(200).json(guildData?.domains || []);
-            return;
-          case "items":
-            res.status(200).json(guildData?.items || []);
-            return;
-          case "wallet":
-            res.status(200).json(guildData?.wallet || { TC: 0, TS: 0, TO: 0, LO: 0 });
-            return;
-          default:
-            res.status(404).json({ error: "Recurso não encontrado" });
-            return;
-        }
+      let auth;
+      try {
+        auth = await authenticateExpress(req, { allowAdmin: true });
+      } catch (err: any) {
+        res.status(err.status || 401).json({ error: err.message });
+        return;
       }
 
-      // GET single guild
+      if (auth.userId !== id && auth.role !== "admin") {
+        res.status(403).json({ error: "Acesso negado" });
+        return;
+      }
+
+      const fullResult = await dbWrapper.sql`SELECT data FROM guilds WHERE id = ${id}`;
+      if (fullResult.rowCount === 0) {
+        res.status(404).json({ error: "Guilda não encontrada" });
+        return;
+      }
+      const guildData = fullResult.rows[0].data as any;
+
+      switch (subResource) {
+        case "members":
+          if (statusFilter) {
+            const valid = ["Ativo", "Inativo", "Morto", "Ferido", "Em Missao", "Viajando"];
+            if (!valid.includes(statusFilter)) {
+              res.status(400).json({ error: `Status inválido. Valores: ${valid.join(", ")}` });
+              return;
+            }
+            const members = (guildData?.members || []).filter((m: any) => m.status === statusFilter);
+            res.status(200).json(members);
+            return;
+          }
+          res.status(200).json(guildData?.members || []);
+          return;
+        case "domains":
+          res.status(200).json(guildData?.domains || []);
+          return;
+        case "items":
+          res.status(200).json(guildData?.items || []);
+          return;
+        case "wallet":
+          res.status(200).json(guildData?.wallet || { TC: 0, TS: 0, TO: 0, LO: 0 });
+          return;
+        default:
+          res.status(404).json({ error: "Recurso não encontrado" });
+          return;
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: (error as Error).message });
+    } finally {
+      if (dbWrapper) dbWrapper.release();
+    }
+  });
+
+  // Single guild by path param (duplicate of ?id= query flow below)
+  app.get("/api/guilds/:id", async (req, res) => {
+    let dbWrapper;
+    try {
+      dbWrapper = await getDbClient();
+      const { id } = req.params;
+
       const password = getBearerPassword(req);
       if (!password) {
         res.status(401).json({ error: "Senha necessária" });
