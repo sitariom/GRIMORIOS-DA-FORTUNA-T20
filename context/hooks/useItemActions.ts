@@ -20,7 +20,7 @@ export const useItemActions = ({ activeGuild, triggerSave, notify, internalAddLo
     triggerSave({
       ...activeGuild,
       items: newItems,
-      logs: internalAddLog(activeGuild, 'Estoque', `Item Registrado: ${item.quantity}x ${item.name}`, item.value * item.quantity, 'system')
+      logs: internalAddLog(activeGuild, 'Estoque', `Item Registrado: ${item.quantity}x ${item.name}`, 0, 'system')
     });
     notify("Item registrado no arsenal.");
   };
