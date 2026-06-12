@@ -242,7 +242,14 @@ const sanitizeGuildData = (data: any): GuildState => {
         encounter: item.encounter || '',
         isQuestItem: !!item.isQuestItem,
         isNonNegotiable: !!item.isNonNegotiable,
-        carryBonus: [5, 10, 15, 20].includes(item.carryBonus) ? item.carryBonus : undefined
+        carryBonus: [5, 10, 15, 20].includes(item.carryBonus) ? item.carryBonus : undefined,
+        category: item.category || (() => {
+            const m: Record<string, string> = { Arma: 'Arma', Consumivel: 'ItemGeral', Equipamento: 'ItemGeral', Tesouro: 'Tesouro', Riqueza: 'Tesouro' };
+            return m[item.type] || undefined;
+        })(),
+        subcategory: item.subcategory || undefined,
+        improvements: Array.isArray(item.improvements) ? item.improvements : undefined,
+        specialMaterial: item.specialMaterial || undefined,
     });
 
     safeData.items = (Array.isArray(safeData.items) ? safeData.items : []).map(sanitizeItem);

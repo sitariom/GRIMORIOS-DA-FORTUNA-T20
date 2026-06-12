@@ -2,9 +2,9 @@
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Trash2, UserPlus, Shield, User, History, Scroll, HeartPulse, Skull, ShieldAlert, Footprints, Coins, ArrowUpRight, ArrowDownLeft, X, Backpack, ArrowRight, PackageMinus, Plus, Settings, Check, Weight, AlertTriangle, Users } from 'lucide-react';
-import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, Item } from '../types';
+import { MemberStatus, Member, CurrencyType, ItemType, ItemRarity, ItemCategory, Item } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
-import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, calcTotalCarryLimit, calcCarryBonus } from '../constants';
+import { RARITY_CONFIG, ITEM_TYPES, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY, calcTotalCarryLimit, calcCarryBonus } from '../constants';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
 import { CardSkeleton } from '../components/LoadingSkeleton';
@@ -42,7 +42,7 @@ const MembersPage: React.FC = () => {
 
   // States for New Item
   const [newItemData, setNewItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined,
   });
 
   // State for Item Action (Transfer/Delete quantity)
@@ -87,7 +87,7 @@ const MembersPage: React.FC = () => {
       if(!activeMember) return;
       createItemForMember(activeMember.id, newItemData as Omit<Item, 'id'>);
       setShowAddItem(false);
-      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined });
+      setNewItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined });
   };
 
   const confirmItemAction = (e: React.FormEvent) => {
@@ -350,36 +350,58 @@ const MembersPage: React.FC = () => {
                            </div>
                        )}
 
-                       {showAddItem && (
-                           <form onSubmit={handleCreateItem} className="bg-fantasy-wood/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fade-in border border-fantasy-wood/10">
-                               <input className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval" required value={newItemData.name} onChange={e => setNewItemData({...newItemData, name: e.target.value})} placeholder="Nome do Item" />
-                               <div className="flex gap-2">
-                                   <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.type} onChange={e => setNewItemData({...newItemData, type: e.target.value as ItemType})}>
-                                       {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                   </select>
-                                   <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.rarity} onChange={e => setNewItemData({...newItemData, rarity: e.target.value as ItemRarity})}>
-                                       {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r}>{r}</option>)}
-                                   </select>
-                               </div>
+                        {showAddItem && (
+                            <form onSubmit={handleCreateItem} className="bg-fantasy-wood/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fade-in border border-fantasy-wood/10">
+                                <input className="w-full bg-white/40 dark:bg-black/40 rounded-xl px-4 py-2 font-medieval" required value={newItemData.name} onChange={e => setNewItemData({...newItemData, name: e.target.value})} placeholder="Nome do Item" />
                                 <div className="flex gap-2">
-                                    <input type="number" min="1" className="w-20 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-center" value={newItemData.quantity} onChange={e => setNewItemData({...newItemData, quantity: Number(e.target.value)})} placeholder="Qtd" />
-                                    <input type="number" min="0" className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2" value={newItemData.value} onChange={e => setNewItemData({...newItemData, value: Number(e.target.value)})} placeholder="Valor (T$)" />
-                                </div>
-                                <div className="flex gap-2">
-                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.space} onChange={e => setNewItemData({...newItemData, space: Number(e.target.value)})}>
-                                        {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.type} onChange={e => {
+                                        const newType = e.target.value as ItemType;
+                                        const newCat = TYPE_TO_CATEGORY[newType];
+                                        setNewItemData({...newItemData, type: newType, category: newCat || newItemData.category, subcategory: undefined});
+                                    }}>
+                                        {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
-                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.carryBonus ?? 0} onChange={e => setNewItemData({...newItemData, carryBonus: Number(e.target.value) || undefined})}>
-                                        <option value={0}>Sem Bônus</option>
-                                        <option value={5}>+5 Carga</option>
-                                        <option value={10}>+10 Carga</option>
-                                        <option value={15}>+15 Carga</option>
-                                        <option value={20}>+20 Carga</option>
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.rarity} onChange={e => setNewItemData({...newItemData, rarity: e.target.value as ItemRarity})}>
+                                        {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r}>{r}</option>)}
                                     </select>
                                 </div>
+                                <div className="flex gap-2">
+                                    <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.category || ''} onChange={e => setNewItemData({...newItemData, category: e.target.value as ItemCategory || undefined, subcategory: undefined})}>
+                                        <option value="">Sem categoria</option>
+                                        {ITEM_CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>)}
+                                    </select>
+                                    {newItemData.category && CATEGORY_CONFIG[newItemData.category]?.subcategories.length > 0 && (
+                                        <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.subcategory || ''} onChange={e => setNewItemData({...newItemData, subcategory: e.target.value || undefined})}>
+                                            <option value="">Subcategoria</option>
+                                            {CATEGORY_CONFIG[newItemData.category].subcategories.map(s => <option key={s} value={s}>{s.replace(/\//g, ' / ')}</option>)}
+                                        </select>
+                                    )}
+                                </div>
+                                 <div className="flex gap-2">
+                                     <input type="number" min="1" className="w-20 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-center" value={newItemData.quantity} onChange={e => setNewItemData({...newItemData, quantity: Number(e.target.value)})} placeholder="Qtd" />
+                                     <input type="number" min="0" className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2" value={newItemData.value} onChange={e => setNewItemData({...newItemData, value: Number(e.target.value)})} placeholder="Valor (T$)" />
+                                 </div>
+                                 <div className="flex gap-2">
+                                     <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.space} onChange={e => setNewItemData({...newItemData, space: Number(e.target.value)})}>
+                                         {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                     </select>
+                                     <select className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs uppercase font-black" value={newItemData.carryBonus ?? 0} onChange={e => setNewItemData({...newItemData, carryBonus: Number(e.target.value) || undefined})}>
+                                         <option value={0}>Sem Bônus</option>
+                                         <option value={5}>+5 Carga</option>
+                                         <option value={10}>+10 Carga</option>
+                                         <option value={15}>+15 Carga</option>
+                                         <option value={20}>+20 Carga</option>
+                                     </select>
+                                 </div>
+                                {newItemData.rarity === 'Superior' && (
+                                <div className="flex gap-2">
+                                    <input className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs" value={newItemData.specialMaterial || ''} onChange={e => setNewItemData({...newItemData, specialMaterial: e.target.value || undefined})} placeholder="Material Especial" />
+                                    <input className="flex-1 bg-white/40 dark:bg-black/40 rounded-xl px-2 py-2 text-xs" value={newItemData.improvements?.join(', ') || ''} onChange={e => setNewItemData({...newItemData, improvements: e.target.value ? e.target.value.split(',').map(s => s.trim()) : undefined})} placeholder="Melhorias (ex: Maciça)" />
+                                </div>
+                                )}
                                 <button type="submit" className="w-full bg-indigo-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95">Criar Item</button>
-                           </form>
-                       )}
+                            </form>
+                        )}
 
                        <div className="bg-white/30 dark:bg-black/20 rounded-3xl p-4 min-h-[200px] max-h-[300px] overflow-y-auto custom-scrollbar border-2 border-fantasy-wood/10 dark:border-white/10 space-y-2">
                            {(activeMember.inventory?.length || 0) === 0 ? (
@@ -391,7 +413,7 @@ const MembersPage: React.FC = () => {
                                         <div key={`${item.id}-${i}`} className="bg-white/50 dark:bg-black/40 p-3 rounded-xl flex justify-between items-center group">
                                             <div>
                                                 <div className={`font-medieval ${rarityStyle.color}`}>{item.name} <span className="text-xs opacity-60">x{item.quantity}</span></div>
-                                                 <div className="text-[9px] uppercase font-black opacity-40">{item.type} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}{item.carryBonus ? ` • +${item.carryBonus} Carga` : ''}</div>
+                                                 <div className="text-[9px] uppercase font-black opacity-40">{item.type}{item.category ? ` • ${CATEGORY_CONFIG[item.category]?.label || item.category}` : ''} • {item.rarity} • {item.space} esp{item.space !== 1 ? 's' : ''}{item.carryBonus ? ` • +${item.carryBonus} Carga` : ''}{item.specialMaterial ? ` • ${item.specialMaterial}` : ''}</div>
                                             </div>
                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button 
