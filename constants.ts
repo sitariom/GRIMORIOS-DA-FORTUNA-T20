@@ -108,7 +108,7 @@ export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string
     icon: '🎒',
     subcategories: [
       'Equipamento de Aventura', 'Ferramenta', 'Instrumento Musical', 'Vestuário',
-      'Esotérico', 'Alquímico Preparado', 'Alquímico Catalisador', 'Alquímico Veneno',
+      'Esotérico', 'Poção', 'Pergaminho', 'Alquímico Preparado', 'Alquímico Catalisador', 'Alquímico Veneno',
       'Alimentação', 'Prato Especial', 'Animal', 'Veículo', 'Serviço',
     ],
   },
@@ -116,19 +116,18 @@ export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string
     label: 'Itens Mágicos',
     icon: '🔮',
     subcategories: [
-      'Poção', 'Pergaminho', 'Arma Mágica', 'Armadura Mágica',
       'Acessório Mágico', 'Item Encantado', 'Item Específico', 'Artefato',
     ],
   },
   Tesouro: {
     label: 'Tesouros',
     icon: '💰',
-    subcategories: ['Moeda', 'Riqueza Menor', 'Riqueza Média', 'Riqueza Maior', 'Matéria-Prima de Forja', 'Ingrediente de Veneno'],
+    subcategories: ['Moeda', 'Riqueza Menor', 'Riqueza Média', 'Riqueza Maior', 'Matéria-Prima de Forja', 'Ingrediente de Veneno', 'Material Especial'],
   },
   RecursoNatural: {
     label: 'Recursos Naturais',
     icon: '🦴',
-    subcategories: ['Matéria-Prima de Forja', 'Ingrediente de Veneno', 'Couro Monstruoso', 'Carapaça', 'Éter Elemental'],
+    subcategories: ['Carapaça', 'Couro', 'Fonte', 'Ingrediente', 'Mantimento', 'Osso', 'Sucata'],
   },
 };
 
