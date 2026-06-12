@@ -3,6 +3,21 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.5.2] — 2026-06-12
+### Corrigido
+- **Modal de criação de missões no estado vazio:** O modal `{modalMode && (...)}` só existia no bloco de retorno do Kanban. Quando o quadro está vazio (`quests.length === 0`), o componente retornava cedo e nunca renderizava o modal — `setModalMode('create')` rodava mas o JSX não existia naquele branch. Extraído para variável `questModal` e referenciado em ambos os branches.
+- **Refatoração:** ~110 linhas de código duplicado eliminadas (modal extraído para variável compartilhada).
+
+## [2.5.1] — 2026-06-11
+### Corrigido
+- **JWT fallback em POST/DELETE:** Handlers de salvamento agora autenticam via JWT com `userId === id || role === 'admin'` e preservam hash armazenado.
+- **JWT fallback em GET:** Adicionado check `auth.userId === id` no fallback JWT do GET handler.
+- **Marcadores de conflito merge:** Removidos marcadores `<<<<<<<`/`=======`/`>>>>>>>` que quebravam a persistência em `api/guilds.ts`.
+- **Runtime Edge:** Restaurado `runtime: 'edge'` em `api/guilds.ts` com fallback de JWT secret hardcoded (Edge Functions não acessam env vars sensíveis).
+- **Rota de sub-recurso:** Parâmetro opcional `:subResource?` dividido em duas rotas explícitas (`path-to-regexp` v8 não suporta `?`).
+- **Troca de guildas:** JWT armazenado é limpo antes de reautenticação ao trocar de guilda.
+- **Erros de tipo:** Cast `sql.query` em `api/guilds.ts` e tipo `AuthResult`.
+
 ## [2.5.0] — 2026-06-10
 ### Adicionado
 - **JWT com jose:** Login de admin e guilda emite token JWT (HS256, Edge Runtime) no lugar de expor a senha. Suporte a renovação silenciosa (`/api/auth/refresh`) e revogação via `token_version`.
