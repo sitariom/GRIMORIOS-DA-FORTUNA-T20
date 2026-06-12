@@ -12,7 +12,7 @@ export interface Wallet {
 export type ItemType = 'Consumivel' | 'Equipamento' | 'Tesouro' | 'Arma' | 'Riqueza';
 export type ItemRarity = 'Comum' | 'Superior' | 'Magico' | 'Liturgico' | 'Artefato';
 
-export type ItemCategory = 'Arma' | 'ArmaduraEscudo' | 'ItemGeral' | 'ItemMagico' | 'Tesouro' | 'RecursoNatural';
+export type ItemCategory = 'Arma' | 'ArmaduraEscudo' | 'Consumivel' | 'ItemGeral' | 'ItemMagico' | 'Tesouro' | 'RecursoNatural';
 
 export interface Item {
   id: string;

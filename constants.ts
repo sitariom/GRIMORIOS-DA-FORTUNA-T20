@@ -82,7 +82,7 @@ export const BUSINESS_ASSETS: BusinessAsset[] = [
 
 export const ITEM_TYPES = ['Consumivel', 'Equipamento', 'Tesouro', 'Arma', 'Riqueza'];
 
-export const ITEM_CATEGORIES: ItemCategory[] = ['Arma', 'ArmaduraEscudo', 'ItemGeral', 'ItemMagico', 'Tesouro', 'RecursoNatural'];
+export const ITEM_CATEGORIES: ItemCategory[] = ['Arma', 'ArmaduraEscudo', 'Consumivel', 'ItemGeral', 'ItemMagico', 'Tesouro', 'RecursoNatural'];
 
 export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string; subcategories: string[] }> = {
   Arma: {
@@ -103,13 +103,17 @@ export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string
     icon: '🛡️',
     subcategories: ['Armadura Leve', 'Armadura Pesada', 'Escudo Leve', 'Escudo Pesado'],
   },
+  Consumivel: {
+    label: 'Consumíveis',
+    icon: '🧪',
+    subcategories: ['Poção', 'Pergaminho', 'Alquímico Preparado', 'Alquímico Catalisador', 'Alquímico Veneno', 'Alimentação', 'Prato Especial'],
+  },
   ItemGeral: {
     label: 'Itens Gerais',
     icon: '🎒',
     subcategories: [
       'Equipamento de Aventura', 'Ferramenta', 'Instrumento Musical', 'Vestuário',
-      'Esotérico', 'Poção', 'Pergaminho', 'Alquímico Preparado', 'Alquímico Catalisador', 'Alquímico Veneno',
-      'Alimentação', 'Prato Especial', 'Animal', 'Veículo', 'Serviço',
+      'Esotérico', 'Animal', 'Veículo', 'Serviço',
     ],
   },
   ItemMagico: {
@@ -133,7 +137,7 @@ export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string
 
 export const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
   Arma: 'Arma',
-  Consumivel: 'ItemGeral',
+  Consumivel: 'Consumivel',
   Equipamento: 'ItemGeral',
   Tesouro: 'Tesouro',
   Riqueza: 'Tesouro',
@@ -142,7 +146,8 @@ export const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
 export const CATEGORY_TO_TYPE: Record<ItemCategory, string> = {
   Arma: 'Arma',
   ArmaduraEscudo: 'Equipamento',
-  ItemGeral: 'Consumivel',
+  Consumivel: 'Consumivel',
+  ItemGeral: 'Equipamento',
   ItemMagico: 'Consumivel',
   Tesouro: 'Tesouro',
   RecursoNatural: 'Equipamento',
