@@ -1,6 +1,6 @@
 # Grimório da Fortuna T20
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.7-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.7.0-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 ![Express](https://img.shields.io/badge/Express-5-green)
@@ -257,6 +257,30 @@ grimorio-fortuna-t20/
 ├── .gitignore
 └── package.json
 ```
+
+---
+
+## Changelog
+
+### v2.7.0 — Categorização de Itens
+- **Novo:** Sistema de categorias e subcategorias para itens (Armas, Armaduras & Escudos, Itens Gerais, Itens Mágicos, Tesouros, Recursos Naturais)
+- **Novo:** Campos de material especial e melhorias para itens de raridade Superior
+- **Novo:** Filtro por categoria no inventário (Arsenal e Bens)
+- **Novo:** Seletor em cascata categoria → subcategoria nos formulários de adição/edição de itens
+- **Melhoria:** Compatibilidade retroativa — itens pré-existentes recebem categoria automaticamente com base no tipo
+- **Atualizado:** Inventário de membros com suporte à nova categorização
+
+### v2.6.7 — Quadro de Missões Kanban com Drag-and-Drop
+- **Novo:** Interface Kanban com drag-and-drop para status de missões (Pendente, Em Andamento, Concluída, Falha)
+- **Melhoria:** Cards de missão arrastáveis entre colunas
+
+### v2.6.6 — Correção Retroativa de Fluxo de Caixa
+- **Correção:** Script de migração retroativa para corrigir logs de fluxo de caixa de guildas pré-existentes
+- **Correção:** 255 logs corrigidos localmente, 6 logs em produção
+
+### v2.6.5 — Validação de Fluxo de Caixa
+- **Correção:** Operações de domínio que afetam apenas o tesouro não registram mais valores não-zero no fluxo de caixa da guilda
+- **Correção:** 21 operações de validação de valor consertadas em useDomainActions e useItemActions
 
 ---
 

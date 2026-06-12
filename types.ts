@@ -12,6 +12,8 @@ export interface Wallet {
 export type ItemType = 'Consumivel' | 'Equipamento' | 'Tesouro' | 'Arma' | 'Riqueza';
 export type ItemRarity = 'Comum' | 'Superior' | 'Magico' | 'Liturgico' | 'Artefato';
 
+export type ItemCategory = 'Arma' | 'ArmaduraEscudo' | 'ItemGeral' | 'ItemMagico' | 'Tesouro' | 'RecursoNatural';
+
 export interface Item {
   id: string;
   name: string;
@@ -25,6 +27,10 @@ export interface Item {
   isQuestItem: boolean;
   isNonNegotiable: boolean;
   carryBonus?: number; // Espaços extras de carga que este item concede (ex: Mochila de Carga)
+  category?: ItemCategory;
+  subcategory?: string;
+  improvements?: string[];
+  specialMaterial?: string;
 }
 
 export type BasePorte = 'Minima' | 'Modesta' | 'Basica' | 'Formidavel' | 'Grandiosa' | 'Suprema';

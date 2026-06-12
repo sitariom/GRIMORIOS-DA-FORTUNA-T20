@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Item, ItemType, ItemRarity } from '../types';
-import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS } from '../constants';
+import { Item, ItemType, ItemRarity, ItemCategory } from '../types';
+import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY } from '../constants';
 import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
@@ -14,7 +14,7 @@ const InventoryPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'sell' | 'withdraw' | 'delete' | 'bulkSell' | 'bulkDelete' | null>(null);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [tempItemData, setTempItemData] = useState<Partial<Item>>({
-      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined
+      type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined,
   });
   
   const [opQty, setOpQty] = useState(1);
@@ -24,6 +24,7 @@ const InventoryPage: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<ItemType | 'Todos'>('Todos');
+  const [filterCategory, setFilterCategory] = useState<ItemCategory | 'Todas'>('Todas');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -33,7 +34,7 @@ const InventoryPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const openAdd = () => {
-      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined });
+      setTempItemData({ type: 'Tesouro', rarity: 'Comum', quantity: 1, space: 1, value: 0, isQuestItem: false, isNonNegotiable: false, name: '', origin: '', encounter: '', carryBonus: undefined, category: 'Tesouro', subcategory: undefined });
       setModalMode('add');
   };
 
@@ -77,9 +78,10 @@ const InventoryPage: React.FC = () => {
       return items.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = filterType === 'Todos' || item.type === filterType;
-        return matchesSearch && matchesType;
+        const matchesCategory = filterCategory === 'Todas' || item.category === filterCategory;
+        return matchesSearch && matchesType && matchesCategory;
       });
-  }, [items, searchTerm, filterType]);
+  }, [items, searchTerm, filterType, filterCategory]);
 
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
@@ -162,6 +164,10 @@ const InventoryPage: React.FC = () => {
               {ITEM_TYPES.map(t => (
                   <button type="button" key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
               ))}
+              <span className="h-8 w-px bg-fantasy-wood/20 mx-2"></span>
+              {ITEM_CATEGORIES.map(c => (
+                  <button type="button" key={c} onClick={() => setFilterCategory(filterCategory === c ? 'Todas' : c)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterCategory === c ? 'bg-fantasy-gold text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{CATEGORY_CONFIG[c].label}</button>
+              ))}
           </div>
       </div>
 
@@ -223,6 +229,9 @@ const InventoryPage: React.FC = () => {
                           {item.type === 'Arma' ? <Sword size={16}/> : item.type === 'Equipamento' ? <Shield size={16}/> : <Sparkles size={16}/>}
                           {item.type}
                         </span>
+                        {item.category && (
+                          <span className="text-[8px] font-black uppercase text-fantasy-gold/60 mt-2 block tracking-widest">{CATEGORY_CONFIG[item.category]?.label || item.category}</span>
+                        )}
                       </td>
                       <td className="px-6 py-8 text-center font-medieval text-2xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">
                         {item.space}{item.space === 0.5 ? '' : ''}
@@ -284,10 +293,46 @@ const InventoryPage: React.FC = () => {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Essência / Categoria</label>
                                 <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
-                                    value={tempItemData.type} onChange={e => setTempItemData({...tempItemData, type: e.target.value as ItemType})}>
+                                    value={tempItemData.type} onChange={e => {
+                                        const newType = e.target.value as ItemType;
+                                        const newCat = TYPE_TO_CATEGORY[newType];
+                                        setTempItemData({...tempItemData, type: newType, category: newCat || tempItemData.category, subcategory: undefined});
+                                    }}>
                                     {ITEM_TYPES.map(t => <option key={t} value={t} className="dark:bg-black">{t}</option>)}
                                 </select>
                             </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Categoria Detalhada</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                                    value={tempItemData.category || ''} onChange={e => setTempItemData({...tempItemData, category: e.target.value as ItemCategory || undefined, subcategory: undefined})}>
+                                    <option value="" className="dark:bg-black">Sem categoria</option>
+                                    {ITEM_CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-black">{CATEGORY_CONFIG[c].label}</option>)}
+                                </select>
+                            </div>
+                            {tempItemData.category && CATEGORY_CONFIG[tempItemData.category]?.subcategories.length > 0 && (
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Subcategoria</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                                    value={tempItemData.subcategory || ''} onChange={e => setTempItemData({...tempItemData, subcategory: e.target.value || undefined})}>
+                                    <option value="" className="dark:bg-black">Nenhuma</option>
+                                    {CATEGORY_CONFIG[tempItemData.category].subcategories.map(s => <option key={s} value={s} className="dark:bg-black">{s.replace(/\//g, ' / ')}</option>)}
+                                </select>
+                            </div>
+                            )}
+                            {tempItemData.rarity === 'Superior' && (
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Material Especial</label>
+                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                    value={tempItemData.specialMaterial || ''} onChange={e => setTempItemData({...tempItemData, specialMaterial: e.target.value || undefined})} placeholder="Ex: Aço-Rubi, Tábuas de Carvalho" />
+                            </div>
+                            )}
+                            {tempItemData.rarity === 'Superior' && (
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Melhorias (separadas por vírgula)</label>
+                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                    value={tempItemData.improvements?.join(', ') || ''} onChange={e => setTempItemData({...tempItemData, improvements: e.target.value ? e.target.value.split(',').map(s => s.trim()) : undefined})} placeholder="Ex: Masterizada, Maciça" />
+                            </div>
+                            )}
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Raridade</label>
                                 <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"

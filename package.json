@@ -1,7 +1,7 @@
 {
   "name": "grimorio-fortuna-t20",
   "private": true,
-  "version": "2.6.7",
+  "version": "2.7.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
@@ -13,7 +13,7 @@
     "db:migrate": "npx tsx scripts/migrate.ts",
     "db:validate": "npx tsx scripts/validate.ts",
     "db:index": "npx tsx scripts/index.ts",
-"db:fixCashFlow": "npx tsx scripts/fixCashFlowRetroactive.ts"
+    "db:fixCashFlow": "npx tsx scripts/fixCashFlowRetroactive.ts"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",

@@ -1,5 +1,5 @@
 
-import { Item, BasePorte, BaseType, CourtType, PopularityType, ItemRarity, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
+import { Item, BasePorte, BaseType, CourtType, PopularityType, ItemRarity, ItemCategory, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
 
 export const PORTE_DATA: Record<BasePorte, { cost: number; maintenance: number; slots: number; label: string }> = {
   Minima: { cost: 1000, maintenance: 100, slots: 0, label: 'Mínima (T$ 1k)' },
@@ -81,6 +81,64 @@ export const BUSINESS_ASSETS: BusinessAsset[] = [
 ];
 
 export const ITEM_TYPES = ['Consumivel', 'Equipamento', 'Tesouro', 'Arma', 'Riqueza'];
+
+export const ITEM_CATEGORIES: ItemCategory[] = ['Arma', 'ArmaduraEscudo', 'ItemGeral', 'ItemMagico', 'Tesouro', 'RecursoNatural'];
+
+export const CATEGORY_CONFIG: Record<ItemCategory, { label: string; icon: string; subcategories: string[] }> = {
+  Arma: {
+    label: 'Armas',
+    icon: '⚔️',
+    subcategories: [
+      'Simples/CorpoACorpo/Leve', 'Simples/CorpoACorpo/UmaMao', 'Simples/CorpoACorpo/DuasMaos',
+      'Simples/Distancia/Leve', 'Simples/Distancia/UmaMao', 'Simples/Distancia/DuasMaos',
+      'Marcial/CorpoACorpo/Leve', 'Marcial/CorpoACorpo/UmaMao', 'Marcial/CorpoACorpo/DuasMaos',
+      'Marcial/Distancia/Leve', 'Marcial/Distancia/UmaMao', 'Marcial/Distancia/DuasMaos',
+      'Exotica/CorpoACorpo', 'Exotica/Distancia',
+      'Fogo/CorpoACorpo', 'Fogo/Distancia',
+      'Municao',
+    ],
+  },
+  ArmaduraEscudo: {
+    label: 'Armaduras & Escudos',
+    icon: '🛡️',
+    subcategories: ['ArmaduraLeve', 'ArmaduraPesada', 'EscudoLeve', 'EscudoPesado'],
+  },
+  ItemGeral: {
+    label: 'Itens Gerais',
+    icon: '🎒',
+    subcategories: [
+      'EquipamentoAventura', 'Ferramenta', 'InstrumentoMusical', 'Vestuario',
+      'Esoterico', 'AlquimicoPreparado', 'AlquimicoCatalisador', 'AlquimicoVeneno',
+      'Alimentacao', 'PratoEspecial', 'Animal', 'Veiculo', 'Servico',
+    ],
+  },
+  ItemMagico: {
+    label: 'Itens Mágicos',
+    icon: '🔮',
+    subcategories: [
+      'Pocao', 'Pergaminho', 'ArmaMagica', 'ArmaduraMagica',
+      'AcessorioMagico', 'ItemEncantado', 'ItemEspecifico', 'Artefato',
+    ],
+  },
+  Tesouro: {
+    label: 'Tesouros',
+    icon: '💰',
+    subcategories: ['Moeda', 'RiquezaMenor', 'RiquezaMedia', 'RiquezaMaior', 'MateriaPrimaForja', 'IngredienteVeneno'],
+  },
+  RecursoNatural: {
+    label: 'Recursos Naturais',
+    icon: '🦴',
+    subcategories: ['MateriaPrimaForja', 'IngredienteVeneno', 'CouroMonstruoso', 'Carapaca', 'EterElemental'],
+  },
+};
+
+export const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
+  Arma: 'Arma',
+  Consumivel: 'ItemGeral',
+  Equipamento: 'ItemGeral',
+  Tesouro: 'Tesouro',
+  Riqueza: 'Tesouro',
+};
 
 // Regras de Carga (Tormenta20)
 export const BASE_CARRY = 10;
