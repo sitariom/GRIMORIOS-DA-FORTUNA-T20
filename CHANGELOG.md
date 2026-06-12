@@ -3,6 +3,10 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.6.7] — 2026-06-12
+### Adicionado
+- **Drag and Drop no Kanban:** Cards de missões podem ser arrastados entre as colunas do quadro (Disponível, Em Andamento, Concluída, Falha) usando a API nativa HTML5 Drag and Drop. Feedback visual com cursor grab/grabbing e destaque dourado na coluna alvo. Botões originais mantidos como fallback (`QuestBoardPage.tsx`).
+
 ## [2.6.6] — 2026-06-12
 ### Adicionado
 - **Script de correção retroativa:** `npm run db:fixCashFlow` — percorre guildas existentes e zera `log.value` de operações de tesouro de domínio registradas incorretamente antes da correção. Identifica e preserva os únicos logs `Dominio` com valor legítimo (`investDomain`/`withdrawDomain`). Idempotente e seguro (`scripts/fixCashFlowRetroactive.ts`).

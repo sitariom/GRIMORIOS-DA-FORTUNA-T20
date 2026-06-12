@@ -1,6 +1,6 @@
 # Grimório da Fortuna T20
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.6-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.7-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 ![Express](https://img.shields.io/badge/Express-5-green)
