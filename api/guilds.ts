@@ -178,16 +178,33 @@ export default async function handler(request: Request) {
       }
 
       const existing = await client.sql`SELECT password, data FROM guilds WHERE id = ${id}`;
-      const hashed = await hashPassword(password);
+
+      let authOk = false;
+      let useStoredHash = false;
+      let storedPassword = '';
 
       if ((existing.rowCount ?? 0) > 0) {
         const dbRow = existing.rows[0];
-        const v = await verifyAndMaybeUpgradePassword(dbRow.password as string, password);
-        if (!v.ok) {
-          return new Response(JSON.stringify({ error: 'Senha incorreta para atualizar esta guilda.' }), { status: 403 });
+        storedPassword = dbRow.password as string;
+        const v = await verifyAndMaybeUpgradePassword(storedPassword, password);
+
+        if (v.ok) {
+          authOk = true;
+          if (v.upgraded) {
+            await client.sql`UPDATE guilds SET password = ${v.upgraded} WHERE id = ${id}`;
+          }
+        } else {
+          // Password failed — try JWT fallback
+          try {
+            const jwtAuth = await authenticate(request, { allowAdmin: true });
+            if (jwtAuth.userId === id || jwtAuth.role === 'admin') {
+              authOk = true;
+              useStoredHash = true;
+            }
+          } catch (_) {}
         }
 
-        if (!v.ok) {
+        if (!authOk) {
           return new Response(JSON.stringify({ error: 'Senha incorreta para atualizar esta guilda.' }), { status: 403 });
         }
 
@@ -203,7 +220,6 @@ export default async function handler(request: Request) {
         }
 
         if ($patch) {
-          // Patch parcial — mescla campos fornecidos no JSONB existente
           const patchFields = { guildName, version, ...rest };
           for (const [key, value] of Object.entries(patchFields)) {
             const jsonValue = JSON.stringify(value);
@@ -220,7 +236,8 @@ export default async function handler(request: Request) {
         }
       }
 
-      // Full replace
+      // Full replace — use stored hash when JWT-authed, otherwise hash the password
+      const hashed = useStoredHash ? storedPassword : await hashPassword(password);
       const guildData = { id, guildName, version, ...rest };
       await client.sql`
         INSERT INTO guilds (id, guild_name, password, data, updated_at)
@@ -258,8 +275,8 @@ export default async function handler(request: Request) {
 
       if (!canDelete) {
         try {
-          const adminAuth = await authenticate(request, { allowAdmin: true });
-          if (adminAuth.role === 'admin') canDelete = true;
+          const jwtAuth = await authenticate(request, { allowAdmin: true });
+          if (jwtAuth.role === 'admin' || jwtAuth.userId === id) canDelete = true;
         } catch (_) {}
       }
 

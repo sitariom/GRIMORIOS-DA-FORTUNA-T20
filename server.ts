@@ -483,10 +483,32 @@ async function startServer() {
 
       const existing = await dbWrapper.sql`SELECT password, data FROM guilds WHERE id = ${id}`;
 
+      let authOk = false;
+      let useStoredHash = false;
+      let storedPassword = '';
+
       if (existing.rowCount > 0) {
         const dbRow = existing.rows[0];
-        const v = await verifyAndMaybeUpgradePassword(dbRow.password as string, password);
-        if (!v.ok) {
+        storedPassword = dbRow.password as string;
+        const v = await verifyAndMaybeUpgradePassword(storedPassword, password);
+
+        if (v.ok) {
+          authOk = true;
+          if (v.upgraded) {
+            await dbWrapper.sql`UPDATE guilds SET password = ${v.upgraded} WHERE id = ${id}`;
+          }
+        } else {
+          // Password failed — try JWT fallback
+          try {
+            const jwtAuth = await authenticateExpress(req, { allowAdmin: true });
+            if (jwtAuth.userId === id || jwtAuth.role === 'admin') {
+              authOk = true;
+              useStoredHash = true;
+            }
+          } catch (_) {}
+        }
+
+        if (!authOk) {
           res.status(403).json({ error: "Senha incorreta para atualizar esta guilda." });
           return;
         }
@@ -521,8 +543,8 @@ async function startServer() {
         }
       }
 
+      const hashed = useStoredHash ? storedPassword : await hashPassword(password);
       const guildData = { id, guildName, version, ...rest };
-      const hashed = await hashPassword(password);
 
       await dbWrapper.sql`
         INSERT INTO guilds (id, guild_name, password, data, updated_at)
@@ -594,6 +616,16 @@ async function startServer() {
             }
           }
         }
+      }
+
+      if (!canDelete) {
+        // JWT fallback — allow guild owner or admin via token
+        try {
+          const jwtAuth = await authenticateExpress(req, { allowAdmin: true });
+          if (jwtAuth.role === 'admin' || jwtAuth.userId === id) {
+            canDelete = true;
+          }
+        } catch (_) {}
       }
 
       if (!canDelete) {
