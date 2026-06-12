@@ -44,3 +44,5 @@ docs/memory/
 *.njsproj
 *.sln
 *.sw?
+.env*
+.playwright-mcp/
