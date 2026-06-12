@@ -10,6 +10,9 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 - **Ações de Domínio:** `manageDomainTreasury`, `addDomainBuilding`, `addDomainUnit`, `resolveCaravan`, `applyBattleOutcome`, `payMaintenance`, `applyRandomEvent`, `resolveRevolt` e fases de pagamento de `executeDomainAction` (governar, corte, festival, extorquir, convocar, impostos, caravana) — `log.value` alterado para `0` (`useDomainActions.ts`).
 - **Investimentos:** Exibe `--` no lugar de `+0` para entradas sem valor financeiro (`InvestmentsPage.tsx`).
 
+### Adicionado
+- **Script de correção retroativa:** `npm run db:fixCashFlow` — percorre guildas existentes e zera `log.value` de operações de tesouro de domínio registradas incorretamente antes da correção. Identifica e preserva os únicos logs `Dominio` com valor legítimo (`investDomain`/`withdrawDomain`). Idempotente e seguro (`scripts/fixCashFlowRetroactive.ts`).
+
 ## [2.6.4] — 2026-06-12
 ### Corrigido
 - **JWT fallback em GET:** Adicionado check `auth.userId === id` no fallback JWT do GET handler (`api/guilds.ts`).

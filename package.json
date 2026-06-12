@@ -12,7 +12,8 @@
     "db:verify": "npx tsx scripts/verify.ts",
     "db:migrate": "npx tsx scripts/migrate.ts",
     "db:validate": "npx tsx scripts/validate.ts",
-    "db:index": "npx tsx scripts/index.ts"
+    "db:index": "npx tsx scripts/index.ts",
+"db:fixCashFlow": "npx tsx scripts/fixCashFlowRetroactive.ts"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
