@@ -1,7 +1,7 @@
 {
   "name": "grimorio-fortuna-t20",
   "private": true,
-  "version": "2.5.0",
+  "version": "2.6.4",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",

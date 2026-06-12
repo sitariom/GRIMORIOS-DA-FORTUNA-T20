@@ -101,6 +101,53 @@ const QuestBoardPage: React.FC = () => {
     return s !== 'inativo' && s !== 'morto';
   });
 
+  const questModal = modalMode && (
+    <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
+      <div className="parchment-card p-10 rounded-[50px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
+        <div className="text-center mb-8">
+          <div className="wax-seal w-20 h-20 mx-auto mb-4 flex items-center justify-center text-white"><CheckSquare size={40}/></div>
+          <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'edit' ? 'Editar Contrato' : 'Novo Contrato'}</h3>
+        </div>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Título da Missão</label>
+            <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" required value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: A Besta de Smokestone" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Descrição / Objetivos</label>
+            <textarea className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-serif text-lg h-32 resize-none" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Detalhes do contrato..." />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (Ouro)</label>
+              <div className="flex gap-2">
+                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
+                <select className="bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-4 py-4 font-medieval text-lg outline-none cursor-pointer" value={newCurrency} onChange={e => setNewCurrency(e.target.value as CurrencyType)}>
+                  {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c} className="dark:bg-black">{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (XP / Itens)</label>
+              <input type="text" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newXP} onChange={e => setNewXP(e.target.value)} placeholder="Ex: 500 XP, Espada mágica" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Membros Ativos Alocados</label>
+            <div className="flex flex-wrap gap-2 bg-black/5 dark:bg-black/20 p-4 rounded-[24px] border border-fantasy-wood/10 dark:border-white/10 max-h-40 overflow-y-auto">
+              {activeMembers.length === 0 && <p className="text-xs text-fantasy-wood/40 italic px-2">Nenhum aventureiro ativo disponível.</p>}
+              {activeMembers.map(m => (
+                <button key={m.id} type="button" onClick={() => toggleMemberAssign(m.id)} className={`px-4 py-2 rounded-full text-xs font-bold transition-all border active:scale-95 ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}>{m.name}</button>
+              ))}
+            </div>
+          </div>
+          <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all active:scale-95">{modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}</button>
+        </form>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
@@ -134,6 +181,8 @@ const QuestBoardPage: React.FC = () => {
         <div className="flex-1 flex items-center justify-center">
           <EmptyState icon={CheckSquare} title="Nenhuma missao encontrada..." description="Crie missoes para seus aventureiros." />
         </div>
+
+        {questModal}
       </div>
     );
   }
@@ -236,66 +285,7 @@ const QuestBoardPage: React.FC = () => {
           </div>
       </div>
 
-      {modalMode && (
-          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
-              <div className="parchment-card p-10 rounded-[50px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-                  <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
-                  
-                  <div className="text-center mb-8">
-                      <div className="wax-seal w-20 h-20 mx-auto mb-4 flex items-center justify-center text-white"><CheckSquare size={40}/></div>
-                      <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'edit' ? 'Editar Contrato' : 'Novo Contrato'}</h3>
-                  </div>
-
-                  <form onSubmit={handleSave} className="space-y-6">
-                      <div className="space-y-2">
-                          <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Título da Missão</label>
-                          <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" required value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: A Besta de Smokestone" />
-                      </div>
-                      <div className="space-y-2">
-                          <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Descrição / Objetivos</label>
-                          <textarea className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-serif text-lg h-32 resize-none" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Detalhes do contrato..." />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                              <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (Ouro)</label>
-                              <div className="flex gap-2">
-                                  <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
-                                  <select className="bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-4 py-4 font-medieval text-lg outline-none cursor-pointer" value={newCurrency} onChange={e => setNewCurrency(e.target.value as CurrencyType)}>
-                                      {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c} className="dark:bg-black">{c}</option>)}
-                                  </select>
-                              </div>
-                          </div>
-                          <div className="space-y-2">
-                              <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (XP / Itens)</label>
-                              <input type="text" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newXP} onChange={e => setNewXP(e.target.value)} placeholder="Ex: 500 XP, Espada mágica" />
-                          </div>
-                      </div>
-
-                      <div className="space-y-2">
-                          <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Membros Ativos Alocados</label>
-                          <div className="flex flex-wrap gap-2 bg-black/5 dark:bg-black/20 p-4 rounded-[24px] border border-fantasy-wood/10 dark:border-white/10 max-h-40 overflow-y-auto">
-                              {activeMembers.length === 0 && <p className="text-xs text-fantasy-wood/40 italic px-2">Nenhum aventureiro ativo disponível.</p>}
-                              {activeMembers.map(m => (
-                                  <button 
-                                    key={m.id}
-                                    type="button" 
-                                    onClick={() => toggleMemberAssign(m.id)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border active:scale-95 ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}
-                                  >
-                                      {m.name}
-                                  </button>
-                              ))}
-                          </div>
-                      </div>
-
-                      <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all active:scale-95">
-                          {modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}
-                      </button>
-                  </form>
-              </div>
-          </div>
-      )}
+      {questModal}
     </div>
   );
 };
