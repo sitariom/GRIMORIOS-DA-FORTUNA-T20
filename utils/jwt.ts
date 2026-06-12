@@ -2,13 +2,22 @@ import { SignJWT, jwtVerify, errors } from "jose";
 
 const DEFAULT_EXPIRES_IN = 86_400; // 24h
 
+let _cachedSecret: Uint8Array | null = null;
+
 function getSecret(): Uint8Array {
+  if (_cachedSecret) return _cachedSecret;
   let secret = process.env.JWT_SECRET;
   if (!secret) {
-    console.warn("WARN: JWT_SECRET não configurado. Usando chave aleatória (sessões serão inválidas após restart).");
+    console.warn(
+      "WARN: JWT_SECRET não configurado no runtime. " +
+      "process.env.JWT_SECRET = " + JSON.stringify(process.env.JWT_SECRET) + ". " +
+      "Edge Functions não acessam env vars Sensitive/Secret. " +
+      "Usando chave aleatória (sessões serão inválidas entre restarts)."
+    );
     secret = crypto.randomUUID() + crypto.randomUUID();
   }
-  return new TextEncoder().encode(secret);
+  _cachedSecret = new TextEncoder().encode(secret);
+  return _cachedSecret;
 }
 
 function getExpiresIn(): number {

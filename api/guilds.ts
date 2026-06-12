@@ -4,10 +4,6 @@ import { hashPassword, verifyAndMaybeUpgradePassword } from '../utils/password';
 import { authenticate, AuthError, signToken, type AuthResult } from './middleware/auth';
 import { checkJsonbColumn } from '../utils/schemaCheck';
 
-export const config = {
-  runtime: 'edge',
-};
-
 async function getGuildData(client: any, id: string, field?: string, jsonbFilter?: string) {
   if (field) {
     const query = jsonbFilter
