@@ -3,15 +3,22 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.6.6] — 2026-06-12
+### Adicionado
+- **Script de correção retroativa:** `npm run db:fixCashFlow` — percorre guildas existentes e zera `log.value` de operações de tesouro de domínio registradas incorretamente antes da correção. Identifica e preserva os únicos logs `Dominio` com valor legítimo (`investDomain`/`withdrawDomain`). Idempotente e seguro (`scripts/fixCashFlowRetroactive.ts`).
+
+### Alterado
+- **Gitignore:** Adicionados padrões `.env*` e `.playwright-mcp/` para segurança.
+
+### Corrigido
+- **Branches paralelas:** Limpeza de branches `fix/quest-modal-empty-state` e `fix/cash-flow-value-validation` já mergeadas.
+
 ## [2.6.5] — 2026-06-12
 ### Corrigido
 - **Fluxo de Caixa — Validação de valor:** 21 operações corrigidas para registrar `value: 0` quando apenas o tesouro do domínio (`domain.treasury`) é alterado, sem movimentação real no cofre da guilda (`wallet.LO`/`wallet.TS`). Isso evita que gráficos de Fluxo de Caixa e Dashboard exibam movimentações fictícias.
 - **Registro de Itens:** `addItem` não é venda — `log.value` alterado para `0` (`useItemActions.ts`).
 - **Ações de Domínio:** `manageDomainTreasury`, `addDomainBuilding`, `addDomainUnit`, `resolveCaravan`, `applyBattleOutcome`, `payMaintenance`, `applyRandomEvent`, `resolveRevolt` e fases de pagamento de `executeDomainAction` (governar, corte, festival, extorquir, convocar, impostos, caravana) — `log.value` alterado para `0` (`useDomainActions.ts`).
 - **Investimentos:** Exibe `--` no lugar de `+0` para entradas sem valor financeiro (`InvestmentsPage.tsx`).
-
-### Adicionado
-- **Script de correção retroativa:** `npm run db:fixCashFlow` — percorre guildas existentes e zera `log.value` de operações de tesouro de domínio registradas incorretamente antes da correção. Identifica e preserva os únicos logs `Dominio` com valor legítimo (`investDomain`/`withdrawDomain`). Idempotente e seguro (`scripts/fixCashFlowRetroactive.ts`).
 
 ## [2.6.4] — 2026-06-12
 ### Corrigido
