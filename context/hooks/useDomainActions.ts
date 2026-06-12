@@ -220,7 +220,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         activeGuild,
         'Dominio',
         `Ajuste de Tesouro no Domínio ${domain.name}: ${type === 'Income' ? '+' : '-'}${amount} LO (${reason || 'Ajuste Manual'})`,
-        type === 'Income' ? amount * 1000 : -amount * 1000,
+        0,
         'system'
       )
     });
@@ -318,7 +318,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         cashFlow: updatedCashFlow,
         actionsRemaining: pay ? currentActions - 1 : currentActions
       } : d),
-      logs: internalAddLog(activeGuild, 'Dominio', `Construção erguida em ${domain.name}: ${building.name}`, pay ? -building.costLO * 1000 : 0, 'system')
+      logs: internalAddLog(activeGuild, 'Dominio', `Construção erguida em ${domain.name}: ${building.name}`, 0, 'system')
     });
     notify("Construção finalizada.");
   };
@@ -389,7 +389,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         cashFlow: updatedCashFlow,
         actionsRemaining: pay ? currentActions - 1 : currentActions
       } : d),
-      logs: internalAddLog(activeGuild, 'Dominio', `Unidade recrutada em ${domain.name}: ${unit.name}`, pay ? -unit.costLO * 1000 : 0, 'system')
+      logs: internalAddLog(activeGuild, 'Dominio', `Unidade recrutada em ${domain.name}: ${unit.name}`, 0, 'system')
     });
     notify("Unidade recrutada.");
   };
@@ -584,13 +584,13 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
       transaction = createTransaction('Entrada', profitLO, "Retorno de Caravana");
       logMsg = `Caravana Resolvida em ${domain.name}: +${profitLO} LO obtidos de lucro (Investimento original: ${investLO} LO)`;
       finalTreasuryChange = profitLO;
-      logValue = profitLO * 1000;
+      logValue = 0;
       notify(`Caravana resolvida: +${profitLO} LO adicionados ao tesouro.`);
     } else {
       transaction = createTransaction('Saída', 0, `Caravana Fracassada (Investimento de ${investLO} LO perdido)`);
       logMsg = `Caravana perdida em ${domain.name}: −${investLO} LO`;
       finalTreasuryChange = 0;
-      logValue = -(investLO * 1000);
+      logValue = 0;
       notify(`Caravana fracassou: ${investLO} LO investidos foram perdidos.`, "error");
     }
 
@@ -645,7 +645,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         activeGuild,
         'Dominio',
         `Batalha em ${domain.name}: Perdas registradas (LO: -${lostLO}, Nível: ${loseLevel ? '-1' : '0'}, Unidades perdidas: ${lostUnitIds.length}, Construções destruídas: ${lostBuildingIds.length})`,
-        -lostLO * 1000,
+        0,
         'system'
       )
     });
@@ -702,7 +702,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               cashFlow: [...(d.cashFlow || []), transaction],
               actionsRemaining: currentActions - 1
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Tentativa de Governar em ${domain.name} (Custo: ${cost} LO pago)`, -cost * 1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Tentativa de Governar em ${domain.name} (Custo: ${cost} LO pago)`, 0, 'system')
           });
           return {
             success: true,
@@ -756,7 +756,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               cashFlow: [...(d.cashFlow || []), transaction],
               actionsRemaining: currentActions - 1
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Aumentar Corte em ${domain.name} (Declarado): Custo 1 LO pago`, -1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Aumentar Corte em ${domain.name} (Declarado): Custo 1 LO pago`, 0, 'system')
           });
           return { success: true, message: `Ação de Corte declarada. Custo de 1 LO pago. Confirme se passou no teste ou se é uma decisão aceita.` };
         } else {
@@ -821,7 +821,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               cashFlow: [...(d.cashFlow || []), transaction],
               actionsRemaining: currentActions - 1
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Festival em ${domain.name} (Declarado): Custo 1 LO pago`, -1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Festival em ${domain.name} (Declarado): Custo 1 LO pago`, 0, 'system')
           });
           return { success: true, message: `Festival declarado. Custo de 1 LO pago. Realize o teste de Diplomacia/Atuação CD 20.` };
         } else {
@@ -870,7 +870,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               revolt,
               cashFlow: [...(d.cashFlow || []), transaction]
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Extorquir Sucesso em ${domain.name}: +${total} LO, Popularidade ${domain.popularity} → ${newPopularityE}`, total * 1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Extorquir Sucesso em ${domain.name}: +${total} LO, Popularidade ${domain.popularity} → ${newPopularityE}`, 0, 'system')
           });
 
           return { success: true, message: `Extorção rendeu ${total} LO. Popularidade: ${domain.popularity} → ${newPopularityE}${revolt ? ' — REVOLTA!' : ''}`, details: [`+${total} LO no tesouro`] };
@@ -894,7 +894,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               cashFlow: [...(d.cashFlow || []), transaction],
               actionsRemaining: currentActions - 1
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Convocar em ${domain.name} (Declarado): Custo 1 LO pago`, -1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Convocar em ${domain.name} (Declarado): Custo 1 LO pago`, 0, 'system')
           });
           return { success: true, message: `Ação de Convocação declarada. Custo de 1 LO pago. Realize o teste de Nobreza/Guerra CD 20.` };
         } else {
@@ -964,7 +964,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               revolt: false,
               cashFlow: [...(d.cashFlow || []), transaction]
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Baixos em ${domain.name}: +${income} LO, Popularidade ${domain.popularity} → ${newPopularityT}`, income * 1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Baixos em ${domain.name}: +${income} LO, Popularidade ${domain.popularity} → ${newPopularityT}`, 0, 'system')
           });
 
           return { success: true, message: `Impostos Baixos: +${income} LO. Popularidade: ${domain.popularity} → ${newPopularityT}` };
@@ -997,7 +997,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               treasury: d.treasury + incomeM,
               cashFlow: [...(d.cashFlow || []), transaction]
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Médios em ${domain.name}: +${incomeM} LO`, incomeM * 1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Médios em ${domain.name}: +${incomeM} LO`, 0, 'system')
           });
 
           return { success: true, message: `Impostos Médios: +${incomeM} LO.` };
@@ -1044,7 +1044,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               revolt: revoltH,
               cashFlow: [...(d.cashFlow || []), transaction]
             } : d),
-            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Altos em ${domain.name}: +${totalIncome} LO, Popularidade ${domain.popularity} → ${newPopularityH}`, totalIncome * 1000, 'system')
+            logs: internalAddLog(activeGuild, 'Dominio', `Impostos Altos em ${domain.name}: +${totalIncome} LO, Popularidade ${domain.popularity} → ${newPopularityH}`, 0, 'system')
           });
 
           return { success: true, message: `Impostos Altos: +${totalIncome} LO. Popularidade: ${domain.popularity} → ${newPopularityH}${revoltH ? ' — REVOLTA!' : ''}` };
@@ -1123,7 +1123,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
               history: [{ date: new Date().toISOString(), details: 'Caravana despachada' }]
             }]
           } : d),
-          logs: internalAddLog(activeGuild, 'Dominio', `Caravana enviada de ${domain.name}: investido ${investLO} LO (${numDice}d4)`, -investLO * 1000, 'system')
+          logs: internalAddLog(activeGuild, 'Dominio', `Caravana enviada de ${domain.name}: investido ${investLO} LO (${numDice}d4)`, 0, 'system')
         });
 
         return {
@@ -1189,7 +1189,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
           tempCaosPenalty: true
         } : d),
         npcs: updatedNPCs,
-        logs: internalAddLog(activeGuild, 'Dominio', `Manutenção de ${domain.name}: Tesouro insuficiente. Corte caiu para ${newCourt}. Caos instalado (-5 em ações). Tropas perdidas.`, -cost * 1000, 'system')
+        logs: internalAddLog(activeGuild, 'Dominio', `Manutenção de ${domain.name}: Tesouro insuficiente. Corte caiu para ${newCourt}. Caos instalado (-5 em ações). Tropas perdidas.`, 0, 'system')
       });
 
       return { success: false, message: `Manutenção de ${cost} LO não paga. Corte: ${domain.court} → ${newCourt}. Tropas perdidas!` };
@@ -1217,7 +1217,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         activeGuild,
         'Dominio',
         `Manutenção paga em ${domain.name}: ${cost} LO.${passiveIncome > 0 ? ` Rendimento Místico de +${passiveIncome} LO coletado.` : ''}`,
-        netChange * 1000,
+        0,
         'system'
       )
     });
@@ -1377,6 +1377,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         updatedDomain.treasury -= actualLoss;
         updatedDomain.cashFlow = [...(updatedDomain.cashFlow || []), tx];
         logValue = -actualLoss * 1000;
+        logValue = 0;
         details.push(`Problema menor (Nevasca/Seca) causou prejuízo de ${actualLoss} LO no tesouro (rolagem 1d6: ${diceLoss}).`);
       }
 
@@ -1516,7 +1517,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
         const tx = createTransaction('Entrada', loGain, `Regalia: Clima Bom`);
         updatedDomain.treasury += loGain;
         updatedDomain.cashFlow = [...(updatedDomain.cashFlow || []), tx];
-        logValue = loGain * 1000;
+        logValue = 0;
         details.push(`Clima bom e colheitas fartas! Adicionado +${loGain} LO ao tesouro.`);
       } else if (roll === 3 || roll === 4) {
         updatedDomain.actionModifier = (updatedDomain.actionModifier || 0) + 2;
@@ -1592,7 +1593,7 @@ export const useDomainActions = ({ activeGuild, triggerSave, notify, internalAdd
             treasury: newTreasury,
             cashFlow: [...(d.cashFlow || []), transaction]
           } : d),
-          logs: internalAddLog(activeGuild, 'Dominio', `Falha ao sufocar revolta: tesouro real saqueado em ${actualLost} LO (dados: ${die1}+${die2}).`, -actualLost * 1000, 'system')
+          logs: internalAddLog(activeGuild, 'Dominio', `Falha ao sufocar revolta: tesouro real saqueado em ${actualLost} LO (dados: ${die1}+${die2}).`, 0, 'system')
         });
 
         return { success: false, message: `Falha ao sufocar a revolta! Como não havia construções, a população invadiu os cofres reais e saqueou ${actualLost} LO (rolagem de 2d4: ${die1} + ${die2} = ${lostLO}).` };

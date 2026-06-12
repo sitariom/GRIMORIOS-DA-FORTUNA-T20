@@ -87,7 +87,7 @@ const DashboardPage: React.FC = () => {
 
     const financialLogs = logs
         .filter(l => l.value !== 0)
-        .slice(0, 30); // Analisa os últimos 30 movimentos
+        .slice(0, 30);
 
     financialLogs.forEach(log => {
         currentWealth -= log.value; 
