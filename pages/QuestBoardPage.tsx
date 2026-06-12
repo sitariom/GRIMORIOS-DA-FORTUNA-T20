@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Quest, QuestStatus, CurrencyType } from '../types';
 import { CheckSquare, Plus, Trash2, ArrowRight, ArrowLeft, Coins, Award, Users, AlertCircle, X, Edit } from 'lucide-react';
@@ -36,6 +36,7 @@ const QuestBoardPage: React.FC = () => {
   const [newCurrency, setNewCurrency] = useState<CurrencyType>('TS');
   const [newXP, setNewXP] = useState('');
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
+  const dragRef = useRef<string | null>(null);
 
   const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
@@ -202,7 +203,17 @@ const QuestBoardPage: React.FC = () => {
       <div className="flex-1 overflow-x-auto pb-8 custom-scrollbar">
           <div className="flex gap-6 min-w-max h-full">
               {STATUS_COLUMNS.map(col => (
-                  <div key={col.id} className={`w-80 md:w-96 flex-shrink-0 flex flex-col rounded-[32px] border-2 ${col.color} p-4 backdrop-blur-sm`}>
+                  <div key={col.id} className={`w-80 md:w-96 flex-shrink-0 flex flex-col rounded-[32px] border-2 ${col.color} p-4 backdrop-blur-sm`}
+                    onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'rgba(251,191,36,0.5)'; }}
+                    onDragLeave={e => { e.currentTarget.style.borderColor = ''; }}
+                    onDrop={e => {
+                      e.preventDefault();
+                      e.currentTarget.style.borderColor = '';
+                      if (dragRef.current) {
+                        updateQuestStatus(dragRef.current, col.id);
+                        dragRef.current = null;
+                      }
+                    }}>
                       <div className="mb-4 px-2 py-2 flex items-center justify-between">
                           <h3 className="font-medieval text-xl text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-widest">{col.label}</h3>
                           <span className="bg-black/10 dark:bg-white/10 px-3 py-1 rounded-full text-xs font-black">{(quests || []).filter(q => q.status === col.id).length}</span>
@@ -216,7 +227,9 @@ const QuestBoardPage: React.FC = () => {
                           ) : (
                             (quests || []).filter(q => q.status === col.id).map((quest, index) => (
                               <AnimatedCard key={quest.id} delay={index * 100}>
-                                <div className="parchment-card p-5 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-md hover:border-fantasy-gold/50 transition-all group relative hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                                <div draggable className="parchment-card p-5 rounded-[32px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-md hover:border-fantasy-gold/50 transition-all group relative hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-grab active:cursor-grabbing"
+                                  onDragStart={() => { dragRef.current = quest.id; }}
+                                  onDragEnd={() => { dragRef.current = null; }}>
                                     <div className="flex justify-between items-start mb-2">
                                         <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight pr-6">{quest.title}</h4>
                                         <div className="flex gap-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
