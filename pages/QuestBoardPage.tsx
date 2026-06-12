@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Quest, QuestStatus, CurrencyType } from '../types';
 import { CheckSquare, Plus, Trash2, ArrowRight, ArrowLeft, Coins, Award, Users, AlertCircle, X, Edit } from 'lucide-react';
@@ -16,6 +16,17 @@ const STATUS_COLUMNS: { id: QuestStatus; label: string; color: string }[] = [
 const QuestBoardPage: React.FC = () => {
   const { quests = [], addQuest, updateQuest, updateQuestStatus, deleteQuest, members, isLoading } = useGuild();
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+
+  console.log('[DEBUG QuestBoardPage] mount | isLoading:', isLoading, ' | quests.length:', quests.length, ' | quests:', JSON.stringify(quests));
+  console.log('[DEBUG QuestBoardPage] members.length:', members.length);
+
+  useEffect(() => {
+    console.log('[DEBUG QuestBoardPage] useEffect | quests.length:', quests.length, ' | quests:', JSON.stringify(quests));
+  }, [quests]);
+
+  useEffect(() => {
+    console.log('[DEBUG QuestBoardPage] isLoading changed:', isLoading);
+  }, [isLoading]);
   
   // Form States
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -28,6 +39,7 @@ const QuestBoardPage: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
+      console.log('[DEBUG QuestBoardPage] handleSave | mode:', modalMode, ' | editingId:', editingId, ' | title:', newTitle, ' | desc:', newDesc);
       
       if (modalMode === 'edit' && editingId) {
           updateQuest(editingId, {
@@ -53,11 +65,13 @@ const QuestBoardPage: React.FC = () => {
   };
 
   const openCreateModal = () => {
+      console.log('[DEBUG QuestBoardPage] openCreateModal');
       resetForm();
       setModalMode('create');
   };
 
   const openEditModal = (q: Quest) => {
+      console.log('[DEBUG QuestBoardPage] openEditModal | questId:', q.id, ' | title:', q.title);
       setEditingId(q.id);
       setNewTitle(q.title);
       setNewDesc(q.description);
@@ -158,7 +172,7 @@ const QuestBoardPage: React.FC = () => {
                                         <h4 className="font-medieval text-lg text-fantasy-wood dark:text-fantasy-parchment leading-tight pr-6">{quest.title}</h4>
                                         <div className="flex gap-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => openEditModal(quest)} className="text-fantasy-wood/40 hover:text-fantasy-gold transition-colors active:scale-95"><Edit size={16}/></button>
-                                            <button onClick={() => deleteQuest(quest.id)} className="text-fantasy-wood/40 hover:text-red-500 transition-colors active:scale-95"><Trash2 size={16}/></button>
+                                            <button onClick={() => { console.log('[DEBUG QuestBoardPage] deleteQuest | questId:', quest.id, ' | title:', quest.title); deleteQuest(quest.id); }} className="text-fantasy-wood/40 hover:text-red-500 transition-colors active:scale-95"><Trash2 size={16}/></button>
                                         </div>
                                     </div>
                                     <p className="text-xs text-fantasy-wood/70 dark:text-fantasy-parchment/70 font-serif italic mb-4 line-clamp-3">{quest.description}</p>
@@ -194,7 +208,7 @@ const QuestBoardPage: React.FC = () => {
                                     {/* Actions */}
                                     <div className="flex justify-between items-center pt-2 border-t border-fantasy-wood/5 dark:border-white/5">
                                         {col.id !== 'Disponivel' && (
-                                            <button onClick={() => updateQuestStatus(quest.id, col.id === 'Em Andamento' ? 'Disponivel' : 'Em Andamento')} className="p-2 hover:bg-white/10 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-fantasy-wood active:scale-95">
+                                            <button onClick={() => { const newStatus = col.id === 'Em Andamento' ? 'Disponivel' : 'Em Andamento'; console.log('[DEBUG QuestBoardPage] updateQuestStatus | questId:', quest.id, ' | from:', col.id, ' | to:', newStatus); updateQuestStatus(quest.id, newStatus); }} className="p-2 hover:bg-white/10 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-fantasy-wood active:scale-95">
                                                 <ArrowLeft size={16}/>
                                             </button>
                                         )}
@@ -202,11 +216,11 @@ const QuestBoardPage: React.FC = () => {
                                         {col.id !== 'Concluida' && col.id !== 'Falha' && (
                                             <div className="flex gap-1">
                                                 {col.id === 'Em Andamento' && (
-                                                    <button onClick={() => updateQuestStatus(quest.id, 'Falha')} className="p-2 hover:bg-red-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-red-500 active:scale-95" title="Falhar">
+                                                    <button onClick={() => { console.log('[DEBUG QuestBoardPage] updateQuestStatus | questId:', quest.id, ' | from:', col.id, ' | to: Falha'); updateQuestStatus(quest.id, 'Falha'); }} className="p-2 hover:bg-red-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-red-500 active:scale-95" title="Falhar">
                                                         <X size={16}/>
                                                     </button>
                                                 )}
-                                                <button onClick={() => updateQuestStatus(quest.id, col.id === 'Disponivel' ? 'Em Andamento' : 'Concluida')} className="p-2 hover:bg-emerald-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-emerald-500 active:scale-95" title="Avançar">
+                                                <button onClick={() => { const newStatus = col.id === 'Disponivel' ? 'Em Andamento' : 'Concluida'; console.log('[DEBUG QuestBoardPage] updateQuestStatus | questId:', quest.id, ' | from:', col.id, ' | to:', newStatus); updateQuestStatus(quest.id, newStatus); }} className="p-2 hover:bg-emerald-900/20 rounded-full text-fantasy-wood/50 dark:text-fantasy-parchment/50 hover:text-emerald-500 active:scale-95" title="Avançar">
                                                     <ArrowRight size={16}/>
                                                 </button>
                                             </div>
