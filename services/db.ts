@@ -142,8 +142,8 @@ export const dbService = {
   },
 
   async deleteGuild(id: string, password?: string) {
-    if (!password) throw new Error("Senha necessária para apagar.");
     const token = getToken();
+    if (!password && !token) throw new Error("Senha ou autenticação necessária para apagar.");
     const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -154,6 +154,16 @@ export const dbService = {
       method: 'DELETE',
       headers,
     });
+  },
+
+  async exportGuild(id: string): Promise<GuildState | null> {
+    const token = getToken();
+    if (!token) throw new Error("Autenticação necessária para exportar.");
+    const { data } = await apiRequest(`guilds?id=${id}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return data;
   },
 
   async getAllGuilds(): Promise<GuildSummary[]> {

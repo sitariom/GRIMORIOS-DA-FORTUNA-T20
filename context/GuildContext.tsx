@@ -924,24 +924,18 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     };
 
-    const importGuild = async (json: string, password: string) => {
-        try {
-            const parsed = JSON.parse(json);
-            if (!parsed.id || !parsed.guildName) throw new Error("Formato inválido");
-            const safeData = sanitizeGuildData(parsed);
-            safeData.version = (safeData.version || 0) + 1; 
-            await dbService.saveGuild(safeData, password);
-            await fetchGuilds();
-            notify("Guilda importada com sucesso.");
-        } catch (e) {
-            notify("Falha na importação. Verifique o arquivo.", "error");
-        }
-    };
-
     const exportGuildData = async (id: string) => {
         const g = guildList.find(x => x.id === id);
         if(!g) return;
         let data = activeGuild.id === id ? activeGuild : null;
+        if (!data && isAdmin) {
+            try {
+                data = await dbService.exportGuild(id);
+            } catch {
+                notify("Erro ao exportar guilda do servidor.", "error");
+                return;
+            }
+        }
         if (!data) {
              notify("Apenas a guilda ativa pode ser exportada neste momento.", "info");
              return;
@@ -955,6 +949,20 @@ export const GuildProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const importGuild = async (json: string, password: string) => {
+        try {
+            const parsed = JSON.parse(json);
+            if (!parsed.id || !parsed.guildName) throw new Error("Formato inválido");
+            const safeData = sanitizeGuildData(parsed);
+            safeData.version = (safeData.version || 0) + 1; 
+            await dbService.saveGuild(safeData, password);
+            await fetchGuilds();
+            notify("Guilda importada com sucesso.");
+        } catch (e) {
+            notify("Falha na importação. Verifique o arquivo.", "error");
+        }
     };
 
     const exportLogs = () => {
