@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
-import { Item, ItemType, ItemRarity, ItemCategory } from '../types';
-import { ITEM_TYPES, RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, TYPE_TO_CATEGORY, CATEGORY_TO_TYPE } from '../constants';
+import { Item, ItemRarity, ItemCategory } from '../types';
+import { RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, CATEGORY_TO_TYPE } from '../constants';
 import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
@@ -23,8 +23,7 @@ const InventoryPage: React.FC = () => {
   const [sellPercent, setSellPercent] = useState(50);
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<ItemType | 'Todos'>('Todos');
-  const [filterCategory, setFilterCategory] = useState<ItemCategory | 'Todas'>('Todas');
+  const [filterCategory, setFilterCategory] = useState<ItemCategory | 'Riquezas' | 'Todas'>('Todas');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -77,11 +76,10 @@ const InventoryPage: React.FC = () => {
   const filteredItems = useMemo(() => {
       return items.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === 'Todos' || item.type === filterType;
-        const matchesCategory = filterCategory === 'Todas' || item.category === filterCategory;
-        return matchesSearch && matchesType && matchesCategory;
+        const matchesCategory = filterCategory === 'Todas' || item.category === filterCategory || (filterCategory === 'Riquezas' && item.subcategory?.startsWith('Riqueza'));
+        return matchesSearch && matchesCategory;
       });
-  }, [items, searchTerm, filterType, filterCategory]);
+  }, [items, searchTerm, filterCategory]);
 
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
@@ -160,14 +158,11 @@ const InventoryPage: React.FC = () => {
               <input type="text" placeholder="Buscar por nome..." className="w-full bg-white/20 dark:bg-black/30 border-2 border-fantasy-wood/10 dark:border-white/5 rounded-2xl pl-16 pr-6 py-4 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg focus:outline-none focus:border-fantasy-gold transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
-              <button type="button" onClick={() => setFilterType('Todos')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === 'Todos' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
-              {ITEM_TYPES.map(t => (
-                  <button type="button" key={t} onClick={() => setFilterType(t as ItemType)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterType === t ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{t}</button>
-              ))}
-              <span className="h-8 w-px bg-fantasy-wood/20 mx-2"></span>
+              <button type="button" onClick={() => setFilterCategory('Todas')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterCategory === 'Todas' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Todos</button>
               {ITEM_CATEGORIES.map(c => (
                   <button type="button" key={c} onClick={() => setFilterCategory(filterCategory === c ? 'Todas' : c)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterCategory === c ? 'bg-fantasy-gold text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>{CATEGORY_CONFIG[c].label}</button>
               ))}
+              <button type="button" onClick={() => setFilterCategory(filterCategory === 'Riquezas' ? 'Todas' : 'Riquezas')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap ${filterCategory === 'Riquezas' ? 'bg-fantasy-gold text-black shadow-lg' : 'bg-black/5 dark:bg-white/5 text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Riquezas</button>
           </div>
       </div>
 
