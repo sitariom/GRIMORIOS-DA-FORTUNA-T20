@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimório da Fortuna T20 — Conceitos Visuais de Alta Fantasia Medieval</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap');
+
+    :root {
+      /* Shared Typography */
+      --font-ornate: 'Cinzel Decorative', cursive;
+      --font-display: 'Cinzel', serif;
+      --font-medieval: 'MedievalSharp', cursive;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Universal constants */
+      --color-pure-white: #ffffff;
+
+      /* =========================================================================
+         DIREÇÃO 1: O MANUSCRITO ILUMINADO (Pergaminho Real com Iluminuras)
+         ========================================================================= */
+      --c-d1-l-bg: #f5eccb;
+      --c-d1-l-bg-pattern: radial-gradient(#e2ce9a 1px, transparent 1px);
+      --c-d1-l-surface: #fdfaf0;
+      --c-d1-l-surface-alt: #ebe0bd;
+      --c-d1-l-fg: #2c1a0e;
+      --c-d1-l-muted: #785a3c;
+      --c-d1-l-border: #b89355;
+      --c-d1-l-border-thick: #805726;
+      --c-d1-l-gold: #c99326;
+      --c-d1-l-gold-glow: rgba(201, 147, 38, 0.35);
+      --c-d1-l-seal: #8f1d1d;
+      --c-d1-l-ink: #1f140c;
+
+      --c-d1-d-bg: #140d08;
+      --c-d1-d-bg-pattern: radial-gradient(#26180f 1px, transparent 1px);
+      --c-d1-d-surface: #20150d;
+      --c-d1-d-surface-alt: #2c1e13;
+      --c-d1-d-fg: #faebd7;
+      --c-d1-d-muted: #bfa382;
+      --c-d1-d-border: #5e4125;
+      --c-d1-d-border-thick: #946933;
+      --c-d1-d-gold: #d4af37;
+      --c-d1-d-gold-glow: rgba(212, 175, 55, 0.45);
+      --c-d1-d-seal: #b91c1c;
+      --c-d1-d-ink: #f5deb3;
+
+      /* =========================================================================
+         DIREÇÃO 2: O BAÚ DE GUERRA & FORJA (Carvalho, Ferro Forjado e Rebites)
+         ========================================================================= */
+      --c-d2-l-bg: #e6dbcb;
+      --c-d2-l-surface: #f4ecdf;
+      --c-d2-l-surface-alt: #d5c5ad;
+      --c-d2-l-fg: #1d1814;
+      --c-d2-l-muted: #5e5145;
+      --c-d2-l-border: #4a3c31;
+      --c-d2-l-border-thick: #2b221a;
+      --c-d2-l-iron: #3d444e;
+      --c-d2-l-brass: #b5893a;
+      --c-d2-l-brass-glow: rgba(181, 137, 58, 0.3);
+      --c-d2-l-velvet: #1c3621;
+      --c-d2-l-velvet-fg: #e2f0d9;
+
+      --c-d2-d-bg: #0d0b09;
+      --c-d2-d-surface: #171410;
+      --c-d2-d-surface-alt: #231e18;
+      --c-d2-d-fg: #ede2d3;
+      --c-d2-d-muted: #9c8976;
+      --c-d2-d-border: #3b3127;
+      --c-d2-d-border-thick: #6b553e;
+      --c-d2-d-iron: #22262d;
+      --c-d2-d-brass: #d4a044;
+      --c-d2-d-brass-glow: rgba(212, 160, 68, 0.4);
+      --c-d2-d-velvet: #0e1e12;
+      --c-d2-d-velvet-fg: #bce5c5;
+
+      /* =========================================================================
+         DIREÇÃO 3: CÓDICE ARCANO & TORMENTA (Obsidiana, Gemas e Runas Místicas)
+         ========================================================================= */
+      --c-d3-l-bg: #f0eef5;
+      --c-d3-l-surface: #faf9fd;
+      --c-d3-l-surface-alt: #e4e0ef;
+      --c-d3-l-fg: #181424;
+      --c-d3-l-muted: #5f5478;
+      --c-d3-l-border: #998bb5;
+      --c-d3-l-border-thick: #6b5791;
+      --c-d3-l-rune: #1d4ed8;
+      --c-d3-l-gem-red: #be123c;
+      --c-d3-l-gem-gold: #b45309;
+      --c-d3-l-mana-glow: rgba(29, 78, 216, 0.25);
+
+      --c-d3-d-bg: #09080e;
+      --c-d3-d-surface: #13111c;
+      --c-d3-d-surface-alt: #1e1b2b;
+      --c-d3-d-fg: #f3f0fa;
+      --c-d3-d-muted: #a39bb8;
+      --c-d3-d-border: #3c3452;
+      --c-d3-d-border-thick: #8065b8;
+      --c-d3-d-rune: #38bdf8;
+      --c-d3-d-gem-red: #f43f5e;
+      --c-d3-d-gem-gold: #f59e0b;
+      --c-d3-d-mana-glow: rgba(56, 189, 248, 0.35);
+
+      /* Active Default Dynamic Variables (Direction 1 Light) */
+      --bg: var(--c-d1-l-bg);
+      --surface: var(--c-d1-l-surface);
+      --surface-alt: var(--c-d1-l-surface-alt);
+      --fg: var(--c-d1-l-fg);
+      --muted: var(--c-d1-l-muted);
+      --border: var(--c-d1-l-border);
+      --border-thick: var(--c-d1-l-border-thick);
+      --accent: var(--c-d1-l-gold);
+      --accent-glow: var(--c-d1-l-gold-glow);
+      --seal: var(--c-d1-l-seal);
+      --card-radius: 12px;
+      --card-shadow: 0 16px 32px -8px rgba(60, 35, 10, 0.15), inset 0 0 40px rgba(184, 147, 85, 0.08);
+    }
+
+    /* Direction 1 Light */
+    body[data-direction="d1"] {
+      --bg: var(--c-d1-l-bg);
+      --surface: var(--c-d1-l-surface);
+      --surface-alt: var(--c-d1-l-surface-alt);
+      --fg: var(--c-d1-l-fg);
+      --muted: var(--c-d1-l-muted);
+      --border: var(--c-d1-l-border);
+      --border-thick: var(--c-d1-l-border-thick);
+      --accent: var(--c-d1-l-gold);
+      --accent-glow: var(--c-d1-l-gold-glow);
+      --seal: var(--c-d1-l-seal);
+      --card-radius: 8px;
+      --card-shadow: 0 12px 28px -6px rgba(50, 30, 10, 0.12), inset 0 0 35px rgba(201, 147, 38, 0.06);
+    }
+
+    /* Direction 1 Dark */
+    body.dark[data-direction="d1"] {
+      --bg: var(--c-d1-d-bg);
+      --surface: var(--c-d1-d-surface);
+      --surface-alt: var(--c-d1-d-surface-alt);
+      --fg: var(--c-d1-d-fg);
+      --muted: var(--c-d1-d-muted);
+      --border: var(--c-d1-d-border);
+      --border-thick: var(--c-d1-d-border-thick);
+      --accent: var(--c-d1-d-gold);
+      --accent-glow: var(--c-d1-d-gold-glow);
+      --seal: var(--c-d1-d-seal);
+      --card-radius: 8px;
+      --card-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(212, 175, 55, 0.08);
+    }
+
+    /* Direction 2 Light */
+    body[data-direction="d2"] {
+      --bg: var(--c-d2-l-bg);
+      --surface: var(--c-d2-l-surface);
+      --surface-alt: var(--c-d2-l-surface-alt);
+      --fg: var(--c-d2-l-fg);
+      --muted: var(--c-d2-l-muted);
+      --border: var(--c-d2-l-border);
+      --border-thick: var(--c-d2-l-border-thick);
+      --accent: var(--c-d2-l-brass);
+      --accent-glow: var(--c-d2-l-brass-glow);
+      --seal: var(--c-d2-l-iron);
+      --card-radius: 4px;
+      --card-shadow: 0 10px 24px -4px rgba(43, 34, 26, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Direction 2 Dark */
+    body.dark[data-direction="d2"] {
+      --bg: var(--c-d2-d-bg);
+      --surface: var(--c-d2-d-surface);
+      --surface-alt: var(--c-d2-d-surface-alt);
+      --fg: var(--c-d2-d-fg);
+      --muted: var(--c-d2-d-muted);
+      --border: var(--c-d2-d-border);
+      --border-thick: var(--c-d2-d-border-thick);
+      --accent: var(--c-d2-d-brass);
+      --accent-glow: var(--c-d2-d-brass-glow);
+      --seal: var(--c-d2-d-iron);
+      --card-radius: 4px;
+      --card-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* Direction 3 Light */
+    body[data-direction="d3"] {
+      --bg: var(--c-d3-l-bg);
+      --surface: var(--c-d3-l-surface);
+      --surface-alt: var(--c-d3-l-surface-alt);
+      --fg: var(--c-d3-l-fg);
+      --muted: var(--c-d3-l-muted);
+      --border: var(--c-d3-l-border);
+      --border-thick: var(--c-d3-l-border-thick);
+      --accent: var(--c-d3-l-rune);
+      --accent-glow: var(--c-d3-l-mana-glow);
+      --seal: var(--c-d3-l-gem-red);
+      --card-radius: 14px;
+      --card-shadow: 0 12px 30px -6px rgba(107, 87, 145, 0.18), inset 0 0 20px rgba(29, 78, 216, 0.04);
+    }
+
+    /* Direction 3 Dark */
+    body.dark[data-direction="d3"] {
+      --bg: var(--c-d3-d-bg);
+      --surface: var(--c-d3-d-surface);
+      --surface-alt: var(--c-d3-d-surface-alt);
+      --fg: var(--c-d3-d-fg);
+      --muted: var(--c-d3-d-muted);
+      --border: var(--c-d3-d-border);
+      --border-thick: var(--c-d3-d-border-thick);
+      --accent: var(--c-d3-d-rune);
+      --accent-glow: var(--c-d3-d-mana-glow);
+      --seal: var(--c-d3-d-gem-red);
+      --card-radius: 14px;
+      --card-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.95), 0 0 20px rgba(56, 189, 248, 0.08);
+    }
+
+    /* Base Setup */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Bar */
+    header {
+      background-color: var(--surface);
+      border-bottom: 3px double var(--border-thick);
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .wax-sigil {
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--accent) 0%, var(--border-thick) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-pure-white);
+      font-family: var(--font-ornate);
+      font-size: 1.75rem;
+      font-weight: 900;
+      box-shadow: 0 4px 12px var(--accent-glow), inset 0 2px 4px rgba(255, 255, 255, 0.35);
+      border: 2px solid var(--border-thick);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: var(--font-ornate);
+      font-size: 1.45rem;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+      color: var(--fg);
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-medieval);
+      font-size: 0.95rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+    }
+
+    .control-cluster {
+      display: flex;
+      gap: 0.875rem;
+      align-items: center;
+    }
+
+    .direction-switch {
+      display: flex;
+      background-color: var(--surface-alt);
+      border: 2px solid var(--border);
+      border-radius: 30px;
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+
+    .btn-dir {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-display);
+      font-size: 0.825rem;
+      font-weight: 700;
+      padding: 0.5rem 1.15rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-dir:hover {
+      color: var(--fg);
+    }
+
+    .btn-dir.active {
+      background-color: var(--surface);
+      color: var(--accent);
+      border: 1px solid var(--border-thick);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .btn-theme-toggle {
+      background-color: var(--surface-alt);
+      border: 2px solid var(--border-thick);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      font-family: var(--font-medieval);
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 14px var(--accent-glow);
+      transform: scale(1.02);
+    }
+
+    /* Main Container */
+    main {
+      padding: 2.5rem 2rem 4rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    /* Ornate Concept Hero */
+    .hero-banner {
+      background-color: var(--surface);
+      border: 2px solid var(--border-thick);
+      border-radius: var(--card-radius);
+      padding: 2rem 2.5rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .hero-label {
+      font-family: var(--font-medieval);
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .hero-heading {
+      font-family: var(--font-ornate);
+      font-size: 2rem;
+      line-height: 1.2;
+      color: var(--fg);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-text {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 980px;
+      line-height: 1.6;
+    }
+
+    /* Drop Cap Illuminated Paragraph */
+    .drop-cap-lead {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      margin-top: 0.5rem;
+    }
+
+    .drop-cap-box {
+      width: 3.5rem;
+      height: 3.5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--border-thick) 100%);
+      color: var(--color-pure-white);
+      font-family: var(--font-ornate);
+      font-size: 2.4rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--border-thick);
+      border-radius: 8px;
+      box-shadow: 0 4px 10px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    /* Tactile Metagame Cards (KPIs) */
+    .treasury-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .parchment-frame {
+      background-color: var(--surface);
+      border: 2px solid var(--border-thick);
+      border-radius: var(--card-radius);
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .parchment-frame:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+
+    /* Filigree Corner Accents */
+    .filigree-corner {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--accent);
+      pointer-events: none;
+    }
+    .filigree-corner.top-left { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+    .filigree-corner.top-right { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+    .filigree-corner.bottom-left { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+    .filigree-corner.bottom-right { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+    .card-top-tag {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tag-title {
+      font-family: var(--font-display);
+      font-size: 0.825rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .coin-badge {
+      font-family: var(--font-medieval);
+      font-size: 0.95rem;
+      padding: 0.2rem 0.75rem;
+      border-radius: 20px;
+      background-color: var(--surface-alt);
+      color: var(--accent);
+      border: 1px solid var(--border-thick);
+      font-weight: 700;
+    }
+
+    .treasury-gold-val {
+      font-family: var(--font-ornate);
+      font-size: 2.15rem;
+      font-weight: 900;
+      color: var(--fg);
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+    }
+
+    .treasury-meta {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Section Layout (2 Columns) */
+    .split-manuscript {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.75rem;
+    }
+
+    @media (max-width: 1024px) {
+      .split-manuscript {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Big Parchment Scroll (Left Panel) */
+    .tome-panel {
+      background-color: var(--surface);
+      border: 3px double var(--border-thick);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .tome-header {
+      padding: 1.35rem 2rem;
+      background-color: var(--surface-alt);
+      border-bottom: 2px solid var(--border-thick);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tome-title {
+      font-family: var(--font-ornate);
+      font-size: 1.35rem;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tome-body {
+      padding: 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Scroll Registry Rows */
+    .scroll-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.1rem 1.35rem;
+      border-radius: 8px;
+      background-color: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s ease;
+    }
+
+    .scroll-row:hover {
+      border-color: var(--border-thick);
+      transform: translateX(4px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .scroll-info-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .scroll-info-detail {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .scroll-badge-status {
+      font-family: var(--font-medieval);
+      font-size: 1.05rem;
+      color: var(--accent);
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Medieval Wax Buttons */
+    .btn-wax-seal {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--border-thick) 100%);
+      color: var(--color-pure-white);
+      border: 2px solid var(--border-thick);
+      padding: 0.85rem 1.65rem;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 6px 16px var(--accent-glow);
+      transition: all 0.25s ease;
+    }
+
+    .btn-wax-seal:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--accent-glow);
+    }
+
+    .btn-iron-plate {
+      background-color: var(--surface-alt);
+      color: var(--fg);
+      border: 1px solid var(--border-thick);
+      padding: 0.85rem 1.4rem;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-iron-plate:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Comparison Ledger */
+    .ledger-section {
+      background-color: var(--surface);
+      border: 3px double var(--border-thick);
+      border-radius: var(--card-radius);
+      padding: 2.25rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .ledger-title {
+      font-family: var(--font-ornate);
+      font-size: 1.45rem;
+      color: var(--fg);
+    }
+
+    .tome-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .tome-table th {
+      text-align: left;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 2px solid var(--border-thick);
+      color: var(--muted);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tome-table td {
+      padding: 1.15rem 1.25rem;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .tome-table tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body data-direction="d1">
+
+  <!-- Header -->
+  <header>
+    <div class="brand-block">
+      <div class="wax-sigil">⚜</div>
+      <div>
+        <div class="brand-title">Grimório da Fortuna T20</div>
+        <div class="brand-subtitle">Estúdio de Alta Fantasia Medieval</div>
+      </div>
+    </div>
+
+    <div class="control-cluster">
+      <!-- 3 Creative Direction Buttons -->
+      <div class="direction-switch">
+        <button class="btn-dir active" onclick="applyDirection('d1')">1. Manuscrito Iluminado</button>
+        <button class="btn-dir" onclick="applyDirection('d2')">2. Baú de Guerra & Forja</button>
+        <button class="btn-dir" onclick="applyDirection('d3')">3. Códice Arcano</button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="btn-theme-toggle" onclick="toggleFantasyTheme()" id="themeSwitcher">
+        <span id="themeSymbol">🕯️</span> <span id="themeText">Luz de Velas (Escuro)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Showcase -->
+  <main>
+    <!-- Creative Concept Showcase Hero -->
+    <section class="hero-banner" data-od-id="hero-banner">
+      <span class="hero-label" id="conceptLabel">Direção 1 — Arte dos Monges Arquivistas de Deheon</span>
+      <h1 class="hero-heading" id="conceptHeading">O Manuscrito Iluminado & Selo Real</h1>
+      
+      <div class="drop-cap-lead">
+        <div class="drop-cap-box" id="dropCap">G</div>
+        <p class="hero-text" id="conceptParagraph">
+          Inspirado nas grandes iluminuras medievais e livros contábeis do Reinado de Arton. Mantém toda a autenticidade táctil do pergaminho envelhecido, mas eleva o nível estético com capitulares historiadas, filigranas douradas trabalhadas nos cantos dos cartões, arabescos heráldicos e fitas de seda para um visual digno da corte de Valkaria.
+        </p>
+      </div>
+    </section>
+
+    <!-- Metagame Treasury Row (KPIs) -->
+    <section class="treasury-grid" data-od-id="treasury-grid">
+      <!-- KPI 1 -->
+      <div class="parchment-frame">
+        <div class="filigree-corner top-left"></div>
+        <div class="filigree-corner top-right"></div>
+        <div class="filigree-corner bottom-left"></div>
+        <div class="filigree-corner bottom-right"></div>
+        
+        <div class="card-top-tag">
+          <span class="tag-title">Tesouraria do Grupo</span>
+          <span class="coin-badge">Cofre Real</span>
+        </div>
+        <div class="treasury-gold-val">T$ 148.520</div>
+        <div class="treasury-meta">120 TL (Lingotes) · 28.520 TO (Ouro)</div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="parchment-frame">
+        <div class="filigree-corner top-left"></div>
+        <div class="filigree-corner top-right"></div>
+        <div class="filigree-corner bottom-left"></div>
+        <div class="filigree-corner bottom-right"></div>
+
+        <div class="card-top-tag">
+          <span class="tag-title">Senhorio Territorial</span>
+          <span class="coin-badge">Nível 4</span>
+        </div>
+        <div class="treasury-gold-val">LO 1.450</div>
+        <div class="treasury-meta">+180 LO/mês · Corte Confortável</div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="parchment-frame">
+        <div class="filigree-corner top-left"></div>
+        <div class="filigree-corner top-right"></div>
+        <div class="filigree-corner bottom-left"></div>
+        <div class="filigree-corner bottom-right"></div>
+
+        <div class="card-top-tag">
+          <span class="tag-title">Fortaleza de Operações</span>
+          <span class="coin-badge">Porte Médio</span>
+        </div>
+        <div class="treasury-gold-val">5 / 8 Cômodos</div>
+        <div class="treasury-meta">Gárgulas Ativas · 0 Danos</div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="parchment-frame">
+        <div class="filigree-corner top-left"></div>
+        <div class="filigree-corner top-right"></div>
+        <div class="filigree-corner bottom-left"></div>
+        <div class="filigree-corner bottom-right"></div>
+
+        <div class="card-top-tag">
+          <span class="tag-title">Calendário de Arton</span>
+          <span class="coin-badge">Ano 1420</span>
+        </div>
+        <div class="treasury-gold-val">14 Valkaria</div>
+        <div class="treasury-meta">Dia da Deusa · Lua Cheia</div>
+      </div>
+    </section>
+
+    <!-- Split Manuscript (Main Operational Panels) -->
+    <section class="split-manuscript" data-od-id="split-manuscript">
+      <!-- Left Panel: Ações de Domínio -->
+      <div class="tome-panel">
+        <div class="tome-header">
+          <div class="tome-title">
+            <span>🏰</span> Registro Régio de Governança
+          </div>
+          <button class="btn-wax-seal">Decretar Ação</button>
+        </div>
+        <div class="tome-body">
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Decreto de Tributos da Cidade Baixa</div>
+              <div class="scroll-info-detail">Turno Atual · Teste de Nobreza CD 20 · Bônus +4 Popularidade</div>
+            </div>
+            <span class="scroll-badge-status">Pronto para Rolar</span>
+          </div>
+
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Regimento de Infantaria de Zakharov</div>
+              <div class="scroll-info-detail">Alojado no Quartel · Manutenção: 40 LO/mês quitada</div>
+            </div>
+            <span class="scroll-badge-status">100% Força</span>
+          </div>
+
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Caravana Comercial para as Uivantes</div>
+              <div class="scroll-info-detail">Despachada há 4 dias · Previsão de retorno: +350 LO</div>
+            </div>
+            <span class="scroll-badge-status">Em Trânsito</span>
+          </div>
+
+          <div style="display: flex; gap: 0.85rem; margin-top: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-iron-plate">Inspecionar Tropas</button>
+            <button class="btn-iron-plate">Nomear Conselheiro</button>
+            <button class="btn-iron-plate">Obras & Fortificações</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: NPCs e Afinidade -->
+      <div class="tome-panel">
+        <div class="tome-header">
+          <div class="tome-title">
+            <span>⚔️</span> Comitiva & Laços
+          </div>
+          <span class="coin-badge">7 PA Max</span>
+        </div>
+        <div class="tome-body">
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Mestre Elíseo</div>
+              <div class="scroll-info-detail">Alquimista Contratado · T$ 150/mês</div>
+            </div>
+            <span class="scroll-badge-status">7 PA ★</span>
+          </div>
+
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Gwen de Ahlen</div>
+              <div class="scroll-info-detail">Parceira Vigilante · Bônus Ativo</div>
+            </div>
+            <span class="scroll-badge-status">5 PA</span>
+          </div>
+
+          <div class="scroll-row">
+            <div>
+              <div class="scroll-info-name">Torvald Punho-de-Ferro</div>
+              <div class="scroll-info-detail">Combatente Anão · Guarita Principal</div>
+            </div>
+            <span class="scroll-badge-status">3 PA</span>
+          </div>
+
+          <button class="btn-wax-seal" style="width: 100%; justify-content: center;">
+            Pagar Folha Salarial (T$ 450)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="ledger-section" data-od-id="ledger-section">
+      <h2 class="ledger-title">Análise Comparativa das Propostas Artísticas</h2>
+      <table class="tome-table">
+        <thead>
+          <tr>
+            <th>Direção Proposta</th>
+            <th>Alma & Narrativa</th>
+            <th>Elementos Skeuomórficos</th>
+            <th>Sensação Visual</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Manuscrito Iluminado</strong></td>
+            <td>Cortes de Valkaria, Deheon e mosteiros arquivistas</td>
+            <td>Filigranas douradas nos cantos, capitulares nobres, velino prensado</td>
+            <td>Nobreza, realeza e tomos de alta erudição</td>
+          </tr>
+          <tr>
+            <td><strong>2. Baú de Guerra & Forja</strong></td>
+            <td>Generais de campanha, Doherimm e reinos de ferro</td>
+            <td>Carvalho escovado, rebites de ferro, gavetas com veludo para moedas</td>
+            <td>Tática militar, peso físico e solidez de fortaleza</td>
+          </tr>
+          <tr>
+            <td><strong>3. Códice Arcano</strong></td>
+            <td>Academia Arcana, Wynna e os mistérios de Arton</td>
+            <td>Runas gravadas em relevo, gemas facetadas, glifos alquímicos</td>
+            <td>Alta magia, mistério e poder sobrenatural</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const creativeManifesto = {
+      d1: {
+        label: "Direção 1 — Arte dos Monges Arquivistas de Deheon",
+        heading: "O Manuscrito Iluminado & Selo Real",
+        dropCap: "G",
+        text: "Inspirado nas grandes iluminuras medievais e livros contábeis do Reinado de Arton. Mantém toda a autenticidade táctil do pergaminho envelhecido, mas eleva o nível estético com capitulares historiadas, filigranas douradas trabalhadas nos cantos dos cartões, arabescos heráldicos e fitas de seda para um visual digno da corte de Valkaria."
+      },
+      d2: {
+        label: "Direção 2 — O Forte de Doherimm & Tenda de Campanha",
+        heading: "O Baú de Guerra & Forja de Khalmyr",
+        dropCap: "B",
+        text: "Inspirado no interior do baú de guerra de um general militar de Arton. Utiliza madeira de carvalho escovado, cantoneiras de ferro batido com rebites salientes e cartões que funcionam como compartimentos forrados de veludo para guardar moedas e tesouros, com botões talhados como pesados sinetes imperiais."
+      },
+      d3: {
+        label: "Direção 3 — Os Tomos Secretos da Academia Arcana",
+        heading: "O Códice Arcano & Relicário de Wynna",
+        dropCap: "C",
+        text: "Inspirado em relíquias de alta magia de Tormenta20. Apresenta superfícies com runas artonianas entalhadas em relevo, círculos alquímicos místicos e gemas preciosas (rubis e safiras) lapidadas como indicadores de status, transmitindo a sensação de manusear um artefato arcano encantado."
+      }
+    };
+
+    function applyDirection(dir) {
+      document.body.setAttribute('data-direction', dir);
+
+      const buttons = document.querySelectorAll('.btn-dir');
+      buttons.forEach((btn, index) => {
+        btn.classList.toggle('active', (index === 0 && dir === 'd1') || (index === 1 && dir === 'd2') || (index === 2 && dir === 'd3'));
+      });
+
+      const labelEl = document.querySelector('#conceptLabel');
+      if (labelEl) labelEl.textContent = creativeManifesto[dir].label;
+
+      const headingEl = document.querySelector('#conceptHeading');
+      if (headingEl) headingEl.textContent = creativeManifesto[dir].heading;
+
+      const dropEl = document.querySelector('#dropCap');
+      if (dropEl) dropEl.textContent = creativeManifesto[dir].dropCap;
+
+      const textEl = document.querySelector('#conceptParagraph');
+      if (textEl) textEl.textContent = creativeManifesto[dir].text;
+    }
+
+    function toggleFantasyTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      const symbol = document.querySelector('#themeSymbol');
+      const text = document.querySelector('#themeText');
+
+      if (isDark) {
+        if (symbol) symbol.textContent = '☀️';
+        if (text) text.textContent = 'Luz do Sol (Claro)';
+      } else {
+        if (symbol) symbol.textContent = '🕯️';
+        if (text) text.textContent = 'Luz de Velas (Escuro)';
+      }
+    }
+  </script>
+</body>
+</html>
