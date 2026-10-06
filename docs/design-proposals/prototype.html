@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimório da Fortuna T20 — Propostas de Modernização Visual (OpenDesign)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=MedievalSharp&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    :root {
+      /* Shared functional typography */
+      --font-display: 'Cinzel', serif;
+      --font-medieval: 'MedievalSharp', cursive;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Universal tokens */
+      --color-white: #ffffff;
+
+      /* Direction 1: Pergaminho Nobre (Light) */
+      --color-d1-light-bg: #f7f3e8;
+      --color-d1-light-surface: #ffffff;
+      --color-d1-light-surface-alt: #f1ebd8;
+      --color-d1-light-fg: #1c150c;
+      --color-d1-light-muted: #6b5840;
+      --color-d1-light-border: #d6c6a8;
+      --color-d1-light-border-strong: #96723e;
+      --color-d1-light-accent: #c68a18;
+      --color-d1-light-accent-glow: rgba(198, 138, 24, 0.2);
+      --color-d1-light-seal: #a81c1c;
+
+      /* Direction 1: Pergaminho Nobre (Dark) */
+      --color-d1-dark-bg: #0d0a07;
+      --color-d1-dark-surface: #17130e;
+      --color-d1-dark-surface-alt: #221c15;
+      --color-d1-dark-fg: #f5ece0;
+      --color-d1-dark-muted: #a8947c;
+      --color-d1-dark-border: #382c1f;
+      --color-d1-dark-border-strong: #785a30;
+      --color-d1-dark-accent: #eab308;
+      --color-d1-dark-accent-glow: rgba(234, 179, 8, 0.2);
+      --color-d1-dark-seal: #dc2626;
+
+      /* Direction 2: Arcana Moderna (Light) */
+      --color-d2-light-bg: #f8fafc;
+      --color-d2-light-surface: #ffffff;
+      --color-d2-light-surface-alt: #f1f5f9;
+      --color-d2-light-fg: #0f172a;
+      --color-d2-light-muted: #64748b;
+      --color-d2-light-border: #e2e8f0;
+      --color-d2-light-border-strong: #3b82f6;
+      --color-d2-light-accent: #2563eb;
+      --color-d2-light-accent-glow: rgba(37, 99, 235, 0.15);
+      --color-d2-light-seal: #0369a1;
+
+      /* Direction 2: Arcana Moderna (Dark) */
+      --color-d2-dark-bg: #060911;
+      --color-d2-dark-surface: #0c1222;
+      --color-d2-dark-surface-alt: #131c33;
+      --color-d2-dark-fg: #f8fafc;
+      --color-d2-dark-muted: #94a3b8;
+      --color-d2-dark-border: #1e293b;
+      --color-d2-dark-border-strong: #38bdf8;
+      --color-d2-dark-accent: #38bdf8;
+      --color-d2-dark-accent-glow: rgba(56, 189, 248, 0.25);
+      --color-d2-dark-seal: #0284c7;
+
+      /* Direction 3: Forja & Aço (Light) */
+      --color-d3-light-bg: #f1f5f9;
+      --color-d3-light-surface: #ffffff;
+      --color-d3-light-surface-alt: #e2e8f0;
+      --color-d3-light-fg: #090d16;
+      --color-d3-light-muted: #475569;
+      --color-d3-light-border: #cbd5e1;
+      --color-d3-light-border-strong: #475569;
+      --color-d3-light-accent: #d97706;
+      --color-d3-light-accent-glow: rgba(217, 119, 6, 0.15);
+      --color-d3-light-seal: #b91c1c;
+
+      /* Direction 3: Forja & Aço (Dark) */
+      --color-d3-dark-bg: #090c10;
+      --color-d3-dark-surface: #12161f;
+      --color-d3-dark-surface-alt: #1a202c;
+      --color-d3-dark-fg: #f1f5f9;
+      --color-d3-dark-muted: #8b949e;
+      --color-d3-dark-border: #21262d;
+      --color-d3-dark-border-strong: #f59e0b;
+      --color-d3-dark-accent: #f59e0b;
+      --color-d3-dark-accent-glow: rgba(245, 158, 11, 0.2);
+      --color-d3-dark-seal: #ef4444;
+
+      /* Active Dynamic Bindings (Default Direção 1 Light) */
+      --bg: var(--color-d1-light-bg);
+      --surface: var(--color-d1-light-surface);
+      --surface-alt: var(--color-d1-light-surface-alt);
+      --fg: var(--color-d1-light-fg);
+      --muted: var(--color-d1-light-muted);
+      --border: var(--color-d1-light-border);
+      --border-strong: var(--color-d1-light-border-strong);
+      --accent: var(--color-d1-light-accent);
+      --accent-glow: var(--color-d1-light-accent-glow);
+      --seal: var(--color-d1-light-seal);
+      --card-shadow: 0 10px 25px -5px rgba(50, 35, 15, 0.08), 0 4px 6px -2px rgba(50, 35, 15, 0.04);
+      --badge-radius: 9999px;
+      --card-radius: 18px;
+    }
+
+    /* Light Theme Variations per Direction */
+    body[data-direction="d1"] {
+      --bg: var(--color-d1-light-bg);
+      --surface: var(--color-d1-light-surface);
+      --surface-alt: var(--color-d1-light-surface-alt);
+      --fg: var(--color-d1-light-fg);
+      --muted: var(--color-d1-light-muted);
+      --border: var(--color-d1-light-border);
+      --border-strong: var(--color-d1-light-border-strong);
+      --accent: var(--color-d1-light-accent);
+      --accent-glow: var(--color-d1-light-accent-glow);
+      --seal: var(--color-d1-light-seal);
+      --card-radius: 18px;
+      --card-shadow: 0 10px 25px -5px rgba(50, 35, 15, 0.08);
+    }
+
+    body[data-direction="d2"] {
+      --bg: var(--color-d2-light-bg);
+      --surface: var(--color-d2-light-surface);
+      --surface-alt: var(--color-d2-light-surface-alt);
+      --fg: var(--color-d2-light-fg);
+      --muted: var(--color-d2-light-muted);
+      --border: var(--color-d2-light-border);
+      --border-strong: var(--color-d2-light-border-strong);
+      --accent: var(--color-d2-light-accent);
+      --accent-glow: var(--color-d2-light-accent-glow);
+      --seal: var(--color-d2-light-seal);
+      --card-radius: 20px;
+      --card-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.08);
+    }
+
+    body[data-direction="d3"] {
+      --bg: var(--color-d3-light-bg);
+      --surface: var(--color-d3-light-surface);
+      --surface-alt: var(--color-d3-light-surface-alt);
+      --fg: var(--color-d3-light-fg);
+      --muted: var(--color-d3-light-muted);
+      --border: var(--color-d3-light-border);
+      --border-strong: var(--color-d3-light-border-strong);
+      --accent: var(--color-d3-light-accent);
+      --accent-glow: var(--color-d3-light-accent-glow);
+      --seal: var(--color-d3-light-seal);
+      --card-radius: 12px;
+      --card-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Dark Mode Variations per Direction */
+    body.dark[data-direction="d1"] {
+      --bg: var(--color-d1-dark-bg);
+      --surface: var(--color-d1-dark-surface);
+      --surface-alt: var(--color-d1-dark-surface-alt);
+      --fg: var(--color-d1-dark-fg);
+      --muted: var(--color-d1-dark-muted);
+      --border: var(--color-d1-dark-border);
+      --border-strong: var(--color-d1-dark-border-strong);
+      --accent: var(--color-d1-dark-accent);
+      --accent-glow: var(--color-d1-dark-accent-glow);
+      --seal: var(--color-d1-dark-seal);
+      --card-radius: 18px;
+      --card-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.7);
+    }
+
+    body.dark[data-direction="d2"] {
+      --bg: var(--color-d2-dark-bg);
+      --surface: var(--color-d2-dark-surface);
+      --surface-alt: var(--color-d2-dark-surface-alt);
+      --fg: var(--color-d2-dark-fg);
+      --muted: var(--color-d2-dark-muted);
+      --border: var(--color-d2-dark-border);
+      --border-strong: var(--color-d2-dark-border-strong);
+      --accent: var(--color-d2-dark-accent);
+      --accent-glow: var(--color-d2-dark-accent-glow);
+      --seal: var(--color-d2-dark-seal);
+      --card-radius: 20px;
+      --card-shadow: 0 16px 36px -10px rgba(6, 182, 212, 0.12);
+    }
+
+    body.dark[data-direction="d3"] {
+      --bg: var(--color-d3-dark-bg);
+      --surface: var(--color-d3-dark-surface);
+      --surface-alt: var(--color-d3-dark-surface-alt);
+      --fg: var(--color-d3-dark-fg);
+      --muted: var(--color-d3-dark-muted);
+      --border: var(--color-d3-dark-border);
+      --border-strong: var(--color-d3-dark-border-strong);
+      --accent: var(--color-d3-dark-accent);
+      --accent-glow: var(--color-d3-dark-accent-glow);
+      --seal: var(--color-d3-dark-seal);
+      --card-radius: 12px;
+      --card-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Base Layout & Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Shell */
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--seal) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-white);
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 900;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* Selector Pill Buttons */
+    .btn-group {
+      display: flex;
+      background-color: var(--surface-alt);
+      padding: 0.25rem;
+      border-radius: var(--badge-radius);
+      border: 1px solid var(--border);
+      gap: 0.25rem;
+    }
+
+    .btn-pill {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-sans);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 0.4rem 1rem;
+      border-radius: var(--badge-radius);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-pill:hover {
+      color: var(--fg);
+    }
+
+    .btn-pill.active {
+      background-color: var(--surface);
+      color: var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      font-weight: 700;
+    }
+
+    .btn-theme {
+      background-color: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 0.5rem 0.875rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s ease;
+    }
+
+    .btn-theme:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Direction Concept Card */
+    .concept-hero {
+      padding: 2rem 2rem 1.5rem 2rem;
+      max-width: 1380px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .concept-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 1.5rem 2rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .concept-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background-color: var(--accent);
+    }
+
+    .concept-tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      display: inline-block;
+    }
+
+    .concept-title {
+      font-family: var(--font-display);
+      font-size: 1.625rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .concept-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 920px;
+    }
+
+    /* Dashboard Layout */
+    main {
+      padding: 0 2rem 3rem 2rem;
+      max-width: 1380px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* KPI Summary Row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .kpi-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .kpi-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--badge-radius);
+      background-color: var(--surface-alt);
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--fg);
+      line-height: 1.1;
+    }
+
+    .kpi-meta {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* Two Columns */
+    .layout-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .layout-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Panel */
+    .panel {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--surface-alt);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .panel-body {
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Item Row */
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.875rem 1rem;
+      border-radius: 10px;
+      background-color: var(--surface-alt);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .item-row:hover {
+      border-color: var(--border-strong);
+      transform: translateX(3px);
+    }
+
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .item-name {
+      font-weight: 700;
+      font-size: 0.9375rem;
+    }
+
+    .item-sub {
+      font-size: 0.775rem;
+      color: var(--muted);
+    }
+
+    .item-status {
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* Buttons */
+    .btn-action {
+      background-color: var(--accent);
+      color: var(--color-white);
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-action:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: var(--surface-alt);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-strong);
+    }
+
+    /* Comparison Section */
+    .comparison-section {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .comparison-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    .comparison-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body data-direction="d1">
+
+  <!-- Header Shell -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">G</div>
+      <div>
+        <div class="brand-title">Grimório da Fortuna T20</div>
+        <div class="brand-subtitle">Laboratório de Modernização de Interface</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <!-- Direction Selectors -->
+      <div class="btn-group">
+        <button class="btn-pill active" onclick="setDirection('d1')">1. Pergaminho Nobre</button>
+        <button class="btn-pill" onclick="setDirection('d2')">2. Arcana Moderna</button>
+        <button class="btn-pill" onclick="setDirection('d3')">3. Forja & Aço</button>
+      </div>
+
+      <!-- Light / Dark Toggle -->
+      <button class="btn-theme" onclick="toggleTheme()" id="themeToggleBtn">
+        <span id="themeIcon">🌙</span> <span id="themeLabel">Modo Escuro</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Direction Explanation Hero -->
+  <div class="concept-hero">
+    <div class="concept-card">
+      <span class="concept-tag" id="conceptTag">Direção 1 — Editorial Fantasia Clássica</span>
+      <h1 class="concept-title" id="conceptTitle">Pergaminho Nobre & Selo Imperial</h1>
+      <p class="concept-desc" id="conceptDesc">
+        Uma evolução clássica e refinada inspirada em livros de registros das cortes de Valkaria e Deheon. Substitui a rusticidade pesada por cartões elegantes, tipografia nobre com serifas expressivas e números em sans-serif ultra legíveis, preservando o toque de cera e pergaminho marfim.
+      </p>
+    </div>
+  </div>
+
+  <!-- Dashboard Simulation -->
+  <main>
+    <!-- Top KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Tesouraria Total</span>
+          <span class="kpi-badge">Moeda Base</span>
+        </div>
+        <div class="kpi-value">T$ 148.520</div>
+        <div class="kpi-meta">120 TL · 28.520 TO · 100% Líquido</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Domínios & Renda</span>
+          <span class="kpi-badge">Nível 4</span>
+        </div>
+        <div class="kpi-value">LO 1.450</div>
+        <div class="kpi-meta">+180 LO / mês · Corte Confortável</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Quartel & Bases</span>
+          <span class="kpi-badge">Básica</span>
+        </div>
+        <div class="kpi-value">5 / 8 Cômodos</div>
+        <div class="kpi-meta">Manutenção em dia · 0 Danos</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Calendário de Arton</span>
+          <span class="kpi-badge">Ano 1420</span>
+        </div>
+        <div class="kpi-value">14 Valkaria</div>
+        <div class="kpi-meta">Dia da Deusa · Lua Cheia</div>
+      </div>
+    </div>
+
+    <!-- Layout Columns -->
+    <div class="layout-columns">
+      <!-- Main Column: Domínios e Governança -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>🏰</span> Senhorio Territorial — Ducado de Zakharov
+          </div>
+          <button class="btn-action">Ação Governar</button>
+        </div>
+        <div class="panel-body">
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Decreto de Cobrança de Impostos</span>
+              <span class="item-sub">Turno Corrente · CD 20 Nobreza · Bônus +4 Popularidade</span>
+            </div>
+            <span class="item-status">Pronto para Rolar</span>
+          </div>
+
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Regimento de Infantaria Pesada</span>
+              <span class="item-sub">Quartel de Nível 2 · Manutenção: 40 LO/mês</span>
+            </div>
+            <span class="item-status">Prontidão 100%</span>
+          </div>
+
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Caravana Comercial para Yuvalin</span>
+              <span class="item-sub">Despachada há 4 dias · Previsão de lucro: +350 LO</span>
+            </div>
+            <span class="item-status">Em Viagem</span>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-secondary">Gerenciar Tropas</button>
+            <button class="btn-secondary">Nomear Conselheiro</button>
+            <button class="btn-secondary">Obras Públicas</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Column: NPCs & Comitiva -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>👥</span> Comitiva Ativa (Afinidade)
+          </div>
+          <span class="kpi-badge">7 / 7 PA Max</span>
+        </div>
+        <div class="panel-body">
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Mestre Elíseo (Alquimista)</span>
+              <span class="item-sub">Contratado · Folha: T$ 150/mês</span>
+            </div>
+            <span class="item-status">7 PA ★</span>
+          </div>
+
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Gwen de Ahlen (Espiã)</span>
+              <span class="item-sub">Parceira Vigilante · Bônus Ativo</span>
+            </div>
+            <span class="item-status">5 PA</span>
+          </div>
+
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-name">Torvald Punho-de-Ferro</span>
+              <span class="item-sub">Combatente Anão · Base Principal</span>
+            </div>
+            <span class="item-status">3 PA</span>
+          </div>
+
+          <button class="btn-action" style="width: 100%;">
+            Pagar Folha Salarial (T$ 450)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table Section -->
+    <div class="comparison-section">
+      <h2 style="font-family: var(--font-display); font-size: 1.25rem;">Matriz Comparativa das 3 Direções Estéticas</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Direção</th>
+            <th>Pilar Conceitual</th>
+            <th>Tipografia</th>
+            <th>Tratamento de Superfície</th>
+            <th>Acento Cromático</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Pergaminho Nobre</strong></td>
+            <td>Editorial Medieval & Cortes Reais</td>
+            <td>Cinzel + Plus Jakarta Sans</td>
+            <td>Marfim nobre / Couro profundo com borda 1px</td>
+            <td>Ouro Imperial & Selo de Cera Rubro</td>
+          </tr>
+          <tr>
+            <td><strong>2. Arcana Moderna</strong></td>
+            <td>Minimalismo Mágico & Wynna</td>
+            <td>Cinzel + Plus Jakarta Sans</td>
+            <td>Vidro temperado rúnico com borda luminescente</td>
+            <td>Safira Arcana & Ciano Etéreo</td>
+          </tr>
+          <tr>
+            <td><strong>3. Forja & Aço</strong></td>
+            <td>Tática Militar, Doherimm & Guerra</td>
+            <td>Cinzel + JetBrains Mono / Sans</td>
+            <td>Aço escovado chanfrado e placas de ferro</td>
+            <td>Âmbar Forjado & Rubi Tormenta</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const concepts = {
+      d1: {
+        tag: "Direção 1 — Editorial Fantasia Clássica",
+        title: "Pergaminho Nobre & Selo Imperial",
+        desc: "Uma evolução clássica e refinada inspirada em livros de registros das cortes de Valkaria e Deheon. Substitui a rusticidade pesada por cartões elegantes, tipografia nobre com serifas expressivas e números em sans-serif ultra legíveis, preservando o toque de cera e pergaminho marfim."
+      },
+      d2: {
+        tag: "Direção 2 — Minimalismo Mágico Contemporâneo",
+        title: "Arcana Moderna & Vidro Rúnico",
+        desc: "Fusão de alta magia de Arton com a estética de ferramentas modernas como Linear e Vercel. Superfícies de vidro temperado escuro (frosted glass), bordas com brilho rúnico suave ao hover, e hierarquia tipográfica respirável com acentos em safira arcana."
+      },
+      d3: {
+        tag: "Direção 3 — Tática Militar & Dark Fantasy",
+        title: "Forja de Thwor & Aço Tormenta",
+        desc: "Estética tática, robusta e imersiva inspirada na Aliança Negra, Doherimm e reinos bélicos de Arton. Linhas sólidas chanfradas, placas de aço forjado com contraste cirúrgico, acentos em âmbar ardente e tipografia monoespelhada para dados financeiros precisos."
+      }
+    };
+
+    function setDirection(dir) {
+      document.body.setAttribute('data-direction', dir);
+      
+      const pills = document.querySelectorAll('.btn-pill');
+      pills.forEach((btn, index) => {
+        btn.classList.toggle('active', (index === 0 && dir === 'd1') || (index === 1 && dir === 'd2') || (index === 2 && dir === 'd3'));
+      });
+
+      const tagEl = document.querySelector('#conceptTag');
+      if (tagEl) tagEl.textContent = concepts[dir].tag;
+
+      const titleEl = document.querySelector('#conceptTitle');
+      if (titleEl) titleEl.textContent = concepts[dir].title;
+
+      const descEl = document.querySelector('#conceptDesc');
+      if (descEl) descEl.textContent = concepts[dir].desc;
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      const icon = document.querySelector('#themeIcon');
+      const label = document.querySelector('#themeLabel');
+      
+      if (isDark) {
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Modo Claro';
+      } else {
+        if (icon) icon.textContent = '🌙';
+        if (label) label.textContent = 'Modo Escuro';
+      }
+    }
+  </script>
+</body>
+</html>
