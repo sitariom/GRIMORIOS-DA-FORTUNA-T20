@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimório da Fortuna T20 — A Escrivaninha do Escriba (Papiro & Madeira)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap');
+
+    :root {
+      /* Typography */
+      --font-ornate: 'Cinzel Decorative', cursive;
+      --font-display: 'Cinzel', serif;
+      --font-medieval: 'MedievalSharp', cursive;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Universal constants */
+      --color-white: #ffffff;
+
+      /* Palette Tokens — Wood & Papyrus (Modo Claro / Luz da Janela de Mosteiro) */
+      --c-light-wood-desk: #2b1d12;
+      --c-light-wood-plank: #3a2718;
+      --c-light-wood-border: #1a1008;
+      --c-light-wood-bevel: #553b26;
+      --c-light-papyrus-bg: #f3e6c8;
+      --c-light-papyrus-card: #f9f1db;
+      --c-light-papyrus-fiber: #e8d5ae;
+      --c-light-papyrus-edge: #b59560;
+      --c-light-ink: #1a1008;
+      --c-light-ink-muted: #5e4630;
+      --c-light-gold: #c68916;
+      --c-light-brass: #a87e38;
+      --c-light-seal: #8d1919;
+      --c-light-seal-dark: #580c0c;
+      --c-light-velvet-cavity: #21160e;
+      --c-light-candle-glow: rgba(255, 220, 140, 0.35);
+
+      /* Palette Tokens — Wood & Papyrus (Modo Escuro / Cripta à Luz de Velas) */
+      --c-dark-wood-desk: #120c07;
+      --c-dark-wood-plank: #1a120b;
+      --c-dark-wood-border: #0a0603;
+      --c-dark-wood-bevel: #2d1e12;
+      --c-dark-papyrus-bg: #1f1710;
+      --c-dark-papyrus-card: #281e14;
+      --c-dark-papyrus-fiber: #17100a;
+      --c-dark-papyrus-edge: #4a3824;
+      --c-dark-ink: #f2e2cb;
+      --c-dark-ink-muted: #b09575;
+      --c-dark-gold: #dfa732;
+      --c-dark-brass: #d19f43;
+      --c-dark-seal: #b91c1c;
+      --c-dark-seal-dark: #6e1010;
+      --c-dark-velvet-cavity: #0d0804;
+      --c-dark-candle-glow: rgba(245, 166, 35, 0.45);
+
+      /* Active Default Tokens (Modo Claro) */
+      --desk-bg: var(--c-light-wood-desk);
+      --plank-bg: var(--c-light-wood-plank);
+      --wood-border: var(--c-light-wood-border);
+      --wood-bevel: var(--c-light-wood-bevel);
+      --papyrus-bg: var(--c-light-papyrus-bg);
+      --papyrus-card: var(--c-light-papyrus-card);
+      --papyrus-fiber: var(--c-light-papyrus-fiber);
+      --papyrus-edge: var(--c-light-papyrus-edge);
+      --ink: var(--c-light-ink);
+      --ink-muted: var(--c-light-ink-muted);
+      --gold: var(--c-light-gold);
+      --brass: var(--c-light-brass);
+      --seal: var(--c-light-seal);
+      --seal-dark: var(--c-light-seal-dark);
+      --velvet: var(--c-light-velvet-cavity);
+      --candle-glow: var(--c-light-candle-glow);
+
+      /* Shadows & 3D Layering */
+      --shadow-papyrus: 0 16px 36px -6px rgba(15, 9, 3, 0.45), 0 6px 12px rgba(15, 9, 3, 0.3);
+      --shadow-desk-frame: inset 0 2px 4px rgba(255, 255, 255, 0.15), inset 0 -4px 8px rgba(0, 0, 0, 0.7);
+      --shadow-cavity: inset 0 8px 20px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(0, 0, 0, 0.9);
+      --radius-papyrus: 6px;
+      --radius-wood: 12px;
+    }
+
+    /* Dark Mode Theme */
+    body.dark {
+      --desk-bg: var(--c-dark-wood-desk);
+      --plank-bg: var(--c-dark-wood-plank);
+      --wood-border: var(--c-dark-wood-border);
+      --wood-bevel: var(--c-dark-wood-bevel);
+      --papyrus-bg: var(--c-dark-papyrus-bg);
+      --papyrus-card: var(--c-dark-papyrus-card);
+      --papyrus-fiber: var(--c-dark-papyrus-fiber);
+      --papyrus-edge: var(--c-dark-papyrus-edge);
+      --ink: var(--c-dark-ink);
+      --ink-muted: var(--c-dark-ink-muted);
+      --gold: var(--c-dark-gold);
+      --brass: var(--c-dark-brass);
+      --seal: var(--c-dark-seal);
+      --seal-dark: var(--c-dark-seal-dark);
+      --velvet: var(--c-dark-velvet-cavity);
+      --candle-glow: var(--c-dark-candle-glow);
+      --shadow-papyrus: 0 24px 50px -10px rgba(0, 0, 0, 0.85), 0 0 25px rgba(223, 167, 50, 0.08);
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--desk-bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      /* Simulação de textura de pranchas de madeira rústica com veios */
+      background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 180px, rgba(0,0,0,0.12) 180px, rgba(0,0,0,0.12) 184px),
+        linear-gradient(180deg, var(--desk-bg) 0%, var(--plank-bg) 50%, var(--desk-bg) 100%);
+    }
+
+    /* Lamparina / Vela Interativa */
+    .candle-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99;
+      background: radial-gradient(circle at var(--candle-x, 50%) var(--candle-y, 40%), var(--candle-glow) 0%, transparent 60%);
+      mix-blend-mode: overlay;
+      animation: candle-flicker 5s infinite ease-in-out alternate;
+    }
+
+    @keyframes candle-flicker {
+      0% { opacity: 0.8; filter: brightness(0.96); }
+      40% { opacity: 1; filter: brightness(1.04); }
+      75% { opacity: 0.88; filter: brightness(0.98); }
+      100% { opacity: 0.95; filter: brightness(1.02); }
+    }
+
+    /* Textura Fibrosa de Papiro em CSS puro */
+    .papyrus-texture {
+      background-color: var(--papyrus-card);
+      background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(160, 120, 60, 0.05) 3px, rgba(160, 120, 60, 0.05) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(160, 120, 60, 0.05) 4px, rgba(160, 120, 60, 0.05) 5px);
+    }
+
+    /* Cabeçalho da Escrivaninha */
+    header {
+      background: linear-gradient(180deg, var(--plank-bg) 0%, var(--desk-bg) 100%);
+      border-bottom: 5px solid var(--wood-border);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), var(--shadow-desk-frame);
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .scribe-brand {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    /* Tinteiro & Pena (Ícone com Sombra 3D) */
+    .inkwell-sigil {
+      width: 3.75rem;
+      height: 3.75rem;
+      border-radius: 12px;
+      background: radial-gradient(circle at 35% 35%, var(--plank-bg) 0%, var(--wood-border) 100%);
+      border: 3px solid var(--brass);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 6px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.85rem;
+      color: var(--gold);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .inkwell-sigil:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.8), 0 0 15px var(--gold);
+    }
+
+    .inkwell-sigil:active {
+      transform: translateY(3px) scale(0.95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    .scribe-title {
+      font-family: var(--font-ornate);
+      font-size: 1.65rem;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      line-height: 1.1;
+    }
+
+    .scribe-sub {
+      font-family: var(--font-medieval);
+      font-size: 1rem;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+    }
+
+    /* Controles de Ambiente */
+    .desk-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-concept-pill {
+      background: linear-gradient(180deg, var(--plank-bg) 0%, var(--desk-bg) 100%);
+      border: 2px solid var(--wood-bevel);
+      color: var(--ink-muted);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.55rem 1.15rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-concept-pill:hover {
+      color: var(--ink);
+      border-color: var(--brass);
+    }
+
+    .btn-concept-pill.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 14px var(--gold);
+      background: var(--wood-bevel);
+    }
+
+    .btn-candle-toggle {
+      background: linear-gradient(180deg, var(--plank-bg) 0%, var(--desk-bg) 100%);
+      border: 2px solid var(--brass);
+      color: var(--ink);
+      font-family: var(--font-medieval);
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.6rem 1.35rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+    }
+
+    .btn-candle-toggle:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6), 0 0 16px var(--gold);
+    }
+
+    /* Container Principal */
+    main {
+      padding: 2.5rem 2rem 5rem 2rem;
+      max-width: 1420px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Folha de Papiro Principal Aberta na Mesa */
+    .papyrus-sheet-hero {
+      border: 2px solid var(--papyrus-edge);
+      border-radius: var(--radius-papyrus);
+      padding: 2rem 2.5rem;
+      box-shadow: var(--shadow-papyrus);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Pesos de Papel de Bronze nas Pontas do Papiro */
+    .brass-weight {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--gold) 0%, var(--brass) 100%);
+      border: 2px solid var(--wood-border);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+    }
+    .brass-weight.top-l { top: 8px; left: 8px; }
+    .brass-weight.top-r { top: 8px; right: 8px; }
+    .brass-weight.bot-l { bottom: 8px; left: 8px; }
+    .brass-weight.bot-r { bottom: 8px; right: 8px; }
+
+    .hero-scribe-label {
+      font-family: var(--font-medieval);
+      font-size: 1.15rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .hero-scribe-title {
+      font-family: var(--font-ornate);
+      font-size: 2.15rem;
+      color: var(--ink);
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-scribe-prose {
+      font-size: 1.05rem;
+      color: var(--ink-muted);
+      max-width: 1020px;
+      line-height: 1.6;
+    }
+
+    /* Gaveteiro de Madeira com Moedas (Veludo Interno) */
+    .wood-chest-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .wood-drawer-compartment {
+      background: linear-gradient(180deg, var(--plank-bg) 0%, var(--desk-bg) 100%);
+      border: 4px solid var(--wood-border);
+      border-radius: var(--radius-wood);
+      padding: 1.35rem 1.65rem;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.6), inset 0 2px 0 var(--wood-bevel);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .wood-drawer-compartment:hover {
+      transform: translateY(-5px);
+      border-color: var(--brass);
+      box-shadow: 0 22px 40px rgba(0,0,0,0.8), 0 0 20px var(--gold);
+    }
+
+    .drawer-handle {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 8px;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--brass) 100%);
+      border: 1px solid var(--wood-border);
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+
+    .drawer-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .drawer-badge {
+      font-family: var(--font-medieval);
+      font-size: 0.95rem;
+      padding: 0.2rem 0.75rem;
+      border-radius: 12px;
+      background-color: var(--wood-border);
+      color: var(--gold);
+      border: 1px solid var(--wood-bevel);
+    }
+
+    /* Fundo de Veludo da Gaveta (Moedas Brilhantes) */
+    .drawer-velvet-pit {
+      background-color: var(--velvet);
+      border: 2px solid var(--wood-border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-cavity);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .drawer-value {
+      font-family: var(--font-ornate);
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.1;
+      text-shadow: 0 2px 10px var(--gold);
+    }
+
+    .drawer-breakdown {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+    }
+
+    /* Colunas: Rolo de Papiro de Decretos & Comitiva de Servos */
+    .scribe-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .scribe-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Rolo de Papiro Sanfonado (Lista de Decretos) */
+    .scroll-sheet {
+      border: 2px solid var(--papyrus-edge);
+      border-radius: var(--radius-papyrus);
+      box-shadow: var(--shadow-papyrus);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .scroll-sheet-top {
+      padding: 1.35rem 2rem;
+      border-bottom: 2px solid var(--papyrus-edge);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, var(--papyrus-bg) 0%, var(--papyrus-card) 100%);
+    }
+
+    .scroll-sheet-heading {
+      font-family: var(--font-ornate);
+      font-size: 1.4rem;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .scroll-sheet-body {
+      padding: 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Item de Papiro com Dobra e Sombra */
+    .parchment-item-card {
+      background-color: var(--papyrus-bg);
+      border: 1px solid var(--papyrus-edge);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(15, 9, 3, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      padding: 1.15rem 1.45rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .parchment-item-card:hover {
+      transform: translateX(6px);
+      box-shadow: 0 8px 18px rgba(15, 9, 3, 0.25);
+      border-color: var(--gold);
+    }
+
+    .item-scribe-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .item-scribe-meta {
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+      margin-top: 0.25rem;
+    }
+
+    .item-scribe-badge {
+      font-family: var(--font-medieval);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Botão de Selo de Cera do Regente */
+    .btn-wax-chisel {
+      background: radial-gradient(circle at 35% 35%, var(--seal) 0%, var(--seal-dark) 100%);
+      color: var(--color-white);
+      border: 3px solid var(--seal-dark);
+      border-radius: 8px;
+      padding: 0.95rem 1.85rem;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 20px rgba(88, 12, 12, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn-wax-chisel:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(88, 12, 12, 0.7);
+    }
+
+    .btn-wax-chisel:active {
+      transform: translateY(3px) scale(0.96);
+      box-shadow: 0 2px 6px rgba(88, 12, 12, 0.8);
+    }
+
+    /* Sulco de Cinzel na Madeira (Input Entalhado) */
+    .wood-chisel-search {
+      background-color: var(--velvet);
+      border: 2px solid var(--wood-border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: var(--shadow-cavity);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .wood-chisel-search:focus-within {
+      border-color: var(--gold);
+      box-shadow: var(--shadow-cavity), 0 0 16px var(--gold);
+    }
+
+    .wood-chisel-search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    .wood-chisel-search input::placeholder {
+      color: var(--ink-muted);
+      opacity: 0.75;
+    }
+  </style>
+</head>
+<body class="dark" data-concept="scribe-royal">
+
+  <!-- Luz de Lamparina Dinâmica com Cursor -->
+  <div class="candle-overlay" id="candleOverlay"></div>
+
+  <!-- Cabeçalho de Escrivaninha de Carvalho -->
+  <header>
+    <div class="scribe-brand">
+      <div class="inkwell-sigil" onclick="dipQuill()">🖋️</div>
+      <div>
+        <h1 class="scribe-title">Grimório da Fortuna T20</h1>
+        <div class="scribe-sub">Escrivaninha do Escriba & Guarda-Livros de Arton</div>
+      </div>
+    </div>
+
+    <div class="desk-controls">
+      <!-- 3 Conceitos Escriba / Papiro / Madeira -->
+      <button class="btn-concept-pill active" onclick="switchDeskConcept('scribe-royal')">1. Cronista Real</button>
+      <button class="btn-concept-pill" onclick="switchDeskConcept('monastery')">2. Tanna-Toh (Mosteiro)</button>
+      <button class="btn-concept-pill" onclick="switchDeskConcept('quartermaster')">3. Tenda de Guerra</button>
+
+      <!-- Alternador de Vela / Janela -->
+      <button class="btn-candle-toggle" onclick="toggleCandleLight()" id="candleToggle">
+        <span id="candleIcon">🕯️</span>
+        <span id="candleLabel">Luz de Velas</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Bancada Principal -->
+  <main>
+    <!-- Folha de Papiro Aberta na Mesa -->
+    <section class="papyrus-sheet-hero papyrus-texture" data-od-id="papyrus-hero">
+      <div class="brass-weight top-l"></div>
+      <div class="brass-weight top-r"></div>
+      <div class="brass-weight bot-l"></div>
+      <div class="brass-weight bot-r"></div>
+
+      <div class="hero-scribe-label" id="conceptLabel">
+        <span>📜</span> Livro de Registros da Chancelaria de Deheon
+      </div>
+
+      <h2 class="hero-scribe-title" id="conceptHeading">
+        A Escrivaninha do Cronista Real
+      </h2>
+
+      <p class="hero-scribe-prose" id="conceptText">
+        Papiros envelhecidos estendidos sobre carvalho escuro maciço com encaixes de marcenaria medieval. Pesos de latão nas pontas mantêm o papiro aberto, enquanto tinteiros de ferro forjado e selos de cera rubra autenticam as ordens de pagamento da guilda. Sinta o peso físico de cada anotação contábil do Reinado de Arton.
+      </p>
+
+      <!-- Barra de Busca Entalhada na Madeira -->
+      <div style="margin-top: 1rem;">
+        <div class="wood-chisel-search">
+          <span style="font-size: 1.15rem;">🔍</span>
+          <input type="text" placeholder="Procurar nos rolos de papiro: tesouros, caravanas, decretos ou membros...">
+        </div>
+      </div>
+    </section>
+
+    <!-- Gaveteiro de Madeira & Compartimentos com Moedas -->
+    <section class="wood-chest-row" data-od-id="wood-chest-row">
+      <!-- Gaveta 1: Tesouraria -->
+      <div class="wood-drawer-compartment">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <span class="drawer-title">Gaveta Real de Moedas</span>
+          <span class="drawer-badge">100% Líquido</span>
+        </div>
+        <div class="drawer-velvet-pit">
+          <div class="drawer-value">T$ 148.520</div>
+          <div class="drawer-breakdown">120 TL (Lingotes) · 28.520 TO (Ouro)</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--ink-muted); display: flex; justify-content: space-between;">
+          <span>Último Depósito</span>
+          <span style="color: var(--gold); font-weight: 700;">+T$ 4.200 (Caravana)</span>
+        </div>
+      </div>
+
+      <!-- Gaveta 2: Domínios -->
+      <div class="wood-drawer-compartment">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <span class="drawer-title">Senhorio de Zakharov</span>
+          <span class="drawer-badge">Nível 4</span>
+        </div>
+        <div class="drawer-velvet-pit">
+          <div class="drawer-value">LO 1.450</div>
+          <div class="drawer-breakdown">+180 LO / mês · Corte Confortável</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--ink-muted); display: flex; justify-content: space-between;">
+          <span>Ordem Pública</span>
+          <span style="color: var(--gold); font-weight: 700;">Satisfeito (+2 Bônus)</span>
+        </div>
+      </div>
+
+      <!-- Gaveta 3: Quartel / Base -->
+      <div class="wood-drawer-compartment">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <span class="drawer-title">Quartel da Fortaleza</span>
+          <span class="drawer-badge">Formidável</span>
+        </div>
+        <div class="drawer-velvet-pit">
+          <div class="drawer-value">5 / 8 Cômodos</div>
+          <div class="drawer-breakdown">2 Gárgulas Ativas · 0 Danos</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--ink-muted); display: flex; justify-content: space-between;">
+          <span>Manutenção</span>
+          <span style="color: var(--gold); font-weight: 700;">T$ 500 quitado</span>
+        </div>
+      </div>
+
+      <!-- Gaveta 4: Calendário de Arton -->
+      <div class="wood-drawer-compartment">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <span class="drawer-title">Tempo de Arton</span>
+          <span class="drawer-badge">Ano 1420</span>
+        </div>
+        <div class="drawer-velvet-pit">
+          <div class="drawer-value">14 Valkaria</div>
+          <div class="drawer-breakdown">Dia da Deusa · Lua Cheia</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--ink-muted); display: flex; justify-content: space-between;">
+          <span>Próximo Festival</span>
+          <span style="color: var(--gold); font-weight: 700;">Dia de Nimb (16 dias)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Papiros de Decretos & Livro de Servos -->
+    <section class="scribe-columns" data-od-id="scribe-columns">
+      <!-- Coluna Esquerda: Decretos & Ordens de Marcha -->
+      <div class="scroll-sheet papyrus-texture">
+        <div class="scroll-sheet-top">
+          <div class="scroll-sheet-heading">
+            <span>📜</span> Decretos do Regente Registrados
+          </div>
+          <button class="btn-wax-chisel">
+            <span>⚜</span> Selar Decreto
+          </button>
+        </div>
+
+        <div class="scroll-sheet-body">
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Tributos da Cidade Baixa</div>
+              <div class="item-scribe-meta">Turno Vigente · Nobreza CD 20 · Bônus +4 Popularidade</div>
+            </div>
+            <span class="item-scribe-badge">Pronto para Rolar</span>
+          </div>
+
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Regimento de Infantaria Pesada</div>
+              <div class="item-scribe-meta">Alojado no Quartel · Manutenção: 40 LO quitada</div>
+            </div>
+            <span class="item-scribe-badge">100% Força</span>
+          </div>
+
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Caravana para Yuvalin</div>
+              <div class="item-scribe-meta">Em trânsito há 4 dias · Retorno esperado: +350 LO</div>
+            </div>
+            <span class="item-scribe-badge">Em Viagem</span>
+          </div>
+
+          <div style="display: flex; gap: 0.85rem; margin-top: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-concept-pill" style="border-radius: 8px;">Inspecionar Tropas</button>
+            <button class="btn-concept-pill" style="border-radius: 8px;">Nomear Conselheiro</button>
+            <button class="btn-concept-pill" style="border-radius: 8px;">Obras Públicas</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Comitiva & Afinidade do Escriba -->
+      <div class="scroll-sheet papyrus-texture">
+        <div class="scroll-sheet-top">
+          <div class="scroll-sheet-heading">
+            <span>👥</span> Livro da Comitiva
+          </div>
+          <span class="drawer-badge">7 PA Máximo</span>
+        </div>
+
+        <div class="scroll-sheet-body">
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Mestre Elíseo</div>
+              <div class="item-scribe-meta">Alquimista · Salário: T$ 150/mês</div>
+            </div>
+            <span class="item-scribe-badge">7 PA ★</span>
+          </div>
+
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Gwen de Ahlen</div>
+              <div class="item-scribe-meta">Parceira Vigilante · Bônus Ativo</div>
+            </div>
+            <span class="item-scribe-badge">5 PA</span>
+          </div>
+
+          <div class="parchment-item-card">
+            <div>
+              <div class="item-scribe-name">Torvald Punho-de-Ferro</div>
+              <div class="item-scribe-meta">Combatente Anão · Guarita da Base</div>
+            </div>
+            <span class="item-scribe-badge">3 PA</span>
+          </div>
+
+          <button class="btn-wax-chisel" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+            <span>🪙</span> Pagar Folha (T$ 450)
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 1. Iluminação Dinâmica de Lamparina / Vela seguindo o cursor
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      document.documentElement.style.setProperty('--candle-x', `${x}%`);
+      document.documentElement.style.setProperty('--candle-y', `${y}%`);
+    });
+
+    // 2. Animação de Mergulhar a Pena no Tinteiro
+    function dipQuill() {
+      const quill = document.querySelector('.inkwell-sigil');
+      if (quill) {
+        quill.style.transform = 'scale(0.9) rotate(-15deg)';
+        setTimeout(() => {
+          quill.style.transform = '';
+        }, 220);
+      }
+    }
+
+    // 3. Alternador de Luz de Velas / Luz Solar da Janela
+    function toggleCandleLight() {
+      const isDark = document.body.classList.toggle('dark');
+      const icon = document.querySelector('#candleIcon');
+      const label = document.querySelector('#candleLabel');
+
+      if (isDark) {
+        if (icon) icon.textContent = '🕯️';
+        if (label) label.textContent = 'Luz de Velas';
+      } else {
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Luz da Janela';
+      }
+    }
+
+    // 4. Conceitos Específicos de Escriba
+    const scribeManifestos = {
+      'scribe-royal': {
+        label: "📜 Livro de Registros da Chancelaria de Deheon",
+        heading: "A Escrivaninha do Cronista Real",
+        text: "Papiros envelhecidos estendidos sobre carvalho escuro maciço com encaixes de marcenaria medieval. Pesos de latão nas pontas mantêm o papiro aberto, enquanto tinteiros de ferro forjado e selos de cera rubra autenticam as ordens de pagamento da guilda. Sinta o peso físico de cada anotação contábil do Reinado de Arton."
+      },
+      'monastery': {
+        label: "🏛️ Arquivo Proibido do Scriptorium de Tanna-Toh",
+        heading: "O Papiro Sagrado dos Monges Arquivistas",
+        text: "Uma câmara silenciosa iluminada por velas votivas em candelabros de bronze. Papiros sagrados com textura vegetal aparente e margens douradas, com gavetas de nogueira negra onde rolos de pergaminho sagrado e registros de missões repousam protegidos contra a passagem das eras."
+      },
+      'quartermaster': {
+        label: "⚔️ Tenda de Campanha do Mestre de Intendência",
+        heading: "A Mesa de Campanha & Papiro de Guerra T20",
+        text: "Mesa rústica de campanha reforçada com cantoneiras de ferro e pregos forjados. Papiros de mapas militares e listas de pagamento de mercenários estendidos com canivetes cravados na madeira, com sinetes pesados de intendência prontos para carimbar o saque da vitória."
+      }
+    };
+
+    function switchDeskConcept(concept) {
+      document.body.setAttribute('data-concept', concept);
+
+      const buttons = document.querySelectorAll('.btn-concept-pill');
+      buttons.forEach((b, idx) => {
+        b.classList.toggle('active', 
+          (idx === 0 && concept === 'scribe-royal') ||
+          (idx === 1 && concept === 'monastery') ||
+          (idx === 2 && concept === 'quartermaster')
+        );
+      });
+
+      const labelEl = document.querySelector('#conceptLabel');
+      if (labelEl) labelEl.textContent = scribeManifestos[concept].label;
+
+      const headEl = document.querySelector('#conceptHeading');
+      if (headEl) headEl.textContent = scribeManifestos[concept].heading;
+
+      const textEl = document.querySelector('#conceptText');
+      if (textEl) textEl.textContent = scribeManifestos[concept].text;
+    }
+  </script>
+</body>
+</html>
