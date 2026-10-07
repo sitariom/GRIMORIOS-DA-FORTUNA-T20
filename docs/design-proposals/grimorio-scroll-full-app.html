@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimório da Fortuna T20 — O Rolo de Proclamação Imperial (Full App)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap');
+
+    :root {
+      /* Shared Typography */
+      --font-ornate: 'Cinzel Decorative', cursive;
+      --font-display: 'Cinzel', serif;
+      --font-medieval: 'MedievalSharp', cursive;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Universal constants */
+      --color-white: #ffffff;
+
+      /* Light Palette — Luz Natural da Janela Real */
+      --c-l-desk: #281b10;
+      --c-l-wood-plank: #382516;
+      --c-l-wood-border: #160d07;
+      --c-l-wood-bevel: #523822;
+      --c-l-papyrus: #f6ecce;
+      --c-l-papyrus-sub: #ecdcb5;
+      --c-l-papyrus-edge: #b59560;
+      --c-l-ink: #1e1309;
+      --c-l-ink-muted: #5e452e;
+      --c-l-gold: #c68916;
+      --c-l-brass: #a17732;
+      --c-l-seal: #8d1919;
+      --c-l-seal-dark: #550f0f;
+      --c-l-velvet: #1c1209;
+      --c-l-candle: rgba(255, 225, 150, 0.35);
+
+      /* Dark Palette — Luz de Tochas e Velas na Cripta */
+      --c-d-desk: #0f0a05;
+      --c-d-wood-plank: #191008;
+      --c-d-wood-border: #060402;
+      --c-d-wood-bevel: #291a0f;
+      --c-d-papyrus: #231a12;
+      --c-d-papyrus-sub: #1b130d;
+      --c-d-papyrus-edge: #4c3722;
+      --c-d-ink: #f5e7d3;
+      --c-d-ink-muted: #b59b7e;
+      --c-d-gold: #e2a829;
+      --c-d-brass: #d6a13e;
+      --c-d-seal: #b91c1c;
+      --c-d-seal-dark: #660f0f;
+      --c-d-velvet: #080502;
+      --c-d-candle: rgba(245, 166, 35, 0.45);
+
+      /* Active Dynamic Tokens */
+      --desk: var(--c-l-desk);
+      --wood-plank: var(--c-l-wood-plank);
+      --wood-border: var(--c-l-wood-border);
+      --wood-bevel: var(--c-l-wood-bevel);
+      --papyrus: var(--c-l-papyrus);
+      --papyrus-sub: var(--c-l-papyrus-sub);
+      --papyrus-edge: var(--c-l-papyrus-edge);
+      --ink: var(--c-l-ink);
+      --ink-muted: var(--c-l-ink-muted);
+      --gold: var(--c-l-gold);
+      --brass: var(--c-l-brass);
+      --seal: var(--c-l-seal);
+      --seal-dark: var(--c-l-seal-dark);
+      --velvet: var(--c-l-velvet);
+      --candle: var(--c-l-candle);
+
+      /* Physical Depths */
+      --shadow-scroll: 0 30px 80px -15px rgba(0, 0, 0, 0.85), 0 10px 25px rgba(0, 0, 0, 0.5);
+      --shadow-cavity: inset 0 8px 20px rgba(0, 0, 0, 0.85), inset 0 2px 4px rgba(0, 0, 0, 0.9);
+      --shadow-bevel: inset 0 2px 0 rgba(255, 255, 255, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.6);
+      --radius-spindle: 20px;
+      --radius-parchment: 4px;
+    }
+
+    body.dark {
+      --desk: var(--c-d-desk);
+      --wood-plank: var(--c-d-wood-plank);
+      --wood-border: var(--c-d-wood-border);
+      --wood-bevel: var(--c-d-wood-bevel);
+      --papyrus: var(--c-d-papyrus);
+      --papyrus-sub: var(--c-d-papyrus-sub);
+      --papyrus-edge: var(--c-d-papyrus-edge);
+      --ink: var(--c-d-ink);
+      --ink-muted: var(--c-d-ink-muted);
+      --gold: var(--c-d-gold);
+      --brass: var(--c-d-brass);
+      --seal: var(--c-d-seal);
+      --seal-dark: var(--c-d-seal-dark);
+      --velvet: var(--c-d-velvet);
+      --candle: var(--c-d-candle);
+      --shadow-scroll: 0 35px 90px -15px rgba(0, 0, 0, 0.95), 0 0 30px rgba(226, 168, 41, 0.08);
+    }
+
+    /* Reset & Base Setup */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--desk);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 180px, rgba(0,0,0,0.18) 180px, rgba(0,0,0,0.18) 184px),
+        linear-gradient(180deg, var(--desk) 0%, var(--wood-plank) 50%, var(--desk) 100%);
+    }
+
+    /* Lamparina Interativa */
+    .candle-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99;
+      background: radial-gradient(circle at var(--candle-x, 50%) var(--candle-y, 35%), var(--candle) 0%, transparent 65%);
+      mix-blend-mode: overlay;
+      animation: candle-flicker 5s infinite ease-in-out alternate;
+    }
+
+    @keyframes candle-flicker {
+      0% { opacity: 0.82; }
+      50% { opacity: 1; }
+      100% { opacity: 0.9; }
+    }
+
+    /* Trama de Papiro em CSS puro */
+    .papyrus-mesh {
+      background-color: var(--papyrus);
+      background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(160, 120, 60, 0.05) 3px, rgba(160, 120, 60, 0.05) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(160, 120, 60, 0.05) 4px, rgba(160, 120, 60, 0.05) 5px);
+    }
+
+    /* Cabeçalho da Escribania */
+    header {
+      background: linear-gradient(180deg, var(--wood-plank) 0%, var(--desk) 100%);
+      border-bottom: 5px solid var(--wood-border);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), var(--shadow-bevel);
+      padding: 1.15rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .inkwell-seal {
+      width: 3.75rem;
+      height: 3.75rem;
+      border-radius: 12px;
+      background: radial-gradient(circle at 35% 35%, var(--wood-plank) 0%, var(--wood-border) 100%);
+      border: 3px solid var(--brass);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 6px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.85rem;
+      color: var(--gold);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+
+    .inkwell-seal:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.8), 0 0 16px var(--gold);
+    }
+
+    .brand-title {
+      font-family: var(--font-ornate);
+      font-size: 1.65rem;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-family: var(--font-medieval);
+      font-size: 1rem;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+    }
+
+    .header-ctrls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-toggle-candle {
+      background: linear-gradient(180deg, var(--wood-plank) 0%, var(--desk) 100%);
+      border: 2px solid var(--brass);
+      color: var(--ink);
+      font-family: var(--font-medieval);
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.6rem 1.35rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+    }
+
+    .btn-toggle-candle:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6), 0 0 16px var(--gold);
+    }
+
+    /* Layout Geral em 2 Colunas: Escaninho de Navegação (Esquerda) e Rolo de Proclamação (Centro) */
+    .app-workspace {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 2.5rem;
+      max-width: 1540px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 2.5rem 2rem 5rem 2rem;
+      position: relative;
+      z-index: 20;
+    }
+
+    @media (max-width: 1100px) {
+      .app-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Escaninho de Escriba (Navegação em Madeira & Papiro) */
+    .scribe-sidebar {
+      background: linear-gradient(180deg, var(--wood-plank) 0%, var(--desk) 100%);
+      border: 4px solid var(--wood-border);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), var(--shadow-bevel);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      height: fit-content;
+      position: sticky;
+      top: 110px;
+    }
+
+    .sidebar-section-title {
+      font-family: var(--font-ornate);
+      font-size: 1.15rem;
+      color: var(--gold);
+      border-bottom: 2px dashed var(--wood-bevel);
+      padding-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-ribbon-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .nav-ribbon-btn {
+      background-color: var(--desk);
+      border: 1px solid var(--wood-bevel);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      color: var(--ink-muted);
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .nav-ribbon-btn:hover {
+      color: var(--ink);
+      border-color: var(--brass);
+      transform: translateX(4px);
+    }
+
+    .nav-ribbon-btn.active {
+      background: linear-gradient(90deg, var(--wood-bevel) 0%, var(--wood-plank) 100%);
+      color: var(--gold);
+      border-color: var(--gold);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(226, 168, 41, 0.15);
+      border-left: 4px solid var(--gold);
+    }
+
+    /* O ROLO DE PROCLAMAÇÃO PRINCIPAL */
+    .scroll-proclamation-frame {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      width: 100%;
+    }
+
+    /* Hastes Torneadas de Madeira e Latão */
+    .spindle-bar {
+      height: 42px;
+      background: linear-gradient(180deg, var(--wood-bevel) 0%, var(--wood-border) 100%);
+      border: 3px solid var(--brass);
+      border-radius: var(--radius-spindle);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.85), inset 0 2px 2px rgba(255, 255, 255, 0.35);
+      position: relative;
+      z-index: 15;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.75rem;
+    }
+
+    .spindle-orb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--gold) 0%, var(--brass) 100%);
+      border: 2px solid var(--wood-border);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Corpo Contínuo de Papiro */
+    .parchment-sheet-body {
+      border-left: 4px solid var(--papyrus-edge);
+      border-right: 4px solid var(--papyrus-edge);
+      box-shadow: var(--shadow-scroll);
+      padding: 3.5rem 4.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+      position: relative;
+      margin-top: -12px;
+      margin-bottom: -12px;
+      z-index: 10;
+      min-height: 850px;
+    }
+
+    @media (max-width: 768px) {
+      .parchment-sheet-body {
+        padding: 2.5rem 1.75rem;
+      }
+    }
+
+    /* Selos de Cera Pendentes na Lateral (*Pendant Seals*) */
+    .pendant-seal-dock {
+      position: absolute;
+      top: 100px;
+      right: -32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      z-index: 25;
+    }
+
+    .pendant-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+
+    .pendant-unit:hover {
+      transform: scale(1.1) translateY(4px);
+    }
+
+    .pendant-cord {
+      width: 4px;
+      height: 32px;
+      background: linear-gradient(180deg, var(--seal-dark) 0%, var(--seal) 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .pendant-wax {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--seal) 0%, var(--seal-dark) 100%);
+      border: 3px solid var(--seal-dark);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-white);
+      font-family: var(--font-ornate);
+      font-size: 1.5rem;
+    }
+
+    /* Topo do Papiro com Título e Brasão */
+    .scroll-herald-header {
+      text-align: center;
+      border-bottom: 2px dashed var(--papyrus-edge);
+      padding-bottom: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .herald-title {
+      font-family: var(--font-ornate);
+      font-size: 2.25rem;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .herald-sub {
+      font-family: var(--font-medieval);
+      font-size: 1.15rem;
+      color: var(--gold);
+    }
+
+    /* 4 Nichos de Moedas em Papiro */
+    .money-niches-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .niche-box {
+      background-color: var(--velvet);
+      border: 2px solid var(--wood-border);
+      border-radius: 8px;
+      padding: 1.15rem 1.35rem;
+      box-shadow: var(--shadow-cavity);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .niche-box:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-cavity), 0 0 14px var(--gold);
+    }
+
+    .niche-tag {
+      font-family: var(--font-display);
+      font-size: 0.775rem;
+      font-weight: 800;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .niche-value {
+      font-family: var(--font-ornate);
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.1;
+      text-shadow: 0 2px 10px var(--gold);
+    }
+
+    /* Cartão Padrão de Papiro */
+    .parchment-card-unit {
+      background-color: var(--papyrus-sub);
+      border: 1px solid var(--papyrus-edge);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 6px 14px rgba(15, 9, 3, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .parchment-card-unit:hover {
+      border-color: var(--gold);
+      box-shadow: 0 10px 22px rgba(15, 9, 3, 0.25);
+    }
+
+    /* Botão de Selo Pesado com Cera e Pressão */
+    .btn-wax-press {
+      background: radial-gradient(circle at 35% 35%, var(--seal) 0%, var(--seal-dark) 100%);
+      color: var(--color-white);
+      border: 3px solid var(--seal-dark);
+      border-radius: 8px;
+      padding: 0.85rem 1.65rem;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 18px rgba(88, 12, 12, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      transition: all 0.15s ease;
+      width: fit-content;
+    }
+
+    .btn-wax-press:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(88, 12, 12, 0.75);
+    }
+
+    .btn-wax-press:active {
+      transform: translateY(3px) scale(0.96);
+      box-shadow: 0 2px 6px rgba(88, 12, 12, 0.9);
+    }
+
+    .btn-iron-harness {
+      background: linear-gradient(180deg, var(--wood-plank) 0%, var(--desk) 100%);
+      border: 2px solid var(--brass);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 0.75rem 1.35rem;
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-iron-harness:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    /* Modal / Diálogo de Ação */
+    .dice-roll-feedback {
+      background-color: var(--velvet);
+      border: 3px solid var(--gold);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 25px var(--gold);
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      margin-top: 1rem;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Toast Flutuante em Papiro e Selo */
+    .toast-seal-banner {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 100;
+      background-color: var(--papyrus);
+      border: 3px solid var(--wood-border);
+      border-radius: 8px;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.8);
+      padding: 1rem 1.75rem;
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      animation: slideUpToast 0.3s ease-out forwards;
+    }
+
+    @keyframes slideUpToast {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="dark">
+
+  <!-- Luz de Lamparina Móvel com o Cursor -->
+  <div class="candle-overlay" id="candleOverlay"></div>
+
+  <!-- Cabeçalho -->
+  <header>
+    <div class="brand-wrap">
+      <div class="inkwell-seal" onclick="playAudioEffect('quill')" title="Mergulhar pena no tinteiro">🖋️</div>
+      <div>
+        <h1 class="brand-title">Grimório da Fortuna T20</h1>
+        <div class="brand-sub">O Grande Rolo de Proclamação & Escribania de Arton</div>
+      </div>
+    </div>
+
+    <div class="header-ctrls">
+      <button class="btn-toggle-candle" onclick="toggleCandleIllumination()" id="btnCandle">
+        <span id="candleIcon">🕯️</span>
+        <span id="candleLabel">Luz de Velas</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Espaço de Trabalho do Escriba -->
+  <div class="app-workspace">
+
+    <!-- Escaninho Lateral com Módulos -->
+    <aside class="scribe-sidebar">
+      <div class="sidebar-section-title">
+        <span>📜</span> Módulos da Guilda
+      </div>
+
+      <nav class="nav-ribbon-list">
+        <button class="nav-ribbon-btn active" onclick="navigateScreen('resumo')">
+          <span>🏰</span> Resumo do Regente
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('financas')">
+          <span>🪙</span> Tesouraria & Câmbio
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('dominios')">
+          <span>👑</span> Domínios & Decretos
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('bases')">
+          <span>🛡️</span> Quartel & Negócios
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('arsenal')">
+          <span>⚔️</span> Arsenal & Carga T20
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('membros')">
+          <span>👥</span> Aventureiros
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('comitiva')">
+          <span>🤝</span> Aliados & Afinidade
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('tempo')">
+          <span>📅</span> Calendário de Arton
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('missoes')">
+          <span>📜</span> Quadro de Missões
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('reputacao')">
+          <span>⚜️</span> Facções & Prestígio
+        </button>
+        <button class="nav-ribbon-btn" onclick="navigateScreen('cronicas')">
+          <span>📖</span> Livro de Crônicas
+        </button>
+      </nav>
+
+      <div style="background-color: var(--velvet); border: 2px solid var(--wood-border); border-radius: 6px; padding: 0.85rem; font-size: 0.8rem; color: var(--ink-muted); text-align: center;">
+        Campanha Ativa: <strong style="color: var(--gold);">Heróis de Valkaria</strong>
+      </div>
+    </aside>
+
+    <!-- O Rolo de Proclamação Central -->
+    <main class="scroll-proclamation-frame">
+
+      <!-- Haste Superior Torneada com Pomos -->
+      <div class="spindle-bar">
+        <div class="spindle-orb"></div>
+        <span style="font-family: var(--font-ornate); font-size: 1.15rem; color: var(--gold);">Edictum Imperiale Artoniense</span>
+        <div class="spindle-orb"></div>
+      </div>
+
+      <!-- Papiro Contínuo -->
+      <div class="parchment-sheet-body papyrus-mesh">
+
+        <!-- Selos Pendentes de Cera na Lateral Direita (*Pendant Seals*) -->
+        <div class="pendant-seal-dock">
+          <div class="pendant-unit" onclick="triggerPendantAction('governar')" title="Ação Rápida: Governar">
+            <div class="pendant-cord"></div>
+            <div class="pendant-wax">👑</div>
+          </div>
+          <div class="pendant-unit" onclick="triggerPendantAction('pagar')" title="Ação Rápida: Pagar Salários">
+            <div class="pendant-cord"></div>
+            <div class="pendant-wax">🪙</div>
+          </div>
+          <div class="pendant-unit" onclick="triggerPendantAction('tempo')" title="Ação Rápida: Avançar 30 Dias">
+            <div class="pendant-cord"></div>
+            <div class="pendant-wax">📅</div>
+          </div>
+        </div>
+
+        <!-- =========================================================================
+             TELA 1: RESUMO DO REGENTE
+             ========================================================================= -->
+        <section id="screen-resumo" class="screen-view" data-od-id="screen-resumo">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Balanço Soberano da Guilda</h2>
+            <div class="herald-sub">14 de Valkaria · Ano 1420 · Reinado de Deheon</div>
+          </div>
+
+          <!-- Nichos de Moedas em Papiro -->
+          <div class="money-niches-row">
+            <div class="niche-box" onclick="navigateScreen('financas')">
+              <span class="niche-tag">Tesouro Total (T$)</span>
+              <span class="niche-value" id="valTotalWealth">T$ 148.520</span>
+              <span style="font-size: 0.8rem; color: var(--ink-muted);">100% em cofre seguro</span>
+            </div>
+
+            <div class="niche-box" onclick="navigateScreen('dominios')">
+              <span class="niche-tag">Senhorio Territorial</span>
+              <span class="niche-value" id="valDomainLO">1.450 LO</span>
+              <span style="font-size: 0.8rem; color: var(--ink-muted);">Ducado de Zakharov · Nível 4</span>
+            </div>
+
+            <div class="niche-box" onclick="navigateScreen('bases')">
+              <span class="niche-tag">Quartel de Operações</span>
+              <span class="niche-value">5 / 8</span>
+              <span style="font-size: 0.8rem; color: var(--ink-muted);">Formidável · 0 Danos</span>
+            </div>
+
+            <div class="niche-box" onclick="navigateScreen('tempo')">
+              <span class="niche-tag">Tempo de Campanha</span>
+              <span class="niche-value" id="valCurrentDate">14 Valkaria</span>
+              <span style="font-size: 0.8rem; color: var(--ink-muted);">Lua Cheia · Clima Firme</span>
+            </div>
+          </div>
+
+          <!-- Destaques Rápidos -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+            <div class="parchment-card-unit">
+              <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink);">
+                🏰 Decretos Prontos para Execução
+              </div>
+              <p style="font-size: 0.9rem; color: var(--ink-muted); line-height: 1.5;">
+                O Ducado de Zakharov aguarda o decreto mensal de arrecadação da Cidade Baixa. CD 20 em Nobreza com bônus +4 de popularidade.
+              </p>
+              <button class="btn-wax-press" onclick="navigateScreen('dominios')">
+                <span>👑</span> Abrir Sala de Governo
+              </button>
+            </div>
+
+            <div class="parchment-card-unit">
+              <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink);">
+                👥 Folha Salarial da Comitiva
+              </div>
+              <p style="font-size: 0.9rem; color: var(--ink-muted); line-height: 1.5;">
+                3 NPCs contratados ativos aguardando vencimento mensal no valor total de <strong>T$ 450</strong>. Mestre Elíseo possui 7 PA de afinidade.
+              </p>
+              <button class="btn-wax-press" onclick="payPayrollDirect()">
+                <span>🪙</span> Pagar Folha Salarial
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 2: TESOURARIA & CÂMBIO
+             ========================================================================= -->
+        <section id="screen-financas" class="screen-view" style="display: none;" data-od-id="screen-financas">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Livro Caixa & Câmbio de Arton</h2>
+            <div class="herald-sub">Gestão Monetária Oficial Tormenta20</div>
+          </div>
+
+          <div class="money-niches-row">
+            <div class="niche-box">
+              <span class="niche-tag">Cobre (TC)</span>
+              <span class="niche-value" id="valWalletTC">4.500</span>
+              <span style="font-size: 0.75rem; color: var(--ink-muted);">100 TC = 1 T$</span>
+            </div>
+            <div class="niche-box">
+              <span class="niche-tag">Prata (TP)</span>
+              <span class="niche-value" id="valWalletTP">1.820</span>
+              <span style="font-size: 0.75rem; color: var(--ink-muted);">10 TP = 1 T$</span>
+            </div>
+            <div class="niche-box">
+              <span class="niche-tag">Ouro (TO / T$)</span>
+              <span class="niche-value" id="valWalletTO">28.520</span>
+              <span style="font-size: 0.75rem; color: var(--ink-muted);">Moeda Padrão de Arton</span>
+            </div>
+            <div class="niche-box">
+              <span class="niche-tag">Lingote (TL)</span>
+              <span class="niche-value" id="valWalletTL">120</span>
+              <span style="font-size: 0.75rem; color: var(--ink-muted);">1 TL = 1.000 T$</span>
+            </div>
+          </div>
+
+          <!-- Caixa de Conversão Cambial -->
+          <div class="parchment-card-unit" style="margin-top: 1rem;">
+            <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink);">
+              ⚖️ Mesa de Câmbio de Moedas
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+              <span>Converter</span>
+              <input type="number" id="inputExchangeAmount" value="500" style="width: 110px; background-color: var(--velvet); border: 2px solid var(--wood-border); border-radius: 6px; padding: 0.5rem; color: var(--gold); font-family: var(--font-mono); font-size: 1rem; font-weight: 700;">
+              <span>TO para</span>
+              <select id="selectExchangeTo" style="background-color: var(--velvet); border: 2px solid var(--wood-border); border-radius: 6px; padding: 0.5rem; color: var(--gold); font-family: var(--font-display); font-weight: 700;">
+                <option value="TP">Prata (TP) — 1:10</option>
+                <option value="TC">Cobre (TC) — 1:100</option>
+                <option value="TL">Lingotes (TL) — 1.000:1</option>
+              </select>
+              <button class="btn-wax-press" onclick="executeExchangeTransaction()">
+                <span>🪙</span> Executar Câmbio
+              </button>
+            </div>
+          </div>
+
+          <!-- Histórico Recente de Transações -->
+          <div style="margin-top: 1rem;">
+            <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--gold); margin-bottom: 0.75rem;">
+              📜 Livro Razão Imutável
+            </div>
+            <div id="txHistoryContainer" style="display: flex; flex-direction: column; gap: 0.65rem;">
+              <!-- Linhas Injetadas via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 3: DOMÍNIOS & DECRETOS
+             ========================================================================= -->
+        <section id="screen-dominios" class="screen-view" style="display: none;" data-od-id="screen-dominios">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Senhorio Territorial de Zakharov</h2>
+            <div class="herald-sub">Governança, Forças Armadas & Caravanas de Arton</div>
+          </div>
+
+          <div class="parchment-card-unit">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-family: var(--font-ornate); font-size: 1.4rem; color: var(--ink);">Ducado de Zakharov (Nível 4)</div>
+                <div style="font-size: 0.9rem; color: var(--ink-muted);">Terreno: Colinas Fortificadas · Corte: Confortável · Popularidade: Satisfeito (+2)</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-family: var(--font-ornate); font-size: 1.85rem; color: var(--gold); font-weight: 900;" id="domTreasuryVal">1.450 LO</div>
+                <div style="font-size: 0.8rem; color: var(--ink-muted);">Tesouro Soberano</div>
+              </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px dashed var(--papyrus-edge); margin: 0.5rem 0;">
+
+            <!-- Disparador de Ação Governar com Rolagem de d20 -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <span style="font-family: var(--font-display); font-weight: 800;">Promulgar Decreto de Governo:</span>
+              <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <select id="selectDecreeType" style="background-color: var(--velvet); border: 2px solid var(--wood-border); border-radius: 6px; padding: 0.65rem; color: var(--gold); font-family: var(--font-display); font-weight: 700;">
+                  <option value="tax">Arrecadar Tributos da Cidade Baixa (Custo: 20 LO · CD 20)</option>
+                  <option value="festival">Financiar Grande Torneio Real (Custo: 50 LO · CD 18)</option>
+                  <option value="works">Erguer Baluartes de Muralha (Custo: 80 LO · CD 22)</option>
+                </select>
+                <button class="btn-wax-press" onclick="rollGovernanceDecree()">
+                  <span>🎲</span> Rolar Ação Governar (d20)
+                </button>
+              </div>
+
+              <!-- Caixa de Feedback da Rolagem de Dados -->
+              <div id="diceRollOutput" class="dice-roll-feedback">
+                <!-- Injetado dinamicamente via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Tropas & Caravana -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+            <div class="parchment-card-unit">
+              <span style="font-family: var(--font-display); font-weight: 800; color: var(--gold);">🛡️ Regimentos Militares</span>
+              <div style="font-size: 0.95rem; margin-top: 0.5rem;">• <strong>Cavalaria Pesada de Deheon</strong> (60 lanceiros montados)</div>
+              <div style="font-size: 0.85rem; color: var(--ink-muted);">Manutenção: 50 LO/mês · Prontidão 100%</div>
+              <div style="font-size: 0.95rem; margin-top: 0.5rem;">• <strong>Arqueiros de Zakharov</strong> (80 atiradores)</div>
+              <div style="font-size: 0.85rem; color: var(--ink-muted);">Manutenção: 30 LO/mês · Guarnição de muralha</div>
+            </div>
+
+            <div class="parchment-card-unit">
+              <span style="font-family: var(--font-display); font-weight: 800; color: var(--gold);">🐪 Caravana Mercante</span>
+              <div style="font-size: 0.95rem; margin-top: 0.5rem;">• <strong>Rota de Yuvalin</strong> (Mercadorias & Especiarias)</div>
+              <div style="font-size: 0.85rem; color: var(--ink-muted);">Status: Em trânsito há 4 dias · Retorno esperado: +350 LO</div>
+              <button class="btn-iron-harness" style="margin-top: 0.75rem;" onclick="resolveMerchantCaravan()">
+                <span>💰</span> Receber Caravana no Destino
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 4: BASES & NEGÓCIOS T20
+             ========================================================================= -->
+        <section id="screen-bases" class="screen-view" style="display: none;" data-od-id="screen-bases">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Fortaleza & Ativos de Negócio</h2>
+            <div class="herald-sub">Quartel-General e Empreendimentos de Tormenta20</div>
+          </div>
+
+          <div class="parchment-card-unit">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <div>
+                <div style="font-family: var(--font-ornate); font-size: 1.35rem; color: var(--ink);">Fortaleza da Lança de Aço</div>
+                <div style="font-size: 0.9rem; color: var(--ink-muted);">Porte Formidável · 5 de 8 Slots de Cômodos Ocupados</div>
+              </div>
+              <button class="btn-iron-harness" onclick="payBaseMaintenanceDirect()">
+                <span>🪙</span> Pagar Manutenção (T$ 500)
+              </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+              <div style="background-color: var(--velvet); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--wood-border);">
+                <div style="font-weight: 800; color: var(--gold);">📚 Biblioteca Arcana</div>
+                <div style="font-size: 0.75rem; color: var(--ink-muted);">Bônus +2 em Misticismo e Conhecimento</div>
+              </div>
+              <div style="background-color: var(--velvet); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--wood-border);">
+                <div style="font-weight: 800; color: var(--gold);">⚔️ Arsenal Reforçado</div>
+                <div style="font-size: 0.75rem; color: var(--ink-muted);">Armas e armaduras conservadas</div>
+              </div>
+              <div style="background-color: var(--velvet); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--wood-border);">
+                <div style="font-weight: 800; color: var(--gold);">🦅 Guarita com Gárgulas</div>
+                <div style="font-size: 0.75rem; color: var(--ink-muted);">2 Gárgulas de Vigia Ativas</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Negócio T20 (Taverna) -->
+          <div class="parchment-card-unit" style="margin-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--gold);">
+                  🍻 Taverna do Javali Saltitante (Negócio Nível 3)
+                </div>
+                <div style="font-size: 0.85rem; color: var(--ink-muted);">Ativo Comercial Oficial T20 · Retorno mensal médio de 1d6 x T$ 300</div>
+              </div>
+              <button class="btn-wax-press" onclick="collectTavernProfit()">
+                <span>🪙</span> Coletar Lucros do Negócio
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 5: ARSENAL & CARGA T20
+             ========================================================================= -->
+        <section id="screen-arsenal" class="screen-view" style="display: none;" data-od-id="screen-arsenal">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Arsenal & Inventário de Carga</h2>
+            <div class="herald-sub">Regras Oficiais de Espaços e Capacidade de Tormenta20</div>
+          </div>
+
+          <!-- Barra de Capacidade de Carga -->
+          <div class="parchment-card-unit">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-family: var(--font-display); font-weight: 800; color: var(--ink);">Capacidade de Transporte da Guilda:</span>
+              <span style="font-family: var(--font-mono); font-weight: 800; color: var(--gold);" id="lblCarryCapacity">24 / 40 Espaços</span>
+            </div>
+            <div style="width: 100%; height: 14px; background-color: var(--velvet); border-radius: 7px; overflow: hidden; border: 1px solid var(--wood-border);">
+              <div id="barCarryProgress" style="width: 60%; height: 100%; background: linear-gradient(90deg, var(--gold) 0%, var(--seal) 100%); transition: width 0.3s ease;"></div>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--ink-muted);">Baseado na Força dos membros · Sobrecarga máxima tolerada: 60 espaços</span>
+          </div>
+
+          <!-- Lista de Itens do Inventário -->
+          <div id="inventoryItemsGrid" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+            <!-- Itens Injetados via JS -->
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 6: AVENTUREIROS (MEMBROS)
+             ========================================================================= -->
+        <section id="screen-membros" class="screen-view" style="display: none;" data-od-id="screen-membros">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Heróis & Aventureiros da Guilda</h2>
+            <div class="herald-sub">Carteiras Individuais & Pontos Divinos do Panteão</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;">Sir Bryan de Valkaria</span>
+                <span style="color: var(--gold); font-family: var(--font-medieval); font-weight: 700;">Ativo</span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--ink-muted);">Paladino de Khalmyr · Nível 7</div>
+              <div style="background-color: var(--velvet); padding: 0.5rem 0.85rem; border-radius: 4px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+                <span>Carteira: <strong style="color: var(--gold);" id="bryanGold">T$ 450</strong></span>
+                <span>Pontos Divinos: <strong style="color: var(--gold);" id="bryanDivine">3 PD</strong></span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                <button class="btn-iron-harness" style="font-size: 0.75rem; padding: 0.4rem 0.75rem;" onclick="transferToMember('bryan', 100)">+100 T$</button>
+                <button class="btn-iron-harness" style="font-size: 0.75rem; padding: 0.4rem 0.75rem;" onclick="spendDivinePoint('bryan')">Canalizar Bênção (1 PD)</button>
+              </div>
+            </div>
+
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;">Kaelen Sombra-Fina</span>
+                <span style="color: var(--gold); font-family: var(--font-medieval); font-weight: 700;">Ativo</span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--ink-muted);">Ladino de Hyninn · Nível 6</div>
+              <div style="background-color: var(--velvet); padding: 0.5rem 0.85rem; border-radius: 4px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+                <span>Carteira: <strong style="color: var(--gold);" id="kaelenGold">T$ 820</strong></span>
+                <span>Pontos Divinos: <strong style="color: var(--gold);" id="kaelenDivine">2 PD</strong></span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                <button class="btn-iron-harness" style="font-size: 0.75rem; padding: 0.4rem 0.75rem;" onclick="transferToMember('kaelen', 100)">+100 T$</button>
+                <button class="btn-iron-harness" style="font-size: 0.75rem; padding: 0.4rem 0.75rem;" onclick="spendDivinePoint('kaelen')">Canalizar Bênção (1 PD)</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 7: ALIADOS & AFINIDADE (NPCS)
+             ========================================================================= -->
+        <section id="screen-comitiva" class="screen-view" style="display: none;" data-od-id="screen-comitiva">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Comitiva, Aliados & Servos</h2>
+            <div class="herald-sub">Sistema de Afinidade (0-7 PA) & Folha Salarial T20</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- NPC 1: Mestre Elíseo -->
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                  <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;">Mestre Elíseo (Alquimista)</div>
+                  <div style="font-size: 0.85rem; color: var(--ink-muted);">Contratado · Salário: T$ 150/mês · Afinidade Máxima</div>
+                </div>
+                <div style="font-family: var(--font-medieval); font-size: 1.45rem; color: var(--gold); font-weight: 700;">
+                  <span id="affinityEliseo">7</span> / 7 PA ★
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                <button class="btn-wax-press" onclick="triggerUltimateQuest()">
+                  <span>👑</span> Realizar Última Demanda (Missão Cumprida)
+                </button>
+              </div>
+            </div>
+
+            <!-- NPC 2: Gwen de Ahlen -->
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                  <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;">Gwen de Ahlen (Espiã)</div>
+                  <div style="font-size: 0.85rem; color: var(--ink-muted);">Parceira Vigilante · Bônus Ativo (+2 Percepção da Guilda)</div>
+                </div>
+                <div style="font-family: var(--font-medieval); font-size: 1.45rem; color: var(--gold); font-weight: 700;">
+                  <span id="affinityGwen">5</span> / 7 PA
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                <button class="btn-iron-harness" onclick="interactNpcAffinity('gwen')">
+                  <span>💬</span> Conversar & Interagir (+1 PA)
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 8: CALENDÁRIO ARTONIANO & TEMPO
+             ========================================================================= -->
+        <section id="screen-tempo" class="screen-view" style="display: none;" data-od-id="screen-tempo">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Cronologia Canônica de Arton</h2>
+            <div class="herald-sub">Passagem de Tempo, Fases da Lua & Festivais Divinos</div>
+          </div>
+
+          <div class="parchment-card-unit" style="text-align: center; padding: 2rem;">
+            <div style="font-family: var(--font-medieval); font-size: 1.2rem; color: var(--gold);">Data Corrente no Reinado</div>
+            <div style="font-family: var(--font-ornate); font-size: 2.75rem; color: var(--ink); margin: 0.5rem 0;" id="displayDateLarge">
+              14 de Valkaria, 1420
+            </div>
+            <div style="font-size: 1rem; color: var(--ink-muted);" id="displayWeekday">
+              Segunda-feira · Estação das Colheitas · Lua Cheia
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+              <button class="btn-iron-harness" onclick="advanceDays(1)">+1 Dia de Marcha</button>
+              <button class="btn-iron-harness" onclick="advanceDays(7)">+7 Dias (Semana)</button>
+              <button class="btn-wax-press" onclick="advanceDays(30)">
+                <span>📅</span> Avançar Mês Inteiro (+30 Dias)
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 9: QUADRO DE MISSÕES
+             ========================================================================= -->
+        <section id="screen-missoes" class="screen-view" style="display: none;" data-od-id="screen-missoes">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Quadro de Recompensas & Missões</h2>
+            <div class="herald-sub">Editos de Contratantes & Contratos de Caçada</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                  <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;">Purificação do Poço de Wynlla</div>
+                  <div style="font-size: 0.85rem; color: var(--ink-muted);">Contratante: Conselho dos Anciãos · Dificuldade Média</div>
+                </div>
+                <div style="font-family: var(--font-ornate); font-size: 1.35rem; color: var(--gold); font-weight: 800;">
+                  Recompensa: T$ 3.000
+                </div>
+              </div>
+              <div style="margin-top: 0.5rem;">
+                <button class="btn-wax-press" onclick="completeQuestReward(3000, 'Purificação do Poço de Wynlla')">
+                  <span>⚜</span> Concluir Missão & Coletar Ouro
+                </button>
+              </div>
+            </div>
+
+            <div class="parchment-card-unit">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                  <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;">Escolta da Caravana de Aço até Doherimm</div>
+                  <div style="font-size: 0.85rem; color: var(--ink-muted);">Contratante: Guilda dos Armeiros · Perigo Alto</div>
+                </div>
+                <div style="font-family: var(--font-ornate); font-size: 1.35rem; color: var(--gold); font-weight: 800;">
+                  Recompensa: T$ 5.500
+                </div>
+              </div>
+              <div style="margin-top: 0.5rem;">
+                <button class="btn-wax-press" onclick="completeQuestReward(5500, 'Escolta da Caravana de Aço')">
+                  <span>⚜</span> Concluir Missão & Coletar Ouro
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 10: FACÇÕES & PRESTÍGIO
+             ========================================================================= -->
+        <section id="screen-reputacao" class="screen-view" style="display: none;" data-od-id="screen-reputacao">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">Facções de Arton & Prestígio Diplomático</h2>
+            <div class="herald-sub">Relações Internacionais & Alianças de Guerra</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="parchment-card-unit" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;">Corte Real de Deheon</div>
+                <div style="font-size: 0.85rem; color: var(--ink-muted);">Prestígio: +55 pontos · Bônus de Nobreza Ativo</div>
+              </div>
+              <span style="font-family: var(--font-medieval); font-size: 1.25rem; color: var(--gold); font-weight: 700;">Honrado</span>
+            </div>
+
+            <div class="parchment-card-unit" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;">Guilda dos Mineradores de Zakharov</div>
+                <div style="font-size: 0.85rem; color: var(--ink-muted);">Prestígio: +30 pontos · Desconto de 10% em Metais</div>
+              </div>
+              <span style="font-family: var(--font-medieval); font-size: 1.25rem; color: var(--gold); font-weight: 700;">Amigável</span>
+            </div>
+
+            <div class="parchment-card-unit" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;">Supremacia Purista de Yuden</div>
+                <div style="font-size: 0.85rem; color: var(--ink-muted);">Inimizade declarada · Bloqueio de rotas comerciais</div>
+              </div>
+              <span style="font-family: var(--font-medieval); font-size: 1.25rem; color: var(--seal); font-weight: 700;">Hostil (-80)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================================
+             TELA 11: LIVRO DE CRÔNICAS
+             ========================================================================= -->
+        <section id="screen-cronicas" class="screen-view" style="display: none;" data-od-id="screen-cronicas">
+          <div class="scroll-herald-header">
+            <h2 class="herald-title">O Livro de Crônicas da Guilda</h2>
+            <div class="herald-sub">Diário Permanente das Façanhas e Conquistas</div>
+          </div>
+
+          <div id="chroniclesLogList" style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Entradas de Crônica Injetadas via JS -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Haste Inferior Torneada com Pomos -->
+      <div class="spindle-bar">
+        <div class="spindle-orb"></div>
+        <span style="font-family: var(--font-medieval); font-size: 1rem; color: var(--ink-muted);">Pela Honra da Deusa e da Guilda · Fim do Rolo</span>
+        <div class="spindle-orb"></div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Toast Flutuante com Selo de Cera -->
+  <div id="toastNotification" class="toast-seal-banner">
+    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--seal); color: var(--color-white); display: flex; align-items: center; justify-content: center; font-weight: 900;">⚜</div>
+    <span id="toastMessage" style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 800; color: var(--ink);">Ação executada com sucesso!</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. ESTADO REATIVO DA GUILDA EM TEMPO REAL
+    // =========================================================================
+    const guildState = {
+      wallet: {
+        TC: 4500,
+        TP: 1820,
+        TO: 28520,
+        TL: 120
+      },
+      domain: {
+        name: "Ducado de Zakharov",
+        level: 4,
+        treasuryLO: 1450,
+        court: "Confortável",
+        popularity: 2
+      },
+      calendar: {
+        day: 14,
+        monthIndex: 2, // Valkaria
+        year: 1420
+      },
+      members: {
+        bryan: { gold: 450, divine: 3 },
+        kaelen: { gold: 820, divine: 2 }
+      },
+      npcs: {
+        eliseo: { affinity: 7 },
+        gwen: { affinity: 5 }
+      },
+      inventory: [
+        { id: 1, name: "Espada Longa de Mitral", category: "Armas", spaces: 1, price: 1200, qty: 1 },
+        { id: 2, name: "Armadura Completa de Sob Medida", category: "Armaduras", spaces: 5, price: 3500, qty: 1 },
+        { id: 3, name: "Poções de Cura Menor (x5)", category: "Consumíveis", spaces: 2, price: 150, qty: 5 },
+        { id: 4, name: "Gema de Quartzo Lapidada", category: "Tesouros", spaces: 1, price: 800, qty: 2 }
+      ],
+      transactions: [
+        { desc: "Depósito de caravana mercante", value: 4200, type: "income", date: "12 Valkaria" },
+        { desc: "Compra de provisões de cerco", value: -500, type: "expense", date: "10 Valkaria" },
+        { desc: "Recompensa por contrato da milícia", value: 2000, type: "income", date: "06 Valkaria" }
+      ],
+      chronicles: [
+        { title: "A Fundação do Forte de Zakharov", text: "Sob o olhar de Khalmyr, os heróis assentaram a primeira pedra da fortaleza nas colinas centrais." },
+        { title: "O Tratado com a Guilda Mercante", text: "Firmada a rota de comércio com Bielefeld, garantindo renda tributária mensal para a tesouraria." }
+      ]
+    };
+
+    const ARTON_MONTH_NAMES = [
+      "Tauron", "Arsenal", "Valkaria", "Lena", "Marah", "Tanna-Toh",
+      "Thyatis", "Allihanna", "Megalokk", "Hyninn", "Aharadak", "Khalmyr"
+    ];
+
+    // =========================================================================
+    // 2. FUNÇÕES DE CÁLCULO E RENDERIZAÇÃO
+    // =========================================================================
+    function calcTotalWealth() {
+      return (guildState.wallet.TC * 0.01) + (guildState.wallet.TP * 0.1) + guildState.wallet.TO + (guildState.wallet.TL * 1000);
+    }
+
+    function renderUI() {
+      // 1. Atualizar Tesouraria Total
+      const total = calcTotalWealth();
+      const totalEl = document.querySelector('#valTotalWealth');
+      if (totalEl) totalEl.textContent = `T$ ${total.toLocaleString('pt-BR')}`;
+
+      // 2. Atualizar Carteira Detalhada
+      const tcEl = document.querySelector('#valWalletTC');
+      if (tcEl) tcEl.textContent = guildState.wallet.TC.toLocaleString('pt-BR');
+      const tpEl = document.querySelector('#valWalletTP');
+      if (tpEl) tpEl.textContent = guildState.wallet.TP.toLocaleString('pt-BR');
+      const toEl = document.querySelector('#valWalletTO');
+      if (toEl) toEl.textContent = guildState.wallet.TO.toLocaleString('pt-BR');
+      const tlEl = document.querySelector('#valWalletTL');
+      if (tlEl) tlEl.textContent = guildState.wallet.TL.toLocaleString('pt-BR');
+
+      // 3. Atualizar Domínio
+      const loEl = document.querySelector('#valDomainLO');
+      if (loEl) loEl.textContent = `${guildState.domain.treasuryLO.toLocaleString('pt-BR')} LO`;
+      const dtEl = document.querySelector('#domTreasuryVal');
+      if (dtEl) dtEl.textContent = `${guildState.domain.treasuryLO.toLocaleString('pt-BR')} LO`;
+
+      // 4. Atualizar Data
+      const curDateStr = `${guildState.calendar.day} de ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`;
+      const cdEl = document.querySelector('#valCurrentDate');
+      if (cdEl) cdEl.textContent = curDateStr;
+      const ddlEl = document.querySelector('#displayDateLarge');
+      if (ddlEl) ddlEl.textContent = `${curDateStr}, ${guildState.calendar.year}`;
+
+      // 5. Atualizar Membros
+      const bgEl = document.querySelector('#bryanGold');
+      if (bgEl) bgEl.textContent = `T$ ${guildState.members.bryan.gold}`;
+      const bdEl = document.querySelector('#bryanDivine');
+      if (bdEl) bdEl.textContent = `${guildState.members.bryan.divine} PD`;
+
+      const kgEl = document.querySelector('#kaelenGold');
+      if (kgEl) kgEl.textContent = `T$ ${guildState.members.kaelen.gold}`;
+      const kdEl = document.querySelector('#kaelenDivine');
+      if (kdEl) kdEl.textContent = `${guildState.members.kaelen.divine} PD`;
+
+      // 6. Atualizar NPCs
+      const aeEl = document.querySelector('#affinityEliseo');
+      if (aeEl) aeEl.textContent = guildState.npcs.eliseo.affinity;
+      const agEl = document.querySelector('#affinityGwen');
+      if (agEl) agEl.textContent = guildState.npcs.gwen.affinity;
+
+      // 7. Renderizar Inventário
+      renderInventory();
+
+      // 8. Renderizar Histórico
+      renderHistory();
+
+      // 9. Renderizar Crônicas
+      renderChronicles();
+    }
+
+    function renderInventory() {
+      const container = document.querySelector('#inventoryItemsGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let totalSpaces = 0;
+      guildState.inventory.forEach(item => {
+        totalSpaces += (item.spaces * item.qty);
+        const row = document.createElement('div');
+        row.className = 'parchment-card-unit';
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.innerHTML = `
+          <div>
+            <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--ink);">
+              ${item.name} (${item.qty}x)
+            </div>
+            <div style="font-size: 0.8rem; color: var(--ink-muted);">
+              Categoria: ${item.category} · Carga: ${item.spaces * item.qty} espaços · Valor de face: T$ ${item.price}
+            </div>
+          </div>
+          <button class="btn-iron-harness" onclick="sellInventoryItem(${item.id})">
+            <span>🪙</span> Vender (T$ ${Math.floor(item.price * 0.5)})
+          </button>
+        `;
+        container.appendChild(row);
+      });
+
+      const capEl = document.querySelector('#lblCarryCapacity');
+      if (capEl) capEl.textContent = `${totalSpaces} / 40 Espaços`;
+      const barEl = document.querySelector('#barCarryProgress');
+      if (barEl) {
+        const pct = Math.min(100, Math.floor((totalSpaces / 40) * 100));
+        barEl.style.width = `${pct}%`;
+      }
+    }
+
+    function renderHistory() {
+      const container = document.querySelector('#txHistoryContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      guildState.transactions.forEach(tx => {
+        const row = document.createElement('div');
+        row.className = 'parchment-card-unit';
+        row.style.padding = '0.75rem 1.25rem';
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        
+        const isIncome = tx.value > 0;
+        const color = isIncome ? 'var(--gold)' : 'var(--seal)';
+        const prefix = isIncome ? '+T$ ' : '-T$ ';
+
+        row.innerHTML = `
+          <div>
+            <div style="font-weight: 700; font-size: 0.95rem;">${tx.desc}</div>
+            <div style="font-size: 0.775rem; color: var(--ink-muted);">${tx.date}</div>
+          </div>
+          <span style="font-family: var(--font-mono); font-weight: 800; color: ${color};">
+            ${prefix}${Math.abs(tx.value).toLocaleString('pt-BR')}
+          </span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderChronicles() {
+      const container = document.querySelector('#chroniclesLogList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      guildState.chronicles.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'parchment-card-unit';
+        row.innerHTML = `
+          <div style="font-family: var(--font-ornate); font-size: 1.2rem; color: var(--gold);">${c.title}</div>
+          <p style="font-size: 0.95rem; color: var(--ink-muted); line-height: 1.6; margin-top: 0.25rem;">${c.text}</p>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // =========================================================================
+    // 3. AÇÕES INTERATIVAS DO JOGO TORMENTA20
+    // =========================================================================
+
+    // Câmbio de Moedas
+    function executeExchangeTransaction() {
+      const amount = parseInt(document.querySelector('#inputExchangeAmount').value) || 0;
+      const toType = document.querySelector('#selectExchangeTo').value;
+
+      if (guildState.wallet.TO < amount) {
+        showToast("Saldo de ouro insuficiente para o câmbio!");
+        return;
+      }
+
+      guildState.wallet.TO -= amount;
+      if (toType === 'TP') guildState.wallet.TP += (amount * 10);
+      else if (toType === 'TC') guildState.wallet.TC += (amount * 100);
+      else if (toType === 'TL') guildState.wallet.TL += Math.floor(amount / 1000);
+
+      guildState.transactions.unshift({
+        desc: `Câmbio de ${amount} TO para ${toType}`,
+        value: 0,
+        type: 'transfer',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast(`Câmbio concluído: ${amount} TO convertidos para ${toType}!`);
+    }
+
+    // Ação Governar com Rolagem de d20
+    function rollGovernanceDecree() {
+      const decreeType = document.querySelector('#selectDecreeType').value;
+      const cost = decreeType === 'tax' ? 20 : (decreeType === 'festival' ? 50 : 80);
+
+      if (guildState.domain.treasuryLO < cost) {
+        showToast("Tesouraria do domínio sem saldo de LO para este decreto!");
+        return;
+      }
+
+      guildState.domain.treasuryLO -= cost;
+
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const bonus = 4; // Nobreza + Popularidade
+      const total = d20 + bonus;
+      const success = total >= 20;
+
+      let gainLO = 0;
+      if (success) {
+        gainLO = Math.floor(Math.random() * 6 + 1) * 50;
+        guildState.domain.treasuryLO += gainLO;
+      }
+
+      playAudioEffect('wax');
+
+      const out = document.querySelector('#diceRollOutput');
+      if (out) {
+        out.style.display = 'flex';
+        out.innerHTML = `
+          <div style="font-family: var(--font-medieval); font-size: 1.4rem; color: var(--gold);">
+            🎲 Rolagem de Governar: Dado [${d20}] + Bônus [${bonus}] = <strong>${total}</strong> (CD 20)
+          </div>
+          <div style="font-size: 1.1rem; color: ${success ? 'var(--gold)' : 'var(--seal)'}; font-weight: 800;">
+            ${success ? `SUCESSO! O decreto rendeu +${gainLO} LO ao tesouro de Zakharov!` : 'FALHA! A arrecadação foi obstruída por agitação civil.'}
+          </div>
+        `;
+      }
+
+      renderUI();
+      showToast(success ? `Decreto aprovado com sucesso (+${gainLO} LO)!` : "Falha na aprovação do decreto!");
+    }
+
+    // Vender Item do Inventário
+    function sellInventoryItem(id) {
+      const item = guildState.inventory.find(i => i.id === id);
+      if (!item) return;
+
+      const payout = Math.floor(item.price * 0.5);
+      guildState.wallet.TO += payout;
+      item.qty -= 1;
+      if (item.qty <= 0) {
+        guildState.inventory = guildState.inventory.filter(i => i.id !== id);
+      }
+
+      guildState.transactions.unshift({
+        desc: `Venda de ${item.name}`,
+        value: payout,
+        type: 'income',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast(`Item vendido por T$ ${payout}! Moedas creditadas no cofre.`);
+    }
+
+    // Coleta de Lucro da Taverna (Negócio T20)
+    function collectTavernProfit() {
+      const roll = Math.floor(Math.random() * 6 + 1);
+      const profit = roll * 300;
+      guildState.wallet.TO += profit;
+
+      guildState.transactions.unshift({
+        desc: `Lucros mensais da Taverna do Javali Saltitante`,
+        value: profit,
+        type: 'income',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast(`Taverna rendeu T$ ${profit} (Dado 1d6: ${roll})!`);
+    }
+
+    // Pagar Manutenção de Base
+    function payBaseMaintenanceDirect() {
+      if (guildState.wallet.TO < 500) {
+        showToast("Saldo de ouro insuficiente para pagar a manutenção!");
+        return;
+      }
+
+      guildState.wallet.TO -= 500;
+      guildState.transactions.unshift({
+        desc: "Manutenção mensal da Fortaleza da Lança de Aço",
+        value: -500,
+        type: 'expense',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast("Manutenção de T$ 500 quitada com sucesso!");
+    }
+
+    // Pagar Folha Salarial
+    function payPayrollDirect() {
+      if (guildState.wallet.TO < 450) {
+        showToast("Saldo de ouro insuficiente para a folha salarial!");
+        return;
+      }
+
+      guildState.wallet.TO -= 450;
+      guildState.transactions.unshift({
+        desc: "Pagamento da folha salarial dos servos e aliados",
+        value: -450,
+        type: 'expense',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast("Folha salarial de T$ 450 paga a todos os servos!");
+    }
+
+    // Avançar Calendário
+    function advanceDays(days) {
+      guildState.calendar.day += days;
+      while (guildState.calendar.day > 30) {
+        guildState.calendar.day -= 30;
+        guildState.calendar.monthIndex = (guildState.calendar.monthIndex + 1) % 12;
+        if (guildState.calendar.monthIndex === 0) {
+          guildState.calendar.year += 1;
+        }
+
+        guildState.chronicles.unshift({
+          title: `Virada do Mês de ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}, ${guildState.calendar.year}`,
+          text: `Os registros da chancelaria foram consolidados na virada do ciclo lunar artoniano.`
+        });
+      }
+
+      playAudioEffect('paper');
+      renderUI();
+      showToast(`O tempo avançou ${days} dia(s) em Arton!`);
+    }
+
+    // Receber Caravana
+    function resolveMerchantCaravan() {
+      guildState.domain.treasuryLO += 350;
+      playAudioEffect('coin');
+      renderUI();
+      showToast("A Caravana de Yuvalin chegou ao destino! +350 LO recolhidos.");
+    }
+
+    // Concluir Quest
+    function completeQuestReward(reward, questName) {
+      guildState.wallet.TO += reward;
+      guildState.transactions.unshift({
+        desc: `Recompensa: ${questName}`,
+        value: reward,
+        type: 'income',
+        date: `${guildState.calendar.day} ${ARTON_MONTH_NAMES[guildState.calendar.monthIndex]}`
+      });
+
+      guildState.chronicles.unshift({
+        title: `Feito Heroico: ${questName}`,
+        text: `A guilda completou com glória a demanda, recebendo as honras e T$ ${reward.toLocaleString('pt-BR')}.`
+      });
+
+      playAudioEffect('coin');
+      renderUI();
+      showToast(`Missão cumprida! Recompensa de T$ ${reward} creditada no cofre.`);
+    }
+
+    // Interagir com NPC
+    function interactNpcAffinity(npc) {
+      if (guildState.npcs[npc].affinity < 7) {
+        guildState.npcs[npc].affinity += 1;
+        playAudioEffect('quill');
+        renderUI();
+        showToast(`Afinidade aumentada para ${guildState.npcs[npc].affinity} PA!`);
+      } else {
+        showToast("Afinidade já está no teto de 7 PA!");
+      }
+    }
+
+    function triggerUltimateQuest() {
+      playAudioEffect('wax');
+      showToast("Última Demanda de Mestre Elíseo cumprida com glória eterna!");
+    }
+
+    // Transferir Ouro para Membro
+    function transferToMember(member, amount) {
+      if (guildState.wallet.TO < amount) {
+        showToast("Saldo da guilda insuficiente!");
+        return;
+      }
+      guildState.wallet.TO -= amount;
+      guildState.members[member].gold += amount;
+      playAudioEffect('coin');
+      renderUI();
+      showToast(`T$ ${amount} transferidos para a carteira pessoal.`);
+    }
+
+    function spendDivinePoint(member) {
+      if (guildState.members[member].divine > 0) {
+        guildState.members[member].divine -= 1;
+        playAudioEffect('wax');
+        renderUI();
+        showToast("Bênção divina canalizada com sucesso (1 PD gasto)!");
+      } else {
+        showToast("Sem pontos divinos restantes!");
+      }
+    }
+
+    // =========================================================================
+    // 4. NAVEGAÇÃO ENTRE TELAS DO ROLO
+    // =========================================================================
+    function navigateScreen(screenId) {
+      document.querySelectorAll('.screen-view').forEach(s => s.style.display = 'none');
+      const target = document.querySelector(`#screen-${screenId}`);
+      if (target) {
+        target.style.display = 'block';
+        window.scrollTo({ top: 180, behavior: 'smooth' });
+      }
+
+      document.querySelectorAll('.nav-ribbon-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(screenId));
+      });
+
+      playAudioEffect('paper');
+    }
+
+    // Atalhos dos Selos Pendentes
+    function triggerPendantAction(action) {
+      if (action === 'governar') navigateScreen('dominios');
+      else if (action === 'pagar') payPayrollDirect();
+      else if (action === 'tempo') advanceDays(30);
+    }
+
+    // =========================================================================
+    // 5. TOAST & ÁUDIO DIEGÉTICO SINTETIZADO (WEB AUDIO API)
+    // =========================================================================
+    function showToast(msg) {
+      const toast = document.querySelector('#toastNotification');
+      const msgEl = document.querySelector('#toastMessage');
+      if (toast && msgEl) {
+        msgEl.textContent = msg;
+        toast.style.display = 'flex';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3200);
+      }
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playAudioEffect(type) {
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'coin') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, now);
+        osc.frequency.exponentialRampToValueAtTime(750, now + 0.12);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      } else if (type === 'wax') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      } else if (type === 'paper') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.16);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } else if (type === 'quill') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(750, now);
+        osc.frequency.linearRampToValueAtTime(1100, now + 0.1);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+        osc.start(now);
+        osc.stop(now + 0.13);
+      }
+    }
+
+    // Alternador de Iluminação (Luz de Velas / Luz do Trono)
+    function toggleCandleIllumination() {
+      const isDark = document.body.classList.toggle('dark');
+      const icon = document.querySelector('#candleIcon');
+      const label = document.querySelector('#candleLabel');
+      if (isDark) {
+        if (icon) icon.textContent = '🕯️';
+        if (label) label.textContent = 'Luz de Velas';
+      } else {
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Luz do Trono';
+      }
+      playAudioEffect('wax');
+    }
+
+    // Movimento da Vela pelo Mouse
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      document.documentElement.style.setProperty('--candle-x', `${x}%`);
+      document.documentElement.style.setProperty('--candle-y', `${y}%`);
+    });
+
+    // Inicialização ao carregar
+    window.addEventListener('DOMContentLoaded', () => {
+      renderUI();
+    });
+  </script>
+</body>
+</html>
