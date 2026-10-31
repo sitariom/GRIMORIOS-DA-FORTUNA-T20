@@ -20,8 +20,8 @@ O script de testes principal (`npm test`) DEVE (MUST) incluir a execução autom
 O sistema DEVE (MUST) possuir uma suíte de testes unitários dedicada (`tests/financialActions.test.ts`) cobrindo as paridades monetárias canônicas de Tormenta20 e a integridade matemática da carteira da guilda.
 
 #### Scenario: Validação Rigorosa de Câmbio de Moedas T20
-- **WHEN** Uma conversão de moedas for simulada entre qualquer par de denominações (TC, TP, TO, TL)
-- **THEN** Os saldos resultantes devem corresponder estritamente às razões oficiais (1 TO = 10 TP = 100 TC; 1 TL = 1.000 TO), garantindo que nenhum valor seja perdido por arredondamento
+- **WHEN** Uma conversão de moedas for simulada entre qualquer par de denominações (TC, TS, TO, LO)
+- **THEN** Os saldos resultantes devem corresponder estritamente às razões oficiais (1 TO = 10 TS = 100 TC; 1 LO = 1.000 TS = 100 TO), garantindo que nenhum valor seja perdido por arredondamento
 
 #### Scenario: Rejeição de Saques sem Fundos Disponíveis
 - **WHEN** Uma tentativa de saque com valor superior ao saldo líquido na moeda especificada for submetida
