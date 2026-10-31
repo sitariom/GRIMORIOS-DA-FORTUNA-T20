@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
         onClick={toggle}
       />
 
-      <aside className={`fixed md:static inset-y-0 left-0 w-80 max-w-[85vw] bg-[#1e140d] dark:bg-black border-r-8 border-[#3d2b1f] z-50 transform transition-all duration-500 md:transform-none ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} flex flex-col`}>
+      <aside className={`fixed md:static inset-y-0 left-0 w-80 max-w-[85vw] md:max-w-none bg-[#1e140d] dark:bg-black border-r-8 border-[#3d2b1f] z-50 transition-all duration-500 md:translate-x-0 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} flex flex-col`}>
         <div className="pt-12 pb-8 px-8 border-b-4 border-[#3d2b1f] relative bg-black/10">
           <button 
             onClick={toggleTheme}
