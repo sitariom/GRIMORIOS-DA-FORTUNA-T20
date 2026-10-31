@@ -160,20 +160,20 @@ const DashboardPage: React.FC = () => {
              <Sparkles size={300}/>
           </div>
 
-          <div className="relative p-8 md:p-14 flex flex-col justify-end min-h-[280px] md:min-h-[400px]">
+          <div className="relative p-5 sm:p-8 md:p-14 flex flex-col justify-end min-h-[240px] sm:min-h-[280px] md:min-h-[400px]">
             <div className="space-y-2">
-               <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-fantasy-gold/10 flex items-center justify-center border border-fantasy-gold/20 backdrop-blur-sm shadow-[0_0_15px_rgba(212,175,55,0.1)]">
-                    <Shield size={20} className="text-fantasy-gold" />
+               <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-fantasy-gold/10 flex items-center justify-center border border-fantasy-gold/20 backdrop-blur-sm shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+                    <Shield size={18} className="text-fantasy-gold" />
                   </div>
-                  <span className="text-fantasy-gold/80 font-bold uppercase tracking-[0.3em] text-[10px] md:text-sm">
+                  <span className="text-fantasy-gold/80 font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-xs md:text-sm">
                     Relatório de Gestão Integrada
                   </span>
                </div>
-               <h2 className="text-fantasy-parchment/80 font-medieval text-xl md:text-3xl tracking-widest uppercase border-l-4 border-fantasy-gold/50 pl-4 py-1 text-shadow-lg">
+               <h2 className="text-fantasy-parchment/80 font-medieval text-lg sm:text-xl md:text-3xl tracking-widest uppercase border-l-4 border-fantasy-gold/50 pl-3 sm:pl-4 py-1 text-shadow-lg break-words">
                  {guildName}
                </h2>
-               <h1 className="text-4xl md:text-7xl font-medieval text-white tracking-tight leading-none drop-shadow-2xl mt-4">
+               <h1 className="text-3xl sm:text-4xl md:text-7xl font-medieval text-white tracking-tight leading-none drop-shadow-2xl mt-3 sm:mt-4">
                  Visão <span className="text-transparent bg-clip-text bg-gradient-to-r from-fantasy-gold via-yellow-200 to-fantasy-gold">Estratégica</span>
                </h1>
             </div>
@@ -188,7 +188,7 @@ const DashboardPage: React.FC = () => {
           { label: 'Dia da Campanha', val: `Dia ${calendar.day}`, icon: Calendar, color: 'text-indigo-900 dark:text-indigo-400', border: 'border-indigo-900/30' },
           { label: 'Missões Ativas', val: activeQuests.length, icon: Sword, color: 'text-emerald-900 dark:text-emerald-500', border: 'border-emerald-900/30' },
         ].map((kpi, i) => (
-          <AnimatedCard key={i} delay={i * 100} className={`parchment-card p-6 md:p-8 rounded-[32px] relative overflow-hidden group border-b-[6px] ${kpi.border}`}>
+          <AnimatedCard key={i} delay={i * 100} className={`parchment-card p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] relative overflow-hidden group border-b-[6px] ${kpi.border}`}>
              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <kpi.icon size={64} className="text-black dark:text-white"/>
              </div>
@@ -209,7 +209,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* SECTION: FLUXO DE CAIXA */}
-      <div className="parchment-card p-8 md:p-10 rounded-[40px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
+      <div className="parchment-card p-4 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
          <div className="flex justify-between items-center mb-8 border-b-2 border-fantasy-wood/10 dark:border-white/10 pb-4">
              <h3 className="font-medieval text-2xl md:text-3xl text-fantasy-wood dark:text-fantasy-parchment flex items-center gap-4">
                 <div className="p-2 bg-emerald-800/10 dark:bg-emerald-400/10 rounded-lg"><Activity size={24} className="text-emerald-800 dark:text-emerald-400"/></div>
@@ -294,16 +294,16 @@ const DashboardPage: React.FC = () => {
                           )}
                       </div>
                       {isAdmin ? (
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                               <button 
                                   onClick={() => advanceDate(1)} 
-                                  className="flex-1 py-3 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 border-yellow-800"
+                                  className="w-full sm:flex-1 py-3 bg-fantasy-gold hover:bg-yellow-500 text-black rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 border-yellow-800"
                               >
                                   Avançar Dia (+1 Dia)
                               </button>
                               <button 
                                   onClick={() => toggleNimbDay(!calendar.isNimbDay)} 
-                                  className={`flex-1 py-3 rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 ${
+                                  className={`w-full sm:flex-1 py-3 rounded-xl font-medieval text-xs uppercase tracking-wider font-bold shadow-md hover:scale-105 active:scale-95 transition-all border-b-2 ${
                                       calendar.isNimbDay 
                                           ? 'bg-red-800 text-white border-red-950 hover:bg-red-700' 
                                           : 'bg-black/25 hover:bg-black/40 text-fantasy-gold border-fantasy-gold/20'

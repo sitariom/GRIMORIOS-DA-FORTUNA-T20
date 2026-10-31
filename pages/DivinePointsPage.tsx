@@ -59,24 +59,24 @@ const DivinePointsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex justify-between items-end mb-6 border-b-2 border-fantasy-gold/30 pb-4">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6 border-b-2 border-fantasy-gold/30 pb-4">
         <div>
-          <h1 className="text-4xl font-medieval text-fantasy-gold">Pontos Divinos</h1>
-          <p className="text-fantasy-wood/80 dark:text-fantasy-parchment/80 mt-2 max-w-2xl">
+          <h1 className="text-3xl sm:text-4xl font-medieval text-fantasy-gold">Pontos Divinos</h1>
+          <p className="text-sm sm:text-base text-fantasy-wood/80 dark:text-fantasy-parchment/80 mt-2 max-w-2xl">
             Gerencie o favor dos Deuses. Conceda pontos com base no comportamento em masmorras e gaste-os para obter milagres heroicos na exploração.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto justify-between md:justify-end">
           {activeMembers.length > 0 && (
-            <div className="flex items-center gap-2 bg-fantasy-gold/10 px-4 py-2 rounded-full border border-fantasy-gold/20">
-              <Sparkles size={18} className="text-fantasy-gold" />
-              <span className="transition-all duration-1000 font-bold text-fantasy-gold text-lg">{totalDivinePoints}</span>
-              <span className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 text-sm">PD Total</span>
+            <div className="flex items-center gap-2 bg-fantasy-gold/10 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-fantasy-gold/20">
+              <Sparkles size={16} className="text-fantasy-gold" />
+              <span className="transition-all duration-1000 font-bold text-fantasy-gold text-base sm:text-lg">{totalDivinePoints}</span>
+              <span className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 text-xs sm:text-sm">PD Total</span>
             </div>
           )}
           <button 
             onClick={() => setShowRules(!showRules)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2a1b14] hover:bg-[#3d2b1f] border border-fantasy-gold/30 rounded-lg text-fantasy-gold transition-colors text-sm font-bold shadow active:scale-95"
+            className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-[#2a1b14] hover:bg-[#3d2b1f] border border-fantasy-gold/30 rounded-lg text-fantasy-gold transition-colors text-xs sm:text-sm font-bold shadow active:scale-95"
           >
             <Info size={16} /> Ver Regras e Usos
           </button>
@@ -103,15 +103,15 @@ const DivinePointsPage: React.FC = () => {
         </div>
       )}
 
-      <div className="flex gap-4 mb-6">
-        <button onClick={() => handleAddAll(1)} className="px-4 py-2 bg-blue-900/20 hover:bg-blue-900/40 text-blue-500 border border-blue-900/30 rounded-lg flex items-center gap-2 font-bold shadow transition-colors active:scale-95">
-          <Plus size={18} /> Todos: +1 PD
+      <div className="flex flex-wrap gap-2.5 sm:gap-4 mb-6">
+        <button onClick={() => handleAddAll(1)} className="flex-1 sm:flex-none justify-center px-3.5 py-2 sm:px-4 bg-blue-900/20 hover:bg-blue-900/40 text-blue-500 border border-blue-900/30 rounded-lg flex items-center gap-2 text-xs sm:text-sm font-bold shadow transition-colors active:scale-95">
+          <Plus size={16} /> Todos: +1 PD
         </button>
-        <button onClick={() => handleAddAll(2)} className="px-4 py-2 bg-purple-900/20 hover:bg-purple-900/40 text-purple-400 border border-purple-900/30 rounded-lg flex items-center gap-2 font-bold shadow transition-colors active:scale-95">
-          <Plus size={18} /> Todos: +2 PD
+        <button onClick={() => handleAddAll(2)} className="flex-1 sm:flex-none justify-center px-3.5 py-2 sm:px-4 bg-purple-900/20 hover:bg-purple-900/40 text-purple-400 border border-purple-900/30 rounded-lg flex items-center gap-2 text-xs sm:text-sm font-bold shadow transition-colors active:scale-95">
+          <Plus size={16} /> Todos: +2 PD
         </button>
-        <button onClick={handleResetAll} className="px-4 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-900/30 rounded-lg flex items-center gap-2 font-bold shadow transition-colors ml-auto active:scale-95">
-          <RefreshCw size={18} /> Zerar Todos
+        <button onClick={handleResetAll} className="w-full sm:w-auto justify-center px-3.5 py-2 sm:px-4 bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-900/30 rounded-lg flex items-center gap-2 text-xs sm:text-sm font-bold shadow transition-colors sm:ml-auto active:scale-95">
+          <RefreshCw size={16} /> Zerar Todos
         </button>
       </div>
 

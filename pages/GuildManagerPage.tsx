@@ -103,10 +103,10 @@ const GuildManagerPage: React.FC = () => {
     <div className="space-y-12 max-w-6xl mx-auto font-serif pb-20 animate-fade-in">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Salão das Guildas</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Salão das Guildas</h2>
           <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Selecione seu estandarte ou funde uma nova ordem.</p>
         </div>
-        <div className="flex gap-4 w-full md:w-auto items-center">
+        <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 w-full md:w-auto items-center">
             {isAdmin ? (
                 <>
                     <button onClick={() => setShowAdminPanel(true)} className="flex items-center gap-2 text-fantasy-gold hover:text-white px-4 py-2 border border-fantasy-gold/20 rounded-xl transition-all text-xs font-black uppercase tracking-widest active:scale-95">
@@ -129,21 +129,21 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Active Session Card */}
       {isAuthenticated && (
-          <div className="parchment-card p-8 rounded-[40px] border-4 border-emerald-600/30 bg-emerald-900/5 shadow-2xl mb-10 animate-slide-up">
-              <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-6">
-                      <div className="wax-seal w-16 h-16 flex items-center justify-center animate-pulse"><Check size={32} className="text-white"/></div>
+          <div className="parchment-card p-5 sm:p-8 rounded-[28px] sm:rounded-[40px] border-4 border-emerald-600/30 bg-emerald-900/5 shadow-2xl mb-10 animate-slide-up">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                      <div className="wax-seal w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center animate-pulse shrink-0"><Check size={24} className="text-white sm:scale-125"/></div>
                       <div>
-                          <p className="text-xs font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest">Sessão Ativa</p>
-                          <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{guildName}</h3>
+                          <p className="text-[10px] sm:text-xs font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 tracking-widest">Sessão Ativa</p>
+                          <h3 className="text-xl sm:text-3xl font-medieval text-fantasy-wood dark:text-fantasy-parchment break-words">{guildName}</h3>
                       </div>
                   </div>
-                  <div className="flex gap-4">
-                      <button onClick={() => navigate('/')} className="bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black px-6 py-3 rounded-xl font-medieval uppercase tracking-widest hover:scale-105 transition-transform active:scale-95">
+                  <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
+                      <button onClick={() => navigate('/')} className="flex-1 sm:flex-none bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medieval text-xs sm:text-base uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 text-center">
                           Acessar Painel
                       </button>
-                      <button onClick={logout} className="bg-red-900/10 text-red-800 dark:text-red-400 p-3 rounded-xl hover:bg-red-900/20 transition-colors active:scale-95" title="Sair (Logout)">
-                          <LogOut size={24}/>
+                      <button onClick={logout} className="bg-red-900/10 text-red-800 dark:text-red-400 p-2.5 sm:p-3 rounded-xl hover:bg-red-900/20 transition-colors active:scale-95" title="Sair (Logout)">
+                          <LogOut size={20}/>
                       </button>
                   </div>
               </div>
@@ -213,8 +213,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Guild Login */}
       {showLogin && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 rounded-[32px] sm:rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowLogin(null)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={24}/></button>
                   <div className="text-center mb-8">
                       <div className="wax-seal w-16 h-16 mx-auto mb-4 flex items-center justify-center text-white"><Key size={32}/></div>
@@ -233,8 +233,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Admin Login */}
       {showAdminLogin && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-red-900/30 shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 rounded-[32px] sm:rounded-[48px] w-full max-w-md border-4 border-red-900/30 shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowAdminLogin(false)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={24}/></button>
                   <div className="text-center mb-8">
                       <div className="wax-seal w-16 h-16 mx-auto mb-4 flex items-center justify-center text-white bg-red-900 border-red-950"><Settings size={32}/></div>
@@ -253,8 +253,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Admin Settings Panel */}
       {showAdminPanel && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 rounded-[32px] sm:rounded-[48px] w-full max-w-md border-4 border-fantasy-gold/30 shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowAdminPanel(false)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={24}/></button>
                   <h3 className="text-3xl font-medieval text-center mb-8 text-fantasy-wood dark:text-fantasy-parchment">Configuração Admin</h3>
                   <form onSubmit={handleChangeAdminPass} className="space-y-6">
@@ -274,8 +274,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Reset Guild Password Modal */}
       {showResetGuild && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-10 rounded-[48px] w-full max-w-md border-4 border-amber-500/30 shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 rounded-[32px] sm:rounded-[48px] w-full max-w-md border-4 border-amber-500/30 shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowResetGuild(null)} className="absolute top-6 right-6 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={24}/></button>
                   <h3 className="text-3xl font-medieval text-center mb-8 text-fantasy-wood dark:text-fantasy-parchment">Redefinir Acesso</h3>
                   <form onSubmit={handleResetGuildPass} className="space-y-6">
@@ -292,8 +292,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Create Modal */}
       {showCreate && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-12 rounded-[56px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 md:p-12 rounded-[32px] sm:rounded-[48px] md:rounded-[56px] w-full max-w-lg border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={28}/></button>
                   <h3 className="text-4xl font-medieval text-center mb-10 text-fantasy-wood dark:text-fantasy-gold">Fundar Nova Ordem</h3>
                   <form onSubmit={handleCreate} className="space-y-6">
@@ -313,8 +313,8 @@ const GuildManagerPage: React.FC = () => {
 
       {/* Import Modal */}
       {showImport && (
-          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d] z-[200] flex items-center justify-center p-4 animate-fade-in">
-              <div className="parchment-card p-12 rounded-[56px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 w-screen h-[100dvh] bg-[#0d0d0d]/90 backdrop-blur-sm z-[200] flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 md:p-12 rounded-[32px] sm:rounded-[48px] md:rounded-[56px] w-full max-w-lg border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowImport(false)} className="absolute top-10 right-10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-wood dark:hover:text-fantasy-parchment transition-colors active:scale-95"><X size={28}/></button>
                   <h3 className="text-4xl font-medieval text-center mb-10 text-fantasy-wood dark:text-fantasy-gold">Importar Registro</h3>
                   <form onSubmit={handleImport} className="space-y-6">

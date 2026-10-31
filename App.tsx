@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { GuildProvider, useGuild } from './context/GuildContext';
 import Sidebar from './components/Sidebar';
 import Logo from './components/Logo';
-import { Menu, AlertTriangle, Scroll, Loader } from 'lucide-react';
+import { Menu, AlertTriangle, Scroll, Loader, Sun, Moon } from 'lucide-react';
 
 const FinancialPage = React.lazy(() => import('./pages/FinancialPage'));
 const CashFlowPage = React.lazy(() => import('./pages/CashFlowPage'));
@@ -112,11 +112,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <Logo size="xs" />
              </div>
              
-             <div className="w-10"></div> 
+             <button 
+               onClick={toggleTheme} 
+               className="relative z-10 text-fantasy-gold p-2 hover:bg-white/5 rounded-lg transition-colors"
+               title={theme === 'light' ? 'Grimório de Sombras' : 'Pergaminho de Luz'}
+             >
+               {theme === 'light' ? <Moon size={22}/> : <Sun size={22}/>}
+             </button> 
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-16 custom-scrollbar bg-fantasy-parchment dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-3.5 sm:p-6 md:p-12 lg:p-16 custom-scrollbar bg-fantasy-parchment dark:bg-black bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] transition-colors duration-500 scroll-smooth">
           <div className="max-w-7xl mx-auto h-full">
             {isLoading ? <LoadingScreen /> : children}
           </div>

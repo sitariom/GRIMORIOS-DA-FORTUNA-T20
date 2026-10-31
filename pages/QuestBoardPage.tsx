@@ -103,47 +103,47 @@ const QuestBoardPage: React.FC = () => {
   });
 
   const questModal = modalMode && (
-    <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
-      <div className="parchment-card p-10 rounded-[50px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
-        <div className="text-center mb-8">
-          <div className="wax-seal w-20 h-20 mx-auto mb-4 flex items-center justify-center text-white"><CheckSquare size={40}/></div>
-          <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'edit' ? 'Editar Contrato' : 'Novo Contrato'}</h3>
+    <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-3 sm:p-4 backdrop-blur-xl animate-fade-in overflow-y-auto">
+      <div className="parchment-card p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[50px] w-full max-w-2xl border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[92dvh] overflow-y-auto custom-scrollbar my-auto">
+        <button onClick={closeModal} className="absolute top-4 right-4 sm:top-8 sm:right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 sm:p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={20} className="sm:scale-125"/></button>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="wax-seal w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 flex items-center justify-center text-white shrink-0"><CheckSquare size={28} className="sm:scale-125"/></div>
+          <h3 className="text-2xl sm:text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'edit' ? 'Editar Contrato' : 'Novo Contrato'}</h3>
         </div>
-        <form onSubmit={handleSave} className="space-y-6">
-          <div className="space-y-2">
+        <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
+          <div className="space-y-1.5 sm:space-y-2">
             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Título da Missão</label>
-            <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" required value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: A Besta de Smokestone" />
+            <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[24px] px-4 sm:px-6 py-3 sm:py-4 font-medieval text-base sm:text-xl" required value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: A Besta de Smokestone" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Descrição / Objetivos</label>
-            <textarea className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-serif text-lg h-32 resize-none" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Detalhes do contrato..." />
+            <textarea className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[24px] px-4 sm:px-6 py-3 sm:py-4 font-serif text-base sm:text-lg h-24 sm:h-32 resize-none" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Detalhes do contrato..." />
           </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-1.5 sm:space-y-2">
               <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (Ouro)</label>
               <div className="flex gap-2">
-                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
-                <select className="bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-4 py-4 font-medieval text-lg outline-none cursor-pointer" value={newCurrency} onChange={e => setNewCurrency(e.target.value as CurrencyType)}>
+                <input type="number" min="0" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[24px] px-4 sm:px-6 py-3 sm:py-4 font-medieval text-base sm:text-xl" value={newGold} onChange={e => setNewGold(Number(e.target.value))} />
+                <select className="bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[24px] px-3 sm:px-4 py-3 sm:py-4 font-medieval text-base sm:text-lg outline-none cursor-pointer" value={newCurrency} onChange={e => setNewCurrency(e.target.value as CurrencyType)}>
                   {['TC', 'TS', 'TO', 'LO'].map(c => <option key={c} value={c} className="dark:bg-black">{c}</option>)}
                 </select>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Recompensa (XP / Itens)</label>
-              <input type="text" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[24px] px-6 py-4 font-medieval text-xl" value={newXP} onChange={e => setNewXP(e.target.value)} placeholder="Ex: 500 XP, Espada mágica" />
+              <input type="text" className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[24px] px-4 sm:px-6 py-3 sm:py-4 font-medieval text-base sm:text-xl" value={newXP} onChange={e => setNewXP(e.target.value)} placeholder="Ex: 500 XP, Espada mágica" />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Membros Ativos Alocados</label>
-            <div className="flex flex-wrap gap-2 bg-black/5 dark:bg-black/20 p-4 rounded-[24px] border border-fantasy-wood/10 dark:border-white/10 max-h-40 overflow-y-auto">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 bg-black/5 dark:bg-black/20 p-3 sm:p-4 rounded-[20px] sm:rounded-[24px] border border-fantasy-wood/10 dark:border-white/10 max-h-36 sm:max-h-40 overflow-y-auto">
               {activeMembers.length === 0 && <p className="text-xs text-fantasy-wood/40 italic px-2">Nenhum aventureiro ativo disponível.</p>}
               {activeMembers.map(m => (
-                <button key={m.id} type="button" onClick={() => toggleMemberAssign(m.id)} className={`px-4 py-2 rounded-full text-xs font-bold transition-all border active:scale-95 ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}>{m.name}</button>
+                <button key={m.id} type="button" onClick={() => toggleMemberAssign(m.id)} className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all border active:scale-95 ${assignedIds.includes(m.id) ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black border-transparent' : 'bg-white/10 text-fantasy-wood/60 dark:text-fantasy-parchment/60 border-fantasy-wood/10 dark:border-white/10'}`}>{m.name}</button>
               ))}
             </div>
           </div>
-          <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[40px] font-medieval text-2xl uppercase tracking-widest shadow-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all active:scale-95">{modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}</button>
+          <button type="submit" className="w-full bg-fantasy-blood text-white py-4 sm:py-6 rounded-[28px] sm:rounded-[40px] font-medieval text-xl sm:text-2xl uppercase tracking-widest shadow-xl border-b-6 sm:border-b-8 border-red-950 active:translate-y-2 active:border-b-0 transition-all active:scale-95">{modalMode === 'edit' ? 'Salvar Alterações' : 'Publicar Missão'}</button>
         </form>
       </div>
     </div>
@@ -190,20 +190,20 @@ const QuestBoardPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20 font-serif h-full flex flex-col">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 shrink-0">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Quadro de Missões</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Desafios, contratos e jornadas heróicas.</p>
         </div>
-        <button onClick={openCreateModal} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
-           <Plus size={24} /> Nova Missão
+        <button onClick={openCreateModal} className="w-full md:w-auto justify-center bg-fantasy-blood hover:bg-red-700 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-2 sm:gap-3 font-medieval text-xs sm:text-base uppercase tracking-wider sm:tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
+           <Plus size={20} /> Nova Missão
         </button>
       </header>
 
       <div className="flex-1 overflow-x-auto pb-8 custom-scrollbar">
           <div className="flex gap-6 min-w-max h-full">
               {STATUS_COLUMNS.map(col => (
-                  <div key={col.id} className={`w-80 md:w-96 flex-shrink-0 flex flex-col rounded-[32px] border-2 ${col.color} p-4 backdrop-blur-sm`}
+                  <div key={col.id} className={`w-72 sm:w-80 md:w-96 flex-shrink-0 flex flex-col rounded-[24px] sm:rounded-[32px] border-2 ${col.color} p-3 sm:p-4 backdrop-blur-sm`}
                     onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'rgba(251,191,36,0.5)'; }}
                     onDragLeave={e => { e.currentTarget.style.borderColor = ''; }}
                     onDrop={e => {
