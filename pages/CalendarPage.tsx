@@ -85,39 +85,39 @@ const CalendarPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20 font-serif">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Calendário Artoniano</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">A passagem das eras e o fluxo do tempo.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Calendário Artoniano</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">A passagem das eras e o fluxo do tempo.</p>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 md:gap-12">
           {/* Main Calendar Display */}
-          <div className={`parchment-card p-12 rounded-[60px] border-4 shadow-5xl flex flex-col items-center justify-center text-center relative overflow-hidden group transition-all duration-700 ${isNimbDay ? 'border-purple-600/50 bg-purple-900/10' : 'border-fantasy-gold/20'}`}>
+          <div className={`parchment-card p-6 sm:p-10 md:p-12 rounded-[32px] sm:rounded-[60px] border-4 shadow-5xl flex flex-col items-center justify-center text-center relative overflow-hidden group transition-all duration-700 ${isNimbDay ? 'border-purple-600/50 bg-purple-900/10' : 'border-fantasy-gold/20'}`}>
               <div className={`absolute inset-0 opacity-10 animate-pulse pointer-events-none ${isNimbDay ? "bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" : "bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"}`}></div>
               
               {!isNimbDay && (
-                  <div className="mb-4 inline-block px-6 py-2 bg-fantasy-wood/10 dark:bg-white/10 rounded-full border border-fantasy-wood/20 dark:border-white/20">
-                      <span className="text-xs font-black uppercase tracking-[0.4em] text-fantasy-wood/60 dark:text-fantasy-parchment/60">{season}</span>
+                  <div className="mb-4 inline-block px-4 sm:px-6 py-1.5 sm:py-2 bg-fantasy-wood/10 dark:bg-white/10 rounded-full border border-fantasy-wood/20 dark:border-white/20">
+                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-fantasy-wood/60 dark:text-fantasy-parchment/60">{season}</span>
                   </div>
               )}
 
               {isNimbDay ? (
                   <div className="flex flex-col items-center animate-bounce-in">
-                      <Dices size={80} className="text-purple-600 dark:text-purple-400 mb-6 animate-spin-slow"/>
-                      <span className="text-6xl md:text-8xl font-medieval text-purple-800 dark:text-purple-300 drop-shadow-lg tracking-tighter uppercase">Dia de Nimb</span>
-                      <p className="text-xl font-serif italic text-purple-900/60 dark:text-purple-200/60 mt-4">"Onde a lógica falha e a sorte impera."</p>
+                      <Dices size={64} className="text-purple-600 dark:text-purple-400 mb-4 sm:mb-6 animate-spin-slow"/>
+                      <span className="text-4xl sm:text-6xl md:text-8xl font-medieval text-purple-800 dark:text-purple-300 drop-shadow-lg tracking-tighter uppercase">Dia de Nimb</span>
+                      <p className="text-base sm:text-xl font-serif italic text-purple-900/60 dark:text-purple-200/60 mt-3 sm:mt-4">"Onde a lógica falha e a sorte impera."</p>
                   </div>
               ) : (
                   <>
                       <div className="flex items-baseline gap-2 mb-2">
-                          <span className="text-8xl font-medieval text-fantasy-wood dark:text-fantasy-gold drop-shadow-lg">{day}</span>
-                          <span className="text-2xl font-medieval text-fantasy-wood/50 dark:text-fantasy-parchment/50">de</span>
+                          <span className="text-6xl sm:text-8xl font-medieval text-fantasy-wood dark:text-fantasy-gold drop-shadow-lg">{day}</span>
+                          <span className="text-xl sm:text-2xl font-medieval text-fantasy-wood/50 dark:text-fantasy-parchment/50">de</span>
                       </div>
                       
-                      <h3 className="text-5xl font-medieval text-fantasy-wood dark:text-fantasy-parchment mb-4 uppercase tracking-tight">{currentMonthName}</h3>
-                      <p className="text-xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60">{year} DE</p>
+                      <h3 className="text-3xl sm:text-5xl font-medieval text-fantasy-wood dark:text-fantasy-parchment mb-3 sm:mb-4 uppercase tracking-tight">{currentMonthName}</h3>
+                      <p className="text-lg sm:text-xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60">{year} DE</p>
                       
                       <div className="mt-8 flex items-center gap-3">
                           <Sun className="text-fantasy-gold animate-spin-slow" size={24}/>
@@ -131,7 +131,7 @@ const CalendarPage: React.FC = () => {
           {/* Controls - Admin Only */}
           {isAdmin ? (
               <div className="flex flex-col gap-6">
-                  <div className="parchment-card p-10 rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-xl bg-black/5 dark:bg-black/20">
+                  <div className="parchment-card p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-xl bg-black/5 dark:bg-black/20">
                       <div className="flex justify-between items-center mb-6">
                           <h4 className="text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment flex items-center gap-3"><Clock size={24}/> Controle Temporal</h4>
                           <button onClick={openEdit} className="p-2 bg-fantasy-wood/10 dark:bg-white/10 rounded-full hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment" title="Ajuste Manual">
@@ -187,8 +187,8 @@ const CalendarPage: React.FC = () => {
       </div>
 
       {/* Month Grid */}
-      <div className="parchment-card p-8 rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="parchment-card p-4 sm:p-6 md:p-8 rounded-[28px] sm:rounded-[40px] border-2 border-fantasy-wood/10 dark:border-white/10 shadow-xl">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <button
             onClick={goToPrevMonth}
             className="p-3 bg-white/40 dark:bg-white/5 border border-fantasy-wood/5 dark:border-white/5 rounded-xl hover:border-fantasy-wood/20 transition-all active:scale-95"
@@ -212,12 +212,12 @@ const CalendarPage: React.FC = () => {
           <>
             <div className="grid grid-cols-7 gap-1 mb-2">
               {ARTON_WEEKDAYS.map(wd => (
-                <div key={wd} className="text-center text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1">
+                <div key={wd} className="text-center text-[8px] sm:text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 py-1 truncate">
                   {wd}
                 </div>
               ))}
             </div>
-            <div key={`${browsingYear}-${browsingMonth}`} className="grid grid-cols-7 gap-1 animate-fade-in">
+            <div key={`${browsingYear}-${browsingMonth}`} className="grid grid-cols-7 gap-1 sm:gap-1.5 animate-fade-in">
               {Array.from({ length: firstDayOffset }).map((_, i) => (
                 <div key={`empty-${i}`} className="aspect-square" />
               ))}
@@ -228,9 +228,9 @@ const CalendarPage: React.FC = () => {
                 return (
                   <AnimatedCard
                     key={d}
-                    delay={i * 30}
+                    delay={i * 20}
                     onClick={() => setSelectedDay(d)}
-                    className={`aspect-square rounded-xl flex items-center justify-center font-medieval text-lg cursor-pointer transition-all border ${
+                    className={`aspect-square rounded-lg sm:rounded-xl flex items-center justify-center font-medieval text-xs sm:text-base md:text-lg cursor-pointer transition-all border ${
                       isToday
                         ? 'animate-pulse border-fantasy-gold bg-fantasy-gold/20 text-fantasy-gold shadow-[0_0_10px_rgba(212,175,55,0.3)]'
                         : isSelected
@@ -281,8 +281,8 @@ const CalendarPage: React.FC = () => {
 
       {/* Manual Set Modal */}
       {showEditModal && (
-          <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-              <div className="parchment-card p-10 rounded-[50px] w-full max-w-md border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
+          <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-6 sm:p-10 rounded-[32px] sm:rounded-[50px] w-full max-w-md border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in my-auto">
                   <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 rounded-full transition-colors"><X size={24}/></button>
                   
                   <div className="text-center mb-8">

@@ -731,21 +731,21 @@ const DomainsPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20 font-serif">
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-4xl md:text-6xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-3">Domínios Reais</h2>
-          <p className="text-xs md:text-lg text-fantasy-gold font-bold uppercase tracking-[0.3em]">Gestão de Territórios, Tropas e Regência.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2 sm:mb-3">Domínios Reais</h2>
+          <p className="text-xs sm:text-sm md:text-lg text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Gestão de Territórios, Tropas e Regência.</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5 sm:gap-3 w-full lg:w-auto">
           <button onClick={() => {
             resetAllDomainsTurns();
           }}
-            className="bg-fantasy-wood/10 hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment px-6 py-4 rounded-[32px] flex items-center gap-3 font-medieval uppercase tracking-widest text-sm border-2 border-fantasy-wood/20 transition-all active:scale-95">
-             <RotateCcw size={18} /> Reiniciar Turno
+            className="flex-1 lg:flex-none justify-center bg-fantasy-wood/10 hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment px-4 sm:px-6 py-3 sm:py-4 rounded-[24px] sm:rounded-[32px] flex items-center gap-2 sm:gap-3 font-medieval uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm border-2 border-fantasy-wood/20 transition-all active:scale-95">
+             <RotateCcw size={16} /> Reiniciar Turno
           </button>
           <button onClick={() => setShowAddModal(true)}
-            className="bg-fantasy-blood hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-6 rounded-[32px] flex items-center gap-4 font-medieval uppercase tracking-widest shadow-2xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
-             <LandPlot size={28} /> Conquistar Terras
+            className="flex-1 lg:flex-none justify-center bg-fantasy-blood hover:bg-red-700 text-white px-5 sm:px-8 md:px-12 py-3.5 sm:py-4 md:py-6 rounded-[24px] sm:rounded-[32px] flex items-center gap-2 sm:gap-4 font-medieval text-xs sm:text-base uppercase tracking-wider sm:tracking-widest shadow-2xl border-b-4 sm:border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0">
+             <LandPlot size={20} className="sm:scale-125" /> Conquistar Terras
           </button>
         </div>
       </header>
@@ -962,9 +962,9 @@ const DomainsPage: React.FC = () => {
 
       {/* Add Domain Modal */}
       {showAddModal && (
-         <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
-             <div className="parchment-card p-6 md:p-12 rounded-[40px] md:rounded-[56px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-                 <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 md:top-10 md:right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 md:p-3 bg-white/20 dark:bg-black/20 rounded-full"><X size={28}/></button>
+         <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-3 sm:p-4 backdrop-blur-xl animate-fade-in overflow-y-auto">
+             <div className="parchment-card p-5 sm:p-8 md:p-12 rounded-[28px] sm:rounded-[40px] md:rounded-[56px] w-full max-w-lg border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[92dvh] overflow-y-auto custom-scrollbar my-auto">
+                 <button onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-10 md:right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 md:p-3 bg-white/20 dark:bg-black/20 rounded-full"><X size={22} className="sm:scale-125"/></button>
                  
                  <div className="text-center mb-10">
                     <div className="wax-seal w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 flex items-center justify-center text-white"><LandPlot size={40}/></div>
@@ -1118,19 +1118,19 @@ const DomainsPage: React.FC = () => {
 
       {/* Action Modals */}
       {modalMode && activeDomain && (
-          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
-              <div className="parchment-card p-10 rounded-[60px] w-full max-w-2xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar">
-                  <button onClick={closeModal} className="absolute top-8 right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full"><X size={24}/></button>
+          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-3 sm:p-4 backdrop-blur-xl animate-fade-in overflow-y-auto">
+              <div className="parchment-card p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] md:rounded-[60px] w-full max-w-2xl border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[92dvh] overflow-y-auto custom-scrollbar my-auto">
+                  <button onClick={closeModal} className="absolute top-4 right-4 sm:top-8 sm:right-8 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 sm:p-3 bg-white/20 dark:bg-black/20 rounded-full"><X size={20} className="sm:scale-125"/></button>
                   
                   {/* Finance Modal */}
                   {modalMode === 'finance' && (
-                      <div className="space-y-8">
+                      <div className="space-y-6 sm:space-y-8">
                           <div className="text-center">
-                              <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Tesouro Real: {activeDomain.treasury} LO</h3>
-                              <div className="flex justify-center gap-4 mt-6">
-                                 <button onClick={() => setFinanceTab('transfer')} className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${financeTab === 'transfer' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Transferência</button>
-                                 <button onClick={() => setFinanceTab('manage')} className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${financeTab === 'manage' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Gestão Manual</button>
-                                 <button onClick={() => setFinanceTab('cashflow')} className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${financeTab === 'cashflow' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Fluxo de Caixa</button>
+                              <h3 className="text-2xl sm:text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Tesouro Real: {activeDomain.treasury} LO</h3>
+                              <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4 sm:mt-6">
+                                 <button onClick={() => setFinanceTab('transfer')} className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest transition-all ${financeTab === 'transfer' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Transferência</button>
+                                 <button onClick={() => setFinanceTab('manage')} className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest transition-all ${financeTab === 'manage' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Gestão Manual</button>
+                                 <button onClick={() => setFinanceTab('cashflow')} className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest transition-all ${financeTab === 'cashflow' ? 'bg-fantasy-wood dark:bg-fantasy-gold text-white dark:text-black shadow-lg' : 'bg-transparent text-fantasy-wood/40 dark:text-fantasy-parchment/40'}`}>Fluxo de Caixa</button>
                               </div>
                           </div>
                           

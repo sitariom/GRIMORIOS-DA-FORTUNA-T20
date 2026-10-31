@@ -122,39 +122,39 @@ const ItemHistoryPage: React.FC = () => {
   return (
     <div className="space-y-12 pb-20 font-serif">
        <header>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Movimentação de itens</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Onde as armas, armaduras e relíquias são registradas.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Movimentação de itens</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Onde as armas, armaduras e relíquias são registradas.</p>
        </header>
        
-       <div className="parchment-card rounded-[40px] shadow-5xl border-4 border-fantasy-gold/20 overflow-hidden animate-scroll-unroll">
-           <div className="bg-fantasy-wood/5 dark:bg-black/20 p-8 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="wax-seal w-12 h-12 flex items-center justify-center text-white"><BookOpen size={24}/></div>
+       <div className="parchment-card rounded-[28px] sm:rounded-[40px] shadow-5xl border-4 border-fantasy-gold/20 overflow-hidden animate-scroll-unroll">
+           <div className="bg-fantasy-wood/5 dark:bg-black/20 p-4 sm:p-6 md:p-8 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
+                 <div className="wax-seal w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white shrink-0"><BookOpen size={20} className="sm:scale-125"/></div>
                  <div>
-                    <h3 className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-parchment">Crônicas do Arsenal</h3>
-                    <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-[0.2em] mt-1">Exibindo {visibleLogs.length} de {totalFilteredCount}</div>
+                    <h3 className="font-medieval text-lg sm:text-2xl text-fantasy-wood dark:text-fantasy-parchment">Crônicas do Arsenal</h3>
+                    <div className="text-[9px] sm:text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-[0.2em] mt-0.5 sm:mt-1">Exibindo {visibleLogs.length} de {totalFilteredCount}</div>
                  </div>
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto justify-between md:justify-end">
                    <button 
                      onClick={() => setIsGrouped(!isGrouped)} 
-                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${isGrouped ? 'bg-indigo-900/10 text-indigo-800 dark:text-indigo-400 border-indigo-900/20' : 'bg-white/20 text-fantasy-wood/40 border-fantasy-wood/10'}`}
+                     className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest border transition-all active:scale-95 ${isGrouped ? 'bg-indigo-900/10 text-indigo-800 dark:text-indigo-400 border-indigo-900/20' : 'bg-white/20 text-fantasy-wood/40 border-fantasy-wood/10'}`}
                      title={isGrouped ? "Desagrupar registros similares" : "Agrupar registros similares"}
                    >
-                       <Layers size={16}/> {isGrouped ? 'Agrupado' : 'Detalhado'}
+                       <Layers size={14}/> {isGrouped ? 'Agrupado' : 'Detalhado'}
                    </button>
 
-                   <div className="flex items-center gap-2 bg-white/40 dark:bg-black/40 p-2 rounded-xl border border-fantasy-wood/10 dark:border-white/10">
-                       <Calendar size={16} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50 ml-2"/>
+                   <div className="flex items-center gap-2 bg-white/40 dark:bg-black/40 p-1.5 sm:p-2 rounded-xl border border-fantasy-wood/10 dark:border-white/10">
+                       <Calendar size={14} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50 ml-1 shrink-0"/>
                        <input type="date" className="bg-transparent text-xs font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none" value={startDate} onChange={e => setStartDate(e.target.value)} />
                        <span className="text-fantasy-wood/30">-</span>
                        <input type="date" className="bg-transparent text-xs font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none" value={endDate} onChange={e => setEndDate(e.target.value)} />
                    </div>
                    
-                   <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-800/20 transition-all active:scale-95">
-                       <Download size={16}/> CSV
+                   <button onClick={handleExportCSV} className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest border border-emerald-800/20 transition-all active:scale-95">
+                       <Download size={14}/> CSV
                    </button>
                </div>
            </div>
@@ -166,12 +166,12 @@ const ItemHistoryPage: React.FC = () => {
            ) : (
              <div className="overflow-x-auto">
                <table className="w-full text-left">
-                  <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-widest">
+                  <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[9px] sm:text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider sm:tracking-widest">
                       <tr>
-                          <th className="px-10 py-6 whitespace-nowrap">Época</th>
-                          <th className="px-10 py-6">Tipo</th>
-                          <th className="px-10 py-6">Crônica do Item</th>
-                          <th className="px-10 py-6 text-right whitespace-nowrap">Responsável</th>
+                          <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">Época</th>
+                          <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">Tipo</th>
+                          <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 min-w-[180px]">Crônica do Item</th>
+                          <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 text-right whitespace-nowrap">Responsável</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
@@ -185,25 +185,25 @@ const ItemHistoryPage: React.FC = () => {
 
                           return (
                               <AnimatedCard as="tr" delay={i * 50} className="rounded-[20px]" key={`${log.id}-${i}`}>
-                                  <td className="px-10 py-6 whitespace-nowrap relative">
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap relative">
                                       <div className="absolute left-0 top-3 bottom-3 border-l-2 border-fantasy-gold/20"></div>
-                                      <div className="font-medieval text-lg text-fantasy-wood/80 dark:text-fantasy-parchment">{new Date(log.date).toLocaleDateString()}</div>
-                                      <div className="text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
+                                      <div className="font-medieval text-sm sm:text-base md:text-lg text-fantasy-wood/80 dark:text-fantasy-parchment leading-none mb-1">{new Date(log.date).toLocaleDateString()}</div>
+                                      <div className="text-[8px] sm:text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
                                   </td>
-                                  <td className="px-10 py-6">
-                                      <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border tracking-widest ${badgeColor}`}>
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">
+                                      <span className={`px-2.5 sm:px-4 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase border tracking-wider sm:tracking-widest ${badgeColor}`}>
                                           {log.category}
                                       </span>
                                   </td>
-                                  <td className="px-10 py-6">
-                                      <div className="flex items-center gap-3">
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6">
+                                      <div className="flex items-center gap-2 sm:gap-3">
                                           <Package size={16} className="text-fantasy-gold shrink-0"/>
-                                          <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight">"{log.details}"</p>
+                                          <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight text-xs sm:text-sm md:text-base">"{log.details}"</p>
                                       </div>
                                   </td>
-                                  <td className="px-10 py-6 text-right whitespace-nowrap">
-                                      <span className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center justify-end gap-2 tracking-tight">
-                                        {log.memberName} <div className="w-2 h-2 rounded-full bg-fantasy-gold"></div>
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 text-right whitespace-nowrap">
+                                      <span className="text-[10px] sm:text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center justify-end gap-1.5 sm:gap-2 tracking-tight">
+                                        {log.memberName} <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-fantasy-gold shrink-0"></div>
                                       </span>
                                   </td>
                               </AnimatedCard>

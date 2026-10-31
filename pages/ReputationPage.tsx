@@ -309,15 +309,15 @@ const ReputationPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20 font-serif">
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Gestão de Reputação</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Influência e renome perante as facções, NPCs e organizações de Arton.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Gestão de Reputação</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Influência e renome perante as facções, NPCs e organizações de Arton.</p>
         </div>
-        <div className="flex bg-[#2a1b14] dark:bg-black/60 p-1 rounded-2xl border-2 border-fantasy-gold/20 shadow-lg w-full lg:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap bg-[#2a1b14] dark:bg-black/60 p-1 rounded-2xl border-2 border-fantasy-gold/20 shadow-lg w-full lg:w-auto gap-1">
           <button
             onClick={() => setActiveTab('manage')}
-            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+            className={`flex-1 sm:flex-none py-2.5 sm:py-3.5 px-3 sm:px-8 rounded-xl font-medieval text-[10px] sm:text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 text-center ${
               activeTab === 'manage' ? 'bg-fantasy-gold text-black font-bold shadow-md' : 'text-fantasy-parchment/65 hover:text-fantasy-gold hover:bg-white/5'
             }`}
           >
@@ -325,7 +325,7 @@ const ReputationPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('pois')}
-            className={`flex-1 lg:flex-none py-3.5 px-8 rounded-xl font-medieval text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+            className={`flex-1 sm:flex-none py-2.5 sm:py-3.5 px-3 sm:px-8 rounded-xl font-medieval text-[10px] sm:text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 text-center ${
               activeTab === 'pois' ? 'bg-fantasy-gold text-black font-bold shadow-md' : 'text-fantasy-parchment/65 hover:text-fantasy-gold hover:bg-white/5'
             }`}
           >
@@ -335,8 +335,8 @@ const ReputationPage: React.FC = () => {
       </header>
 
       {activeTab === 'pois' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-1 parchment-card p-8 rounded-[48px] border-2 border-fantasy-gold/20 shadow-2xl flex flex-col h-fit bg-white/5 dark:bg-black/20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
+          <div className="lg:col-span-1 parchment-card p-5 sm:p-8 rounded-[28px] sm:rounded-[48px] border-2 border-fantasy-gold/20 shadow-2xl flex flex-col h-fit bg-white/5 dark:bg-black/20">
             <h2 className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-gold mb-6 border-b-2 border-fantasy-gold/20 pb-3 flex items-center gap-3">
               <ShieldAlert size={24} className="text-fantasy-gold shrink-0" />
               Novo Ponto de Interesse

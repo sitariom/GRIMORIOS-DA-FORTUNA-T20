@@ -84,48 +84,48 @@ const CashFlowPage: React.FC = () => {
   return (
     <div className="space-y-10 pb-20 font-serif">
       <header>
-        <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Registros tesouraria</h2>
-        <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">O rastro de prata e ouro deixado pela guilda.</p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Registros tesouraria</h2>
+        <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">O rastro de prata e ouro deixado pela guilda.</p>
       </header>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <AnimatedCard delay={0} className="parchment-card p-6 rounded-[16px] border-2 border-emerald-700/20 bg-emerald-900/5 shadow-xl">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700/60 dark:text-emerald-400/60 mb-1">Total Depositos</div>
-          <div className="font-medieval text-3xl text-emerald-800 dark:text-emerald-400">+{totalDeposits.toLocaleString('pt-BR')} <span className="text-sm">T$</span></div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+        <AnimatedCard delay={0} className="parchment-card p-4 sm:p-6 rounded-[16px] border-2 border-emerald-700/20 bg-emerald-900/5 shadow-xl">
+          <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700/60 dark:text-emerald-400/60 mb-1">Total Depositos</div>
+          <div className="font-medieval text-2xl sm:text-3xl text-emerald-800 dark:text-emerald-400">+{totalDeposits.toLocaleString('pt-BR')} <span className="text-xs sm:text-sm">T$</span></div>
         </AnimatedCard>
-        <AnimatedCard delay={50} className="parchment-card p-6 rounded-[16px] border-2 border-red-800/20 bg-red-900/5 shadow-xl">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-red-800/60 dark:text-red-400/60 mb-1">Total Retiradas</div>
-          <div className="font-medieval text-3xl text-red-900 dark:text-red-400">-{totalWithdrawals.toLocaleString('pt-BR')} <span className="text-sm">T$</span></div>
+        <AnimatedCard delay={50} className="parchment-card p-4 sm:p-6 rounded-[16px] border-2 border-red-800/20 bg-red-900/5 shadow-xl">
+          <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-red-800/60 dark:text-red-400/60 mb-1">Total Retiradas</div>
+          <div className="font-medieval text-2xl sm:text-3xl text-red-900 dark:text-red-400">-{totalWithdrawals.toLocaleString('pt-BR')} <span className="text-xs sm:text-sm">T$</span></div>
         </AnimatedCard>
-        <AnimatedCard delay={100} className="parchment-card p-6 rounded-[16px] border-2 border-fantasy-gold/20 shadow-xl">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-fantasy-wood/60 dark:text-fantasy-parchment/60 mb-1">Saldo Liquido</div>
-          <div className={`font-medieval text-3xl ${netBalance >= 0 ? 'text-emerald-800 dark:text-emerald-400' : 'text-red-900 dark:text-red-400'}`}>
-            {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString('pt-BR')} <span className="text-sm">T$</span>
+        <AnimatedCard delay={100} className="parchment-card p-4 sm:p-6 rounded-[16px] border-2 border-fantasy-gold/20 shadow-xl">
+          <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-fantasy-wood/60 dark:text-fantasy-parchment/60 mb-1">Saldo Liquido</div>
+          <div className={`font-medieval text-2xl sm:text-3xl ${netBalance >= 0 ? 'text-emerald-800 dark:text-emerald-400' : 'text-red-900 dark:text-red-400'}`}>
+            {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString('pt-BR')} <span className="text-xs sm:text-sm">T$</span>
           </div>
         </AnimatedCard>
       </div>
 
-      <div className="parchment-card rounded-[40px] shadow-5xl border-4 border-fantasy-gold/20 overflow-hidden animate-scroll-unroll">
-        <div className="bg-fantasy-wood/5 dark:bg-black/20 p-8 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
-           <div className="flex items-center gap-4">
-              <div className="wax-seal w-12 h-12 flex items-center justify-center text-white"><History size={24}/></div>
+      <div className="parchment-card rounded-[28px] sm:rounded-[40px] shadow-5xl border-4 border-fantasy-gold/20 overflow-hidden animate-scroll-unroll">
+        <div className="bg-fantasy-wood/5 dark:bg-black/20 p-4 sm:p-6 md:p-8 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+           <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
+              <div className="wax-seal w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white shrink-0"><History size={20} className="sm:scale-125"/></div>
               <div>
-                  <h3 className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-parchment">Anais de Transação</h3>
-                  <div className="text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-[0.2em] mt-1">Exibindo {visibleLogs.length} de {financialLogs.length}</div>
+                  <h3 className="font-medieval text-lg sm:text-2xl text-fantasy-wood dark:text-fantasy-parchment">Anais de Transação</h3>
+                  <div className="text-[9px] sm:text-[10px] font-black uppercase text-fantasy-wood/40 dark:text-fantasy-parchment/40 tracking-[0.2em] mt-0.5 sm:mt-1">Exibindo {visibleLogs.length} de {financialLogs.length}</div>
               </div>
            </div>
 
            {/* Filters & Actions */}
-           <div className="flex flex-wrap items-center gap-4">
+           <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto justify-between md:justify-end">
                <div className="flex items-center gap-2 bg-white/40 dark:bg-black/40 p-2 rounded-xl border border-fantasy-wood/10 dark:border-white/10">
-                   <Calendar size={16} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50 ml-2"/>
+                   <Calendar size={16} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50 ml-1 shrink-0"/>
                    <input type="date" className="bg-transparent text-xs font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none" value={startDate} onChange={e => setStartDate(e.target.value)} />
                    <span className="text-fantasy-wood/30">-</span>
                    <input type="date" className="bg-transparent text-xs font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none" value={endDate} onChange={e => setEndDate(e.target.value)} />
                </div>
 
-               <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-800/20 transition-all active:scale-95" title="Exportar para Excel (CSV)">
+               <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-emerald-800/10 hover:bg-emerald-800/20 text-emerald-900 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-800/20 transition-all active:scale-95" title="Exportar para Excel (CSV)">
                    <Download size={16}/> CSV
                </button>
            </div>
@@ -139,13 +139,13 @@ const CashFlowPage: React.FC = () => {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-widest">
+                <thead className="bg-fantasy-wood/5 dark:bg-black/10 text-[9px] sm:text-[10px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/40 tracking-wider sm:tracking-widest">
                   <tr>
-                    <th className="px-10 py-6">Data Astral</th>
-                    <th className="px-10 py-6">Escrutínio</th>
-                    <th className="px-10 py-6">Escrituração</th>
-                    <th className="px-10 py-6">Escriba</th>
-                    <th className="px-10 py-6 text-right">Montante (T$)</th>
+                    <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">Data Astral</th>
+                    <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">Escrutínio</th>
+                    <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 min-w-[160px]">Escrituração</th>
+                    <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">Escriba</th>
+                    <th className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 text-right whitespace-nowrap">Montante (T$)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
@@ -156,16 +156,16 @@ const CashFlowPage: React.FC = () => {
                     return (
                       <tr key={log.id} className="hover:bg-fantasy-gold/5 dark:hover:bg-fantasy-gold/10 transition-colors">
                         <td colSpan={5} className="p-0">
-                          <AnimatedCard delay={index * 50} className="parchment-card m-2 rounded-[16px] border border-fantasy-wood/5 dark:border-white/5 shadow-sm">
+                          <AnimatedCard delay={index * 50} className="parchment-card m-1 sm:m-2 rounded-[14px] sm:rounded-[16px] border border-fantasy-wood/5 dark:border-white/5 shadow-sm">
                             <table className="w-full">
                               <tbody>
                                 <tr>
-                                  <td className="px-10 py-6">
-                                    <div className="font-medieval text-lg text-fantasy-wood/80 dark:text-fantasy-parchment">{new Date(log.date).toLocaleDateString()}</div>
-                                    <div className="text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">
+                                    <div className="font-medieval text-sm sm:text-base md:text-lg text-fantasy-wood/80 dark:text-fantasy-parchment leading-none mb-1">{new Date(log.date).toLocaleDateString()}</div>
+                                    <div className="text-[8px] sm:text-[9px] font-bold text-fantasy-wood/30 dark:text-fantasy-parchment/30 uppercase">{new Date(log.date).toLocaleTimeString()}</div>
                                   </td>
-                                  <td className="px-10 py-6">
-                                    <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border tracking-widest ${
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">
+                                    <span className={`px-2.5 sm:px-4 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase border tracking-wider sm:tracking-widest ${
                                       isIncome ? 'bg-emerald-700/10 border-emerald-700/30 text-emerald-800 dark:text-emerald-400' :
                                       isConversion ? 'bg-indigo-700/10 border-indigo-700/30 text-indigo-800 dark:text-indigo-400' :
                                       'bg-red-800/10 border-red-800/30 text-red-900 dark:text-red-400'
@@ -173,18 +173,18 @@ const CashFlowPage: React.FC = () => {
                                       {log.category}
                                     </span>
                                   </td>
-                                  <td className="px-10 py-6">
-                                    <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight">"{log.details}"</p>
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6">
+                                    <p className="font-serif text-fantasy-wood dark:text-fantasy-parchment/80 font-bold italic leading-tight text-xs sm:text-sm md:text-base">"{log.details}"</p>
                                   </td>
-                                  <td className="px-10 py-6">
-                                    <span className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center gap-2 tracking-tight">
-                                       <div className="w-2 h-2 rounded-full bg-fantasy-gold"></div> {log.memberName}
+                                  <td className="px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 whitespace-nowrap">
+                                    <span className="text-[10px] sm:text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase flex items-center gap-1.5 sm:gap-2 tracking-tight">
+                                       <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-fantasy-gold shrink-0"></div> {log.memberName}
                                     </span>
                                   </td>
-                                  <td className={`px-10 py-6 text-right font-medieval text-2xl ${isConversion ? 'text-indigo-800 dark:text-indigo-400' : isIncome ? 'text-emerald-800 dark:text-emerald-400' : 'text-red-900 dark:text-red-400'}`}>
-                                    <div className="flex items-center justify-end gap-2">
+                                  <td className={`px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-6 text-right font-medieval text-base sm:text-xl md:text-2xl whitespace-nowrap ${isConversion ? 'text-indigo-800 dark:text-indigo-400' : isIncome ? 'text-emerald-800 dark:text-emerald-400' : 'text-red-900 dark:text-red-400'}`}>
+                                    <div className="flex items-center justify-end gap-1 sm:gap-2">
                                       {isConversion ? '--' : `${isIncome ? '+' : '-'}${Math.abs(log.value).toLocaleString('pt-BR')}`}
-                                      {!isConversion && (isIncome ? <ArrowDownLeft size={16}/> : <ArrowUpRight size={16}/>)}
+                                      {!isConversion && (isIncome ? <ArrowDownLeft size={14}/> : <ArrowUpRight size={14}/>)}
                                     </div>
                                   </td>
                                 </tr>

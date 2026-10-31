@@ -105,32 +105,32 @@ const MembersPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20 font-serif">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Aventureiros</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">As almas heróicas que compõem o corpo da guilda.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Aventureiros</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">As almas heróicas que compõem o corpo da guilda.</p>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Form Card */}
-        <div className="parchment-card p-10 rounded-[50px] border-4 border-fantasy-gold/20 shadow-5xl h-fit">
-           <div className="wax-seal w-16 h-16 mx-auto mb-6 flex items-center justify-center text-white"><UserPlus size={32}/></div>
-           <h3 className="text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold text-center uppercase tracking-tighter mb-8">Novo Alistamento</h3>
-           <form onSubmit={handleAdd} className="space-y-8">
+        <div className="parchment-card p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[50px] border-4 border-fantasy-gold/20 shadow-5xl h-fit">
+           <div className="wax-seal w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-6 flex items-center justify-center text-white shrink-0"><UserPlus size={24} className="sm:scale-125"/></div>
+           <h3 className="text-2xl sm:text-3xl font-medieval text-fantasy-wood dark:text-fantasy-gold text-center uppercase tracking-tighter mb-6 sm:mb-8">Novo Alistamento</h3>
+           <form onSubmit={handleAdd} className="space-y-6 sm:space-y-8">
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 tracking-widest">Nome do Campeão</label>
                  <input 
                    type="text"
                    value={newName}
                    onChange={e => setNewName(e.target.value)}
-                   className="w-full bg-white/30 dark:bg-black/40 border-2 border-fantasy-wood/20 dark:border-white/10 rounded-[28px] px-8 py-5 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl focus:outline-none focus:border-fantasy-gold shadow-inner"
+                   className="w-full bg-white/30 dark:bg-black/40 border-2 border-fantasy-wood/20 dark:border-white/10 rounded-[20px] sm:rounded-[28px] px-5 sm:px-8 py-3.5 sm:py-5 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-base sm:text-xl focus:outline-none focus:border-fantasy-gold shadow-inner"
                    placeholder="Ex: Arton, o Bravo"
                    autoFocus
                    required
                  />
               </div>
-               <button type="submit" className="w-full bg-fantasy-blood text-white py-6 rounded-[32px] font-medieval text-xl uppercase tracking-widest shadow-2xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
+               <button type="submit" className="w-full bg-fantasy-blood text-white py-4 sm:py-6 rounded-[24px] sm:rounded-[32px] font-medieval text-lg sm:text-xl uppercase tracking-widest shadow-2xl border-b-6 sm:border-b-8 border-red-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
                  Selar Contrato
                </button>
            </form>
@@ -204,17 +204,17 @@ const MembersPage: React.FC = () => {
 
       {/* Member Details Modal */}
       {activeMember && (
-        <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 backdrop-blur-xl animate-fade-in">
-           <div className="parchment-card p-8 md:p-12 rounded-[40px] w-full max-w-4xl border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col gap-10">
-                <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-6 right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={24}/></button>
+        <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-3 sm:p-4 backdrop-blur-xl animate-fade-in overflow-y-auto">
+           <div className="parchment-card p-5 sm:p-8 md:p-12 rounded-[28px] sm:rounded-[40px] w-full max-w-4xl border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[92dvh] overflow-y-auto custom-scrollbar flex flex-col gap-6 sm:gap-10 my-auto">
+                <button onClick={() => { setDetailMemberId(null); setItemAction(null); }} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 sm:p-3 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={20}/></button>
                 
-                <div className="text-center border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-6">
-                    <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
-                    <p className="text-xs font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-[0.3em]">Gestão Individual de Aventureiro</p>
-                    <div className="mt-4 flex items-center justify-center gap-4">
-                        <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 px-4 py-2 rounded-full">
-                            <Weight size={16} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50"/>
-                            <span className="text-xs font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60">Força</span>
+                <div className="text-center border-b-2 sm:border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-4 sm:pb-6">
+                    <h3 className="text-2xl sm:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{activeMember.name}</h3>
+                    <p className="text-[10px] sm:text-xs font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Gestão Individual de Aventureiro</p>
+                    <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+                        <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
+                            <Weight size={14} className="text-fantasy-wood/50 dark:text-fantasy-parchment/50"/>
+                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-fantasy-wood/60 dark:text-fantasy-parchment/60">Força</span>
                             <select
                                 value={activeMember.strength}
                                 onChange={(e) => updateMember(activeMember.id, { strength: Number(e.target.value) })}

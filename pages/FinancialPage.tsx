@@ -70,8 +70,8 @@ const FinancialPage: React.FC = () => {
   return (
     <div className="space-y-12 pb-20 font-serif">
       <header>
-        <h2 className="text-4xl md:text-6xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-3">Finanças do grupo</h2>
-        <p className="text-xs md:text-lg text-fantasy-gold font-bold uppercase tracking-[0.3em]">Gestão central de Tibares e Riquezas.</p>
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-3">Finanças do grupo</h2>
+        <p className="text-xs sm:text-sm md:text-lg text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Gestão central de Tibares e Riquezas.</p>
       </header>
 
       {/* KPI Cards */}
@@ -82,34 +82,34 @@ const FinancialPage: React.FC = () => {
           { label: 'Tibares de Ouro (TO)', code: 'TO', val: wallet.TO, color: 'text-fantasy-gold', bg: 'bg-fantasy-gold/20', border: 'border-fantasy-gold/40' },
           { label: 'Lingotes de Ouro (LO)', code: 'LO', val: wallet.LO, color: 'text-indigo-900 dark:text-indigo-400', bg: 'bg-indigo-900/10', border: 'border-indigo-900/30' },
         ].map((coin, i) => (
-          <AnimatedCard key={i} as="button" onClick={() => handleCoinClick(coin.code as CurrencyType)} delay={i * 100} className={`parchment-card p-10 rounded-[40px] border-b-[8px] ${coin.border} shadow-2xl text-left hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group`}>
-            <div className="flex justify-between items-start mb-8">
-              <div className={`p-5 ${coin.bg} rounded-3xl ${coin.color} group-hover:shadow-lg transition-shadow`}><Coins size={40}/></div>
-              <div className="wax-seal w-10 h-10 group-hover:scale-110 transition-transform"></div>
+          <AnimatedCard key={i} as="button" onClick={() => handleCoinClick(coin.code as CurrencyType)} delay={i * 100} className={`parchment-card p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] border-b-[8px] ${coin.border} shadow-2xl text-left hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group`}>
+            <div className="flex justify-between items-start mb-4 sm:mb-8">
+              <div className={`p-3.5 sm:p-5 ${coin.bg} rounded-2xl sm:rounded-3xl ${coin.color} group-hover:shadow-lg transition-shadow`}><Coins size={32} className="sm:scale-125"/></div>
+              <div className="wax-seal w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform"></div>
             </div>
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-fantasy-wood/70 dark:text-fantasy-parchment/60 mb-2">{coin.label}</div>
-            <div className={`text-4xl font-medieval ${coin.color}`}>{coin.val.toLocaleString()}</div>
+            <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fantasy-wood/70 dark:text-fantasy-parchment/60 mb-1 sm:mb-2">{coin.label}</div>
+            <div className={`text-2xl sm:text-3xl md:text-4xl font-medieval ${coin.color}`}>{coin.val.toLocaleString()}</div>
           </AnimatedCard>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Transaction Form */}
-        <div className="parchment-card p-8 md:p-12 rounded-[60px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
-          <h3 className="font-medieval text-3xl md:text-4xl text-fantasy-wood dark:text-fantasy-parchment mb-12 border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-8 flex items-center gap-6">
-            <Scroll size={40} className="text-fantasy-gold"/> Escrituração do Livro
+        <div className="parchment-card p-5 sm:p-8 md:p-12 rounded-[32px] sm:rounded-[60px] shadow-2xl border-4 border-fantasy-wood/10 dark:border-white/10">
+          <h3 className="font-medieval text-2xl sm:text-3xl md:text-4xl text-fantasy-wood dark:text-fantasy-parchment mb-8 sm:mb-12 border-b-4 border-fantasy-wood/10 dark:border-white/10 pb-4 sm:pb-8 flex items-center gap-4 sm:gap-6">
+            <Scroll size={32} className="text-fantasy-gold shrink-0 sm:scale-125"/> Escrituração do Livro
           </h3>
           
-          <div className="flex gap-4 md:gap-6 mb-12 bg-black/10 p-2.5 rounded-[32px] border border-fantasy-wood/10 dark:border-white/10">
-            <button onClick={() => setOpType('deposit')} className={`flex-1 py-4 md:py-5 rounded-[24px] font-medieval uppercase tracking-widest text-base md:text-lg transition-all active:scale-95 ${opType === 'deposit' ? 'bg-emerald-800 text-white shadow-2xl scale-105' : 'text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood'}`}>Entrada</button>
-            <button onClick={() => setOpType('withdraw')} className={`flex-1 py-4 md:py-5 rounded-[24px] font-medieval uppercase tracking-widest text-base md:text-lg transition-all active:scale-95 ${opType === 'withdraw' ? 'bg-red-800 text-white shadow-2xl scale-105' : 'text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood'}`}>Saída</button>
+          <div className="flex gap-2 sm:gap-4 md:gap-6 mb-8 sm:mb-12 bg-black/10 p-2 sm:p-2.5 rounded-[24px] sm:rounded-[32px] border border-fantasy-wood/10 dark:border-white/10">
+            <button onClick={() => setOpType('deposit')} className={`flex-1 py-3 sm:py-4 md:py-5 rounded-[18px] sm:rounded-[24px] font-medieval uppercase tracking-wider sm:tracking-widest text-sm sm:text-base md:text-lg transition-all active:scale-95 ${opType === 'deposit' ? 'bg-emerald-800 text-white shadow-2xl scale-105' : 'text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood'}`}>Entrada</button>
+            <button onClick={() => setOpType('withdraw')} className={`flex-1 py-3 sm:py-4 md:py-5 rounded-[18px] sm:rounded-[24px] font-medieval uppercase tracking-wider sm:tracking-widest text-sm sm:text-base md:text-lg transition-all active:scale-95 ${opType === 'withdraw' ? 'bg-red-800 text-white shadow-2xl scale-105' : 'text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood'}`}>Saída</button>
           </div>
 
-          <form onSubmit={handleOperation} className="space-y-10">
-            <div className="space-y-3">
+          <form onSubmit={handleOperation} className="space-y-6 sm:space-y-10">
+            <div className="space-y-2 sm:space-y-3">
               <label className="text-xs font-black text-fantasy-wood/60 dark:text-fantasy-parchment/60 uppercase ml-4 tracking-widest">Aventureiro Responsável</label>
               <select 
-                className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[28px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl md:text-2xl focus:outline-none appearance-none cursor-pointer hover:bg-white/60 dark:hover:bg-black/60 transition-colors" 
+                className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[20px] sm:rounded-[28px] px-4 sm:px-8 py-3.5 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-base sm:text-xl md:text-2xl focus:outline-none appearance-none cursor-pointer hover:bg-white/60 dark:hover:bg-black/60 transition-colors" 
                 value={memberId} 
                 onChange={e => setMemberId(e.target.value)} 
                 required

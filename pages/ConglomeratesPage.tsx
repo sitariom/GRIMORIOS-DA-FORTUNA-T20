@@ -65,13 +65,13 @@ const ConglomeratesPage: React.FC = () => {
 
   return (
     <div className="space-y-10 pb-20 font-serif">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Alianças & Impérios</h2>
-          <p className="text-sm text-fantasy-gold font-bold uppercase tracking-[0.3em]">Conglomerados de domínios sob um único estandarte.</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medieval text-fantasy-wood dark:text-white tracking-tighter uppercase leading-none mb-2">Alianças & Impérios</h2>
+          <p className="text-xs sm:text-sm text-fantasy-gold font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Conglomerados de domínios sob um único estandarte.</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="bg-fantasy-blood hover:bg-red-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-medieval uppercase tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
-          <Plus size={24} /> Novo Conglomerado
+        <button onClick={() => setShowCreate(true)} className="w-full md:w-auto justify-center bg-fantasy-blood hover:bg-red-700 text-white px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-2 sm:gap-3 font-medieval text-xs sm:text-base uppercase tracking-wider sm:tracking-widest shadow-2xl border-b-4 border-red-950 transition-all active:translate-y-1 active:scale-95">
+          <Plus size={20} /> Novo Conglomerado
         </button>
       </header>
 
@@ -354,9 +354,9 @@ const ConglomeratesPage: React.FC = () => {
       )}
 
       {showCreate && (
-        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[150] p-4 backdrop-blur-xl animate-fade-in">
-          <div className="parchment-card p-14 rounded-[80px] w-full max-w-lg border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in">
-            <button onClick={() => setShowCreate(false)} className="absolute top-10 right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={32} /></button>
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[150] p-3 sm:p-4 backdrop-blur-xl animate-fade-in overflow-y-auto">
+          <div className="parchment-card p-5 sm:p-8 md:p-14 rounded-[28px] sm:rounded-[50px] md:rounded-[80px] w-full max-w-lg border-4 sm:border-8 border-[#3d2b1f] shadow-5xl relative animate-bounce-in max-h-[92dvh] overflow-y-auto custom-scrollbar my-auto">
+            <button onClick={() => setShowCreate(false)} className="absolute top-4 right-4 sm:top-8 sm:right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 sm:p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={20} className="sm:scale-125"/></button>
 
             <form onSubmit={handleCreate} className="space-y-10">
               <div className="flex flex-col items-center text-center">
