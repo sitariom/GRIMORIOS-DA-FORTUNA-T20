@@ -216,33 +216,33 @@ const BasesPage: React.FC = () => {
               return (
                  <AnimatedCard key={base.id} delay={idx * 100}>
                  <div className="parchment-card rounded-[32px] border-4 border-fantasy-gold/20 shadow-5xl overflow-hidden animate-slide-up hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                   <div className="bg-fantasy-wood/10 dark:bg-black/20 p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-                       <div className="flex items-center gap-8">
-                           <div className="wax-seal w-20 h-20 md:w-24 md:h-24 flex items-center justify-center animate-float shrink-0">
-                              <Castle size={40} className="text-white"/>
+                   <div className="bg-fantasy-wood/10 dark:bg-black/20 p-4 sm:p-6 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-8">
+                       <div className="flex items-start sm:items-center gap-3 sm:gap-8 w-full md:w-auto">
+                           <div className="wax-seal w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center animate-float shrink-0 mt-1 sm:mt-0">
+                              <Castle size={28} className="text-white sm:scale-125 md:scale-150"/>
                            </div>
-                           <div>
-                             <h3 className="text-3xl md:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-2 leading-none">{base.name}</h3>
-                             <div className="flex flex-wrap gap-3">
-                                <span className="text-[9px] md:text-[10px] font-black bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black px-4 py-1 md:px-5 md:py-2 rounded-full uppercase tracking-[0.2em]">{porteData.label}</span>
-                                <span className="text-[9px] md:text-[10px] font-black bg-indigo-700/10 dark:bg-indigo-400/10 text-indigo-900 dark:text-indigo-400 border border-indigo-900/20 dark:border-indigo-400/20 px-4 py-1 md:px-5 md:py-2 rounded-full uppercase tracking-[0.2em]">{typeData.label}</span>
+                           <div className="flex-1 min-w-0">
+                             <h3 className="text-2xl sm:text-3xl md:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-1.5 sm:mb-2 leading-tight break-words">{base.name}</h3>
+                             <div className="flex flex-wrap gap-2 sm:gap-3">
+                                <span className="text-[9px] md:text-[10px] font-black bg-fantasy-wood dark:bg-fantasy-gold text-fantasy-parchment dark:text-black px-3 py-1 sm:px-4 sm:py-1 md:px-5 md:py-2 rounded-full uppercase tracking-wider sm:tracking-[0.2em]">{porteData.label}</span>
+                                <span className="text-[9px] md:text-[10px] font-black bg-indigo-700/10 dark:bg-indigo-400/10 text-indigo-900 dark:text-indigo-400 border border-indigo-900/20 dark:border-indigo-400/20 px-3 py-1 sm:px-4 sm:py-1 md:px-5 md:py-2 rounded-full uppercase tracking-wider sm:tracking-[0.2em]">{typeData.label}</span>
                              </div>
                            </div>
                        </div>
-                       <div className="flex gap-4 self-end md:self-auto">
-                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('upgrade'); }} title="Expandir Porte" className="p-4 md:p-5 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold rounded-3xl transition-all border border-fantasy-gold/30 active:scale-95">
-                            <Hammer size={24}/>
+                       <div className="flex gap-2 sm:gap-4 self-end md:self-auto">
+                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('upgrade'); }} title="Expandir Porte" className="p-2.5 sm:p-4 md:p-5 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold rounded-2xl sm:rounded-3xl transition-all border border-fantasy-gold/30 active:scale-95">
+                            <Hammer size={20} className="sm:scale-125"/>
                          </button>
-                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('reform'); setNewType(base.type); }} title="Reformar Sede (Mudar Tipo)" className="p-4 md:p-5 bg-indigo-700/10 hover:bg-indigo-700/20 text-indigo-700 dark:text-indigo-400 rounded-3xl transition-all border border-indigo-700/30 active:scale-95">
-                            <RotateCcw size={24}/>
+                         <button onClick={() => { setActiveBaseId(base.id); setModalMode('reform'); setNewType(base.type); }} title="Reformar Sede (Mudar Tipo)" className="p-2.5 sm:p-4 md:p-5 bg-indigo-700/10 hover:bg-indigo-700/20 text-indigo-700 dark:text-indigo-400 rounded-2xl sm:rounded-3xl transition-all border border-indigo-700/30 active:scale-95">
+                            <RotateCcw size={20} className="sm:scale-125"/>
                          </button>
-                         <button onClick={() => { if(confirm("Deseja mesmo abandonar esta sede? Todos os cômodos e mobílias serão perdidos.")) demolishBase(base.id); }} title="Abandonar Base" className="p-4 md:p-5 bg-red-800/10 dark:bg-red-400/10 hover:bg-red-800/20 text-red-900 dark:text-red-400 rounded-3xl transition-all active:scale-95">
-                            <Trash2 size={24}/>
+                         <button onClick={() => { if(confirm("Deseja mesmo abandonar esta sede? Todos os cômodos e mobílias serão perdidos.")) demolishBase(base.id); }} title="Abandonar Base" className="p-2.5 sm:p-4 md:p-5 bg-red-800/10 dark:bg-red-400/10 hover:bg-red-800/20 text-red-900 dark:text-red-400 rounded-2xl sm:rounded-3xl transition-all active:scale-95">
+                            <Trash2 size={20} className="sm:scale-125"/>
                          </button>
                        </div>
                    </div>
 
-                   <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+                   <div className="p-4 sm:p-6 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
                     {base.type === 'Negocio' ? (
                       <>
                         <div className="space-y-10">
@@ -409,11 +409,11 @@ const BasesPage: React.FC = () => {
                                       <TrendingUp size={24}/> Coletar Lucros
                                   </button>
                               )}
-                              <div className="flex gap-3">
-                                <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance, false)} className="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-emerald-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
+                              <div className="flex gap-2 sm:gap-3">
+                                <button onClick={() => payBaseMaintenance(base.id, 'Regular', porteData.maintenance, false)} className="flex-1 min-w-0 bg-emerald-800 hover:bg-emerald-700 text-white py-3 sm:py-5 rounded-2xl sm:rounded-[32px] font-medieval text-sm sm:text-lg uppercase tracking-wider sm:tracking-widest shadow-xl border-b-4 sm:border-b-8 border-emerald-950 active:translate-y-1 sm:active:translate-y-2 active:border-b-0 active:scale-95 transition-all text-center flex items-center justify-center truncate">
                                     Pagar
                                 </button>
-                                <button onClick={() => { if(confirm("Negligenciar manutenção danificará um cômodo aleatório. Confirmar?")) payBaseMaintenance(base.id, 'Regular', porteData.maintenance, true); }} className="flex-1 bg-amber-800 hover:bg-amber-700 text-white py-5 rounded-[32px] font-medieval text-lg uppercase tracking-widest shadow-2xl border-b-8 border-amber-950 active:translate-y-2 active:border-b-0 active:scale-95 transition-all">
+                                <button onClick={() => { if(confirm("Negligenciar manutenção danificará um cômodo aleatório. Confirmar?")) payBaseMaintenance(base.id, 'Regular', porteData.maintenance, true); }} className="flex-1 min-w-0 bg-amber-800 hover:bg-amber-700 text-white py-3 sm:py-5 rounded-2xl sm:rounded-[32px] font-medieval text-sm sm:text-lg uppercase tracking-wider sm:tracking-widest shadow-xl border-b-4 sm:border-b-8 border-amber-950 active:translate-y-1 sm:active:translate-y-2 active:border-b-0 active:scale-95 transition-all text-center flex items-center justify-center truncate">
                                     Negligenciar
                                 </button>
                               </div>
@@ -428,20 +428,20 @@ const BasesPage: React.FC = () => {
                                </button>
                             </div>
                             
-<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 md:pr-4 animate-fade-in">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 max-h-[600px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2 md:pr-4 animate-fade-in">
                                 {base.rooms.map(room => (
-                                  <div key={room.id} className={`bg-white/50 dark:bg-black/20 border-2 rounded-[40px] p-8 group/room hover:border-fantasy-gold/40 transition-all shadow-md ${room.isDamaged ? 'border-red-600/40 bg-red-950/5 dark:bg-red-950/10' : 'border-fantasy-wood/10 dark:border-white/10'}`}>
-                                     <div className="flex justify-between items-start mb-6">
-                                        <div className="flex items-center gap-4">
-                                           <Bed size={24} className={room.isDamaged ? "text-red-600 shrink-0" : "text-fantasy-gold shrink-0"}/>
-                                           <div className="flex flex-col">
-                                              <span className={`font-medieval text-2xl truncate max-w-[150px] md:max-w-[180px] ${room.isDamaged ? "text-red-600 line-through decoration-red-900/60" : "text-fantasy-wood dark:text-fantasy-parchment"}`}>{room.name}</span>
+                                  <div key={room.id} className={`bg-white/50 dark:bg-black/20 border-2 rounded-2xl sm:rounded-[40px] p-4 sm:p-6 md:p-8 group/room hover:border-fantasy-gold/40 transition-all shadow-md ${room.isDamaged ? 'border-red-600/40 bg-red-950/5 dark:bg-red-950/10' : 'border-fantasy-wood/10 dark:border-white/10'}`}>
+                                     <div className="flex justify-between items-start gap-2 mb-4 sm:mb-6 flex-wrap sm:flex-nowrap">
+                                        <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+                                           <Bed size={22} className={room.isDamaged ? "text-red-600 shrink-0" : "text-fantasy-gold shrink-0"}/>
+                                           <div className="flex flex-col min-w-0">
+                                              <span className={`font-medieval text-lg sm:text-2xl truncate max-w-[130px] sm:max-w-[180px] ${room.isDamaged ? "text-red-600 line-through decoration-red-900/60" : "text-fantasy-wood dark:text-fantasy-parchment"}`}>{room.name}</span>
                                               {room.cost !== undefined && <span className="text-[9px] uppercase tracking-wider text-fantasy-wood/40 dark:text-fantasy-parchment/40">Custo: T$ {room.cost}</span>}
                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 shrink-0">
                                            {room.isDamaged && (
-                                              <button onClick={() => { if(confirm(`Confirmar reparo por T$ ${Math.floor((room.cost || 0)/2)}?`)) repairRoom(base.id, room.id, true); }} className="text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-3 py-1.5 rounded-full transition-colors tracking-widest shadow active:scale-95">
+                                              <button onClick={() => { if(confirm(`Confirmar reparo por T$ ${Math.floor((room.cost || 0)/2)}?`)) repairRoom(base.id, room.id, true); }} className="text-[8px] sm:text-[9px] font-black uppercase bg-red-700 hover:bg-red-600 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-colors tracking-wider sm:tracking-widest shadow active:scale-95 whitespace-nowrap">
                                                  Reparar (T$ {Math.floor((room.cost || 0)/2)})
                                               </button>
                                            )}
@@ -453,7 +453,7 @@ const BasesPage: React.FC = () => {
                                                   : `Demolir o cômodo "${room.name}"?\n\nEsta ação não pode ser desfeita.`;
                                                 if (confirm(msg)) removeRoom(base.id, room.id);
                                               }} 
-                                              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest text-red-700 dark:text-red-400 hover:bg-red-700 hover:text-white dark:hover:bg-red-800 border border-red-700/30 dark:border-red-400/30 transition-all opacity-70 hover:opacity-100 active:scale-95"
+                                              className="flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-wider sm:tracking-widest text-red-700 dark:text-red-400 hover:bg-red-700 hover:text-white dark:hover:bg-red-800 border border-red-700/30 dark:border-red-400/30 transition-all opacity-80 hover:opacity-100 active:scale-95 shrink-0 whitespace-nowrap"
                                               title="Demolir Cômodo"
                                             >
                                               <X size={12}/> Demolir

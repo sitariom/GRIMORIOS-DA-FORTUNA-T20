@@ -713,7 +713,7 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
 
    return (
       <div 
-        className={`parchment-card p-8 rounded-[32px] border-2 shadow-2xl group/card hover:border-fantasy-gold/50 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between ${
+        className={`parchment-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border-2 shadow-2xl group/card hover:border-fantasy-gold/50 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between ${
           isAffinityActive 
             ? 'border-fantasy-gold/80 bg-fantasy-gold/5 shadow-[0_0_15px_rgba(212,175,55,0.25)]' 
             : 'border-fantasy-wood/10 dark:border-white/10 bg-white/5 dark:bg-black/20'
@@ -721,19 +721,19 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
         style={{ animationDelay: `${idx * 50}ms` }}
       >
           <div>
-              <div className="flex justify-between items-start gap-4 mb-4">
-                  <div className="flex items-center gap-4">
-                      <div className="wax-seal w-12 h-12 flex items-center justify-center shadow-lg bg-black/20 dark:bg-black/40 border border-white/10 rounded-full shrink-0">
-                          <Contact size={20} className="text-fantasy-gold"/>
+              <div className="flex justify-between items-start gap-2.5 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="flex items-start gap-2.5 sm:gap-4 flex-1 min-w-0">
+                      <div className="wax-seal w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shadow-lg bg-black/20 dark:bg-black/40 border border-white/10 rounded-full shrink-0 mt-0.5">
+                          <Contact size={18} className="text-fantasy-gold sm:scale-110"/>
                       </div>
-                      <div>
-                          <h4 className="font-medieval text-2xl text-fantasy-wood dark:text-fantasy-gold leading-tight">{npc.name}</h4>
-                          <p className="text-xs font-serif italic text-fantasy-wood/70 dark:text-fantasy-parchment/70">{npc.role}</p>
+                      <div className="flex-1 min-w-0">
+                          <h4 className="font-medieval text-xl sm:text-2xl text-fantasy-wood dark:text-fantasy-gold leading-tight break-words">{npc.name}</h4>
+                          <p className="text-xs font-serif italic text-fantasy-wood/70 dark:text-fantasy-parchment/70 truncate">{npc.role}</p>
                       </div>
                   </div>
-                  <div className="flex gap-2 opacity-60 group-hover/card:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(npc)} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-gold p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Editar"><Edit size={16}/></button>
-                      <button onClick={() => { if(confirm(`Excluir ${npc.name}?`)) removeNPC(npc.id); }} className="text-fantasy-blood hover:text-red-500 p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Excluir"><Trash2 size={16}/></button>
+                  <div className="flex gap-1.5 shrink-0 opacity-80 sm:opacity-60 group-hover/card:opacity-100 transition-opacity">
+                      <button onClick={() => onEdit(npc)} className="text-fantasy-wood/60 dark:text-fantasy-parchment/60 hover:text-fantasy-gold p-1.5 sm:p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Editar"><Edit size={15}/></button>
+                      <button onClick={() => { if(confirm(`Excluir ${npc.name}?`)) removeNPC(npc.id); }} className="text-fantasy-blood hover:text-red-500 p-1.5 sm:p-2 bg-white/20 dark:bg-white/5 rounded-full transition-all hover:scale-110 active:scale-95" title="Excluir"><Trash2 size={15}/></button>
                   </div>
               </div>
 
@@ -837,17 +837,17 @@ const NPCCard: React.FC<NPCCardProps> = ({ npc, idx, onEdit, selectedMemberId })
 
                   {/* Interaction buttons */}
                   {stat !== 'Morto' ? (
-                      <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2.5 sm:space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <button 
                                 onClick={() => interactWithNPC(npc.id, selectedMemberId, false)} 
-                                className="px-3 py-2 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 text-fantasy-wood dark:text-fantasy-parchment border border-fantasy-wood/10 dark:border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95"
+                                className="px-3 py-2.5 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 text-fantasy-wood dark:text-fantasy-parchment border border-fantasy-wood/10 dark:border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 text-center flex items-center justify-center"
                               >
                                   Interagir (+1 PA)
                               </button>
                               <button 
                                 onClick={() => interactWithNPC(npc.id, selectedMemberId, true)} 
-                                className="px-3 py-2 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold border border-fantasy-gold/20 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95"
+                                className="px-3 py-2.5 bg-fantasy-gold/10 hover:bg-fantasy-gold/20 text-fantasy-gold border border-fantasy-gold/20 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 text-center flex items-center justify-center"
                                 title="Interagir com algo que o NPC gosta"
                               >
                                   Agradar (+2 PA)

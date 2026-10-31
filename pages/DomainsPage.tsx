@@ -767,27 +767,27 @@ const DomainsPage: React.FC = () => {
                 return (
                 <AnimatedCard key={domain.id} delay={idx * 100} className={`parchment-card rounded-[32px] shadow-5xl overflow-hidden border-4 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ${revolt ? 'border-red-600/50 animate-pulse' : 'border-fantasy-gold/20'}`}>
                     {/* Header */}
-                    <div className={`${revolt ? 'bg-red-900/20' : domain.isMystic ? 'bg-purple-900/20' : 'bg-fantasy-wood/10 dark:bg-black/20'} p-8 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8`}>
-                       <div className="flex items-center gap-6 md:gap-8">
-                          <div className={`wax-seal w-20 h-20 md:w-28 md:h-28 flex items-center justify-center animate-float shrink-0 ${revolt ? 'bg-red-900 border-red-950' : domain.isMystic ? 'bg-gradient-to-br from-purple-900 to-indigo-900 border-purple-950' : 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-950'}`}>
-                             {revolt ? <AlertTriangle size={40} className="text-red-400"/> : domain.isMystic ? <Sparkles size={40} className="text-purple-300"/> : <Crown size={40} className="text-fantasy-gold"/>}
+                    <div className={`${revolt ? 'bg-red-900/20' : domain.isMystic ? 'bg-purple-900/20' : 'bg-fantasy-wood/10 dark:bg-black/20'} p-4 sm:p-6 md:p-12 border-b-2 border-fantasy-wood/10 dark:border-white/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 sm:gap-8`}>
+                       <div className="flex items-start sm:items-center gap-3 sm:gap-6 md:gap-8 w-full xl:w-auto">
+                          <div className={`wax-seal w-14 h-14 sm:w-20 sm:h-20 md:w-28 md:h-28 flex items-center justify-center animate-float shrink-0 mt-1 sm:mt-0 ${revolt ? 'bg-red-900 border-red-950' : domain.isMystic ? 'bg-gradient-to-br from-purple-900 to-indigo-900 border-purple-950' : 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-950'}`}>
+                             {revolt ? <AlertTriangle size={28} className="text-red-400 sm:scale-125 md:scale-150"/> : domain.isMystic ? <Sparkles size={28} className="text-purple-300 sm:scale-125 md:scale-150"/> : <Crown size={28} className="text-fantasy-gold sm:scale-125 md:scale-150"/>}
                           </div>
-                          <div>
-                             <div className="flex items-center gap-3 flex-wrap">
-                               <h3 className="text-3xl md:text-5xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-1 leading-none">{domain.name}</h3>
-                               {revolt && <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full">REVOLTA</span>}
-                               {domain.isMystic && <span className="px-3 py-1 bg-purple-800 text-purple-100 text-[10px] font-black uppercase tracking-widest rounded-full">MÍSTICO</span>}
+                          <div className="flex-1 min-w-0">
+                             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                               <h3 className="text-2xl sm:text-3xl md:text-5xl font-medieval text-fantasy-wood dark:text-fantasy-parchment uppercase tracking-tighter mb-1 leading-tight break-words">{domain.name}</h3>
+                               {revolt && <span className="px-2.5 py-0.5 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest rounded-full">REVOLTA</span>}
+                               {domain.isMystic && <span className="px-2.5 py-0.5 bg-purple-800 text-purple-100 text-[9px] font-black uppercase tracking-widest rounded-full">MÍSTICO</span>}
                              </div>
-                             <p className={`text-xs md:text-sm font-black uppercase tracking-[0.3em] ${!domain.regent.trim() ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Regente: {domain.regent || 'VACANTE (Penalidade -5)'}</p>
-                             <div className="flex items-center gap-4 mt-2">
+                             <p className={`text-xs md:text-sm font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate ${!domain.regent.trim() ? 'text-red-600 dark:text-red-400' : 'text-fantasy-wood/50 dark:text-fantasy-parchment/50'}`}>Regente: {domain.regent || 'VACANTE (Penalidade -5)'}</p>
+                             <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap">
                                 <LevelDot level={domain.level} maxLevel={maxLevel} />
-                                <span className="text-[10px] font-black text-fantasy-wood/40 dark:text-fantasy-parchment/40 uppercase">
-                                   {domain.terrain} (Potencial Mágico: {getDomainMagicPotential(domain)})
+                                <span className="text-[9px] sm:text-[10px] font-black text-fantasy-wood/40 dark:text-fantasy-parchment/40 uppercase">
+                                   {domain.terrain} (Potencial: {getDomainMagicPotential(domain)})
                                  </span>
-                                <span className="h-3 w-px bg-fantasy-wood/20 dark:bg-white/10" />
-                                <span className="text-[10px] font-black text-fantasy-gold uppercase">Corte: {domain.court}</span>
+                                <span className="h-3 w-px bg-fantasy-wood/20 dark:bg-white/10 hidden sm:inline" />
+                                <span className="text-[9px] sm:text-[10px] font-black text-fantasy-gold uppercase">Corte: {domain.court}</span>
                              </div>
-                             <div className="text-[10px] font-semibold text-fantasy-wood/65 dark:text-fantasy-parchment/65 mt-1 text-left">
+                             <div className="text-[9px] sm:text-[10px] font-semibold text-fantasy-wood/65 dark:text-fantasy-parchment/65 mt-1 text-left line-clamp-2 sm:line-clamp-none">
                                População: {
                                  domain.level <= 2 ? '1.000 a 2.500 habitantes (Camponeses, caçadores e rústicos)' :
                                  domain.level <= 5 ? '5.000 a 25.000 habitantes (Mercados, oficinas, arautos e bardos)' :
@@ -796,30 +796,33 @@ const DomainsPage: React.FC = () => {
                              </div>
                           </div>
                        </div>
-                       <div className="flex flex-wrap gap-3">
-                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('finance'); }} className="px-6 py-3 rounded-2xl bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black hover:bg-amber-600 dark:hover:bg-fantasy-gold/90 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
-                              <Coins size={18}/> Tesouro
+                       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 w-full xl:w-auto">
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('finance'); }} className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-amber-500 dark:bg-fantasy-gold text-stone-950 dark:text-black hover:bg-amber-600 dark:hover:bg-fantasy-gold/90 font-medieval uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-md font-bold active:scale-95">
+                              <Coins size={16} className="shrink-0"/> Tesouro
                           </button>
-                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-6 py-3 rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-700 dark:hover:bg-amber-700 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
-                              <Dices size={18}/> Eventos
+                           <button onClick={() => { setActiveDomainId(domain.id); setModalMode('event'); }} className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-600 dark:bg-amber-800 text-white dark:text-amber-100 hover:bg-orange-700 dark:hover:bg-amber-700 font-medieval uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-md font-bold active:scale-95">
+                              <Dices size={16} className="shrink-0"/> Eventos
                           </button>
-                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-6 py-3 rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95">
-                               <Zap size={18}/> Crise
+                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('crisis'); }} className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-red-800 dark:bg-red-950 text-white dark:text-red-200 hover:bg-red-900 dark:hover:bg-red-900 font-medieval uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-md font-bold active:scale-95">
+                               <Zap size={16} className="shrink-0"/> Crise
                            </button>
-                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('levelup'); }} className="px-6 py-3 rounded-2xl bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 hover:bg-purple-800 dark:hover:bg-purple-800 font-medieval uppercase tracking-widest text-sm flex items-center gap-2 transition-all shadow-md font-bold active:scale-95" title="Concessão do Mestre — evolução gratuita sem custo de ação">
-                               <Sparkles size={18}/> Mestre
+                            <button onClick={() => { setActiveDomainId(domain.id); setModalMode('levelup'); }} className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-purple-700 dark:bg-purple-900 text-white dark:text-purple-200 hover:bg-purple-800 dark:hover:bg-purple-800 font-medieval uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-md font-bold active:scale-95" title="Concessão do Mestre — evolução gratuita sem custo de ação">
+                               <Sparkles size={16} className="shrink-0"/> Mestre
                            </button>
-                            <button onClick={() => openStatsModal(domain)} className="px-4 py-3 rounded-2xl bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-all border border-stone-300 dark:border-stone-700 shadow-md active:scale-95">
-                               <Settings size={20}/>
-                            </button>
-                           {(domain.court === 'Comum' || domain.court === 'Rica') && (
-                              <button onClick={() => { setActiveDomainId(domain.id); setModalMode('advisors'); }} className="px-4 py-3 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-all border border-purple-200 dark:border-purple-900/50 shadow-md active:scale-95" title="Conselheiros da Corte">
-                                 <Crown size={20}/>
-                              </button>
-                           )}
-                           <button onClick={() => { if(confirm("Abandonar este domínio?")) demolishDomain(domain.id); }} className="px-4 py-3 rounded-2xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all border border-red-200 dark:border-red-900/50 shadow-md active:scale-95">
-                              <Trash2 size={20}/>
-                           </button>
+                           
+                           <div className="col-span-2 sm:col-span-1 flex items-center justify-end gap-2">
+                             <button onClick={() => openStatsModal(domain)} className="flex-1 sm:flex-none px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-all border border-stone-300 dark:border-stone-700 shadow-md active:scale-95 flex items-center justify-center" title="Estatísticas e Configurações">
+                                <Settings size={18}/>
+                             </button>
+                             {(domain.court === 'Comum' || domain.court === 'Rica') && (
+                                <button onClick={() => { setActiveDomainId(domain.id); setModalMode('advisors'); }} className="flex-1 sm:flex-none px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-all border border-purple-200 dark:border-purple-900/50 shadow-md active:scale-95 flex items-center justify-center" title="Conselheiros da Corte">
+                                   <Crown size={18}/>
+                                </button>
+                             )}
+                             <button onClick={() => { if(confirm("Abandonar este domínio?")) demolishDomain(domain.id); }} className="flex-1 sm:flex-none px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all border border-red-200 dark:border-red-900/50 shadow-md active:scale-95 flex items-center justify-center" title="Abandonar Domínio">
+                                <Trash2 size={18}/>
+                             </button>
+                           </div>
                        </div>
                     </div>
 
