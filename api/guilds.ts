@@ -8,18 +8,20 @@ export const config = {
   runtime: 'edge',
 };
 
-async function getGuildData(client: any, id: string, field?: string, jsonbFilter?: string) {
-  if (field) {
-    const query = jsonbFilter
-      ? `SELECT ${jsonbFilter} AS data FROM guilds WHERE id = $1`
-      : `SELECT data->'${field}' AS data FROM guilds WHERE id = $1`;
-    const result = await client.sql.query(query, [id]);
-    if (result.rowCount === 0) return null;
-    return result.rows[0]?.data;
-  }
+async function getGuildData(client: any, id: string, field?: string, statusFilter?: string | null) {
   const result = await client.sql`SELECT data FROM guilds WHERE id = ${id}`;
   if (result.rowCount === 0) return null;
-  return result.rows[0]?.data;
+  const data = result.rows[0]?.data;
+  if (!data) return null;
+
+  if (field === 'members' && statusFilter) {
+    const members = Array.isArray(data.members) ? data.members : [];
+    return members.filter((m: any) => m.status === statusFilter);
+  }
+  if (field) {
+    return data[field] ?? null;
+  }
+  return data;
 }
 
 export default async function handler(request: Request) {
@@ -65,7 +67,6 @@ export default async function handler(request: Request) {
       const statusFilter = url.searchParams.get('status');
 
       let partialField: string | undefined;
-      let jsonbFilter: string | undefined;
 
       switch (subResource) {
         case 'members':
@@ -76,11 +77,8 @@ export default async function handler(request: Request) {
                 error: `Status inválido. Valores: ${validStatuses.join(', ')}`
               }), { status: 400 });
             }
-            jsonbFilter = `SELECT jsonb_path_query_array(data, '$.members[*] ? (@.status == "${statusFilter}")') AS data`;
-            partialField = 'members_filtered';
-          } else {
-            partialField = 'members';
           }
+          partialField = 'members';
           break;
         case 'domains':
           partialField = 'domains';
@@ -95,7 +93,7 @@ export default async function handler(request: Request) {
           return new Response(JSON.stringify({ error: 'Recurso não encontrado' }), { status: 404 });
       }
 
-      const data = await getGuildData(client, id, partialField, jsonbFilter);
+      const data = await getGuildData(client, id, partialField, statusFilter);
       if (data === null) {
         return new Response(JSON.stringify({ error: 'Guilda não encontrada' }), { status: 404 });
       }
@@ -147,7 +145,9 @@ export default async function handler(request: Request) {
               headers: { 'content-type': 'application/json' }
             });
           }
-        } catch (_) {}
+        } catch (adminErr) {
+          console.debug('Admin fallback auth check skipped:', adminErr);
+        }
 
         return new Response(JSON.stringify({ error: 'Acesso negado ou Guilda não encontrada' }), { status: 403 });
       } else {
@@ -201,7 +201,9 @@ export default async function handler(request: Request) {
               authOk = true;
               useStoredHash = true;
             }
-          } catch (_) {}
+          } catch (jwtErr) {
+            console.debug('JWT fallback auth check skipped:', jwtErr);
+          }
         }
 
         if (!authOk) {
@@ -223,12 +225,12 @@ export default async function handler(request: Request) {
           const patchFields = { guildName, version, ...rest };
           for (const [key, value] of Object.entries(patchFields)) {
             const jsonValue = JSON.stringify(value);
-            await client.sql.query(
-              `UPDATE guilds SET data = jsonb_set(data, '{${key}}', $1::jsonb), updated_at = NOW() WHERE id = $2`,
-              [jsonValue, id]
+            await client.query(
+              `UPDATE guilds SET data = jsonb_set(data, $1, $2::jsonb), updated_at = NOW() WHERE id = $3`,
+              [`{${key}}`, jsonValue, id]
             );
           }
-          await client.sql.query(
+          await client.query(
             `UPDATE guilds SET guild_name = $1, updated_at = NOW() WHERE id = $2`,
             [guildName, id]
           );
@@ -277,7 +279,9 @@ export default async function handler(request: Request) {
         try {
           const jwtAuth = await authenticate(request, { allowAdmin: true });
           if (jwtAuth.role === 'admin' || jwtAuth.userId === id) canDelete = true;
-        } catch (_) {}
+        } catch (jwtErr) {
+          console.debug('Delete auth check skipped:', jwtErr);
+        }
       }
 
       if (!canDelete) {

@@ -3,25 +3,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { GuildProvider, useGuild } from './context/GuildContext';
 import Sidebar from './components/Sidebar';
-import FinancialPage from './pages/FinancialPage';
-import CashFlowPage from './pages/CashFlowPage';
-import InventoryPage from './pages/InventoryPage';
-import ItemHistoryPage from './pages/ItemHistoryPage';
-import BasesPage from './pages/BasesPage';
-import DomainsPage from './pages/DomainsPage';
-import ConglomeratesPage from './pages/ConglomeratesPage';
-import InvestmentsPage from './pages/InvestmentsPage';
-import MembersPage from './pages/MembersPage';
-import DivinePointsPage from './pages/DivinePointsPage';
-import DashboardPage from './pages/DashboardPage';
-import GuildManagerPage from './pages/GuildManagerPage';
-import NPCsPage from './pages/NPCsPage';
-import ChroniclesPage from './pages/ChroniclesPage';
-import QuestBoardPage from './pages/QuestBoardPage';
-import CalendarPage from './pages/CalendarPage';
-import ReputationPage from './pages/ReputationPage';
 import Logo from './components/Logo';
 import { Menu, AlertTriangle, Scroll, Loader } from 'lucide-react';
+
+const FinancialPage = React.lazy(() => import('./pages/FinancialPage'));
+const CashFlowPage = React.lazy(() => import('./pages/CashFlowPage'));
+const InventoryPage = React.lazy(() => import('./pages/InventoryPage'));
+const ItemHistoryPage = React.lazy(() => import('./pages/ItemHistoryPage'));
+const BasesPage = React.lazy(() => import('./pages/BasesPage'));
+const DomainsPage = React.lazy(() => import('./pages/DomainsPage'));
+const ConglomeratesPage = React.lazy(() => import('./pages/ConglomeratesPage'));
+const InvestmentsPage = React.lazy(() => import('./pages/InvestmentsPage'));
+const MembersPage = React.lazy(() => import('./pages/MembersPage'));
+const DivinePointsPage = React.lazy(() => import('./pages/DivinePointsPage'));
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
+const GuildManagerPage = React.lazy(() => import('./pages/GuildManagerPage'));
+const NPCsPage = React.lazy(() => import('./pages/NPCsPage'));
+const ChroniclesPage = React.lazy(() => import('./pages/ChroniclesPage'));
+const QuestBoardPage = React.lazy(() => import('./pages/QuestBoardPage'));
+const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
+const ReputationPage = React.lazy(() => import('./pages/ReputationPage'));
 
 const Toast: React.FC = () => {
   const { feedback } = useGuild();
@@ -130,29 +131,31 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Layout>
-      <Routes>
-        <Route path="/guilds" element={<GuildManagerPage />} />
-        
-        {/* Rotas Protegidas */}
-        <Route path="/" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/quests" element={isAuthenticated ? <QuestBoardPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/calendar" element={isAuthenticated ? <CalendarPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/members" element={isAuthenticated ? <MembersPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/divine-points" element={isAuthenticated ? <DivinePointsPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/finance" element={isAuthenticated ? <FinancialPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/inventory" element={isAuthenticated ? <InventoryPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/itemhistory" element={isAuthenticated ? <ItemHistoryPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/bases" element={isAuthenticated ? <BasesPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/domains" element={isAuthenticated ? <DomainsPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/conglomerates" element={isAuthenticated ? <ConglomeratesPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/npcs" element={isAuthenticated ? <NPCsPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/investments" element={isAuthenticated ? <InvestmentsPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/reputation" element={isAuthenticated ? <ReputationPage /> : <Navigate to="/guilds" replace />} />
-        <Route path="/chronicles" element={isAuthenticated ? <ChroniclesPage /> : <Navigate to="/guilds" replace />} />
-        
-        <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/guilds"} replace />} />
-      </Routes>
+      <React.Suspense fallback={<LoadingScreen />}>
+        <Routes>
+          <Route path="/guilds" element={<GuildManagerPage />} />
+          
+          {/* Rotas Protegidas */}
+          <Route path="/" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/quests" element={isAuthenticated ? <QuestBoardPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/calendar" element={isAuthenticated ? <CalendarPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/members" element={isAuthenticated ? <MembersPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/divine-points" element={isAuthenticated ? <DivinePointsPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/finance" element={isAuthenticated ? <FinancialPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/inventory" element={isAuthenticated ? <InventoryPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/itemhistory" element={isAuthenticated ? <ItemHistoryPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/bases" element={isAuthenticated ? <BasesPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/domains" element={isAuthenticated ? <DomainsPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/conglomerates" element={isAuthenticated ? <ConglomeratesPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/npcs" element={isAuthenticated ? <NPCsPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/investments" element={isAuthenticated ? <InvestmentsPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/cashflow" element={isAuthenticated ? <CashFlowPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/reputation" element={isAuthenticated ? <ReputationPage /> : <Navigate to="/guilds" replace />} />
+          <Route path="/chronicles" element={isAuthenticated ? <ChroniclesPage /> : <Navigate to="/guilds" replace />} />
+          
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/guilds"} replace />} />
+        </Routes>
+      </React.Suspense>
     </Layout>
   );
 };

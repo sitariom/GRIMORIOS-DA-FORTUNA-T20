@@ -24,6 +24,7 @@ const initialGuildState: GuildState = {
   members: [],
   calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
   quests: [],
+  conglomerates: [],
   pointsOfInterest: [],
   reputations: []
 };

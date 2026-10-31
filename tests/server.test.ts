@@ -15,7 +15,7 @@ const spawnCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 const serverProcess = spawn(spawnCmd, ['tsx', 'server.ts'], {
   cwd: path.resolve(process.cwd()),
   env: { ...process.env, PORT: '3001', NODE_ENV: 'test' },
-  shell: true
+  detached: process.platform !== 'win32'
 });
 
 let serverOutput = '';
@@ -86,7 +86,18 @@ async function runTests() {
 
 function cleanup(code: number) {
   console.log("Finalizando processo do servidor...");
-  serverProcess.kill('SIGTERM');
+  if (serverProcess.pid) {
+    if (process.platform !== 'win32') {
+      try {
+        process.kill(-serverProcess.pid, 'SIGKILL');
+      } catch (err) {
+        console.warn(`Aviso ao finalizar processo do servidor: ${err}`);
+        serverProcess.kill('SIGKILL');
+      }
+    } else {
+      serverProcess.kill('SIGKILL');
+    }
+  }
   process.exit(code);
 }
 

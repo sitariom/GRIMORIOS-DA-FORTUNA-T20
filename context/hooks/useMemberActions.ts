@@ -14,6 +14,7 @@ export const useMemberActions = ({ activeGuild, triggerSave, notify, internalAdd
       id: crypto.randomUUID(),
       name,
       status: 'Ativo',
+      strength: 0,
       wallet: { TC: 0, TS: 0, TO: 0, LO: 0 },
       inventory: []
     };

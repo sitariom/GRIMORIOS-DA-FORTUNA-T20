@@ -1,5 +1,5 @@
 
-import { Item, BasePorte, BaseType, CourtType, PopularityType, ItemRarity, ItemCategory, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
+import { Item, ItemType, BasePorte, BaseType, CourtType, PopularityType, ItemRarity, ItemCategory, DomainBuilding, DomainUnit, BusinessAsset } from "./types";
 
 export const PORTE_DATA: Record<BasePorte, { cost: number; maintenance: number; slots: number; label: string }> = {
   Minima: { cost: 1000, maintenance: 100, slots: 0, label: 'Mínima (T$ 1k)' },
@@ -143,7 +143,7 @@ export const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
   Riqueza: 'Tesouro',
 };
 
-export const CATEGORY_TO_TYPE: Record<ItemCategory, string> = {
+export const CATEGORY_TO_TYPE: Record<ItemCategory, ItemType> = {
   Arma: 'Arma',
   ArmaduraEscudo: 'Equipamento',
   Consumivel: 'Consumivel',

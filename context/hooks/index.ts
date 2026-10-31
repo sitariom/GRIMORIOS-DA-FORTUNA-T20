@@ -3,6 +3,7 @@ export { useMemberActions } from './useMemberActions';
 export { useItemActions } from './useItemActions';
 export { useBaseActions } from './useBaseActions';
 export { useDomainActions } from './useDomainActions';
+export { useConglomerateActions } from './useConglomerateActions';
 export { useNPCActions } from './useNPCActions';
 export { useCalendarActions } from './useCalendarActions';
 export { useQuestActions } from './useQuestActions';
