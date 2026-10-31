@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { useGuild } from '../context/GuildContext';
 import { Item, ItemRarity, ItemCategory } from '../types';
 import { RARITY_CONFIG, SPACE_OPTIONS, CATEGORY_CONFIG, ITEM_CATEGORIES, CATEGORY_TO_TYPE } from '../constants';
-import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Filter, Ban, Coins, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
+import { PackagePlus, Trash2, Edit, X, Shield, Sword, Sparkles, ShoppingBag, ArrowRightLeft, Search, Ban, CheckSquare, Square, ChevronUp, ChevronDown, Package } from 'lucide-react';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
 import { CardSkeleton } from '../components/LoadingSkeleton';
@@ -170,99 +170,269 @@ const InventoryPage: React.FC = () => {
         {filteredItems.length === 0 ? (
           <EmptyState icon={Package} title="Nenhum item encontrado..." description="Adicione itens ao arsenal da guilda." />
         ) : (
-          <div className="parchment-card rounded-[32px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-serif table-fixed">
-                <thead className="bg-fantasy-wood/5 dark:bg-black/20 border-b-2 border-fantasy-wood/20 dark:border-white/10">
-                  <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em] whitespace-nowrap">
-                    <th className="px-6 py-8 text-center w-16">
-                        <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity active:scale-95" type="button">
-                            {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
-                        </button>
-                    </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[30%]" onClick={() => handleSort('name')}>
-                        Relíquia / Bem <SortIcon field="name"/>
-                    </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[15%]" onClick={() => handleSort('type')}>
-                        Essência <SortIcon field="type"/>
-                    </th>
-                    <th className="px-6 py-8 text-center w-[10%]">Espaço</th>
-                    <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[10%]" onClick={() => handleSort('quantity')}>
-                        Qtd <SortIcon field="quantity"/>
-                    </th>
-                    <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[18%]" onClick={() => handleSort('value')}>
-                        Valor Estimado <SortIcon field="value"/>
-                    </th>
-                    <th className="px-6 py-8 text-right w-[20%]">Ações de Gestão</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
-                  {sortedItems.map((item, index) => {
-                    const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
-                    const isSelected = selectedIds.has(item.id);
-                    
-                    return (
-                    <AnimatedCard key={item.id} as="tr" delay={index * 60} className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
-                      <td className="px-6 py-8 text-center">
-                          <button type="button" onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
-                              {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
+          <>
+            {/* Visão Desktop: Tabela clássica protegida com min-w para evitar sobreposições */}
+            <div className="hidden md:block parchment-card rounded-[32px] overflow-hidden shadow-5xl border-4 border-fantasy-gold/20">
+              <div className="overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left font-serif table-fixed min-w-[900px]">
+                  <thead className="bg-fantasy-wood/5 dark:bg-black/20 border-b-2 border-fantasy-wood/20 dark:border-white/10">
+                    <tr className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment tracking-[0.3em] whitespace-nowrap">
+                      <th className="px-6 py-8 text-center w-16">
+                          <button onClick={toggleSelectAll} className="opacity-50 hover:opacity-100 transition-opacity active:scale-95" type="button">
+                              {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
                           </button>
-                      </td>
-                      <td className="px-6 py-8 truncate">
-                        <div className={`font-medieval text-2xl leading-none mb-3 truncate ${rarityStyle.color}`}>{item.name}</div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${rarityStyle.border} ${rarityStyle.color}`}>
-                              {rarityStyle.label}
+                      </th>
+                      <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[30%]" onClick={() => handleSort('name')}>
+                          Relíquia / Bem <SortIcon field="name"/>
+                      </th>
+                      <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[15%]" onClick={() => handleSort('type')}>
+                          Essência <SortIcon field="type"/>
+                      </th>
+                      <th className="px-6 py-8 text-center w-[10%]">Espaço</th>
+                      <th className="px-6 py-8 text-center cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[10%]" onClick={() => handleSort('quantity')}>
+                          Qtd <SortIcon field="quantity"/>
+                      </th>
+                      <th className="px-6 py-8 cursor-pointer hover:text-fantasy-gold transition-colors select-none active:scale-95 w-[18%]" onClick={() => handleSort('value')}>
+                          Valor Estimado <SortIcon field="value"/>
+                      </th>
+                      <th className="px-6 py-8 text-right w-[20%]">Ações de Gestão</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-fantasy-wood/10 dark:divide-white/5">
+                    {sortedItems.map((item, index) => {
+                      const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
+                      const isSelected = selectedIds.has(item.id);
+                      
+                      return (
+                      <AnimatedCard key={item.id} as="tr" delay={index * 60} className={`transition-colors group ${rarityStyle.bg} ${isSelected ? 'bg-fantasy-gold/20' : 'hover:bg-fantasy-gold/5'} hover:shadow-2xl hover:scale-[1.02] transition-all duration-300`}>
+                        <td className="px-6 py-8 text-center">
+                            <button type="button" onClick={() => toggleSelection(item.id)} className={`transition-all active:scale-95 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/20 dark:text-fantasy-parchment/20 hover:text-fantasy-gold'}`}>
+                                {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
+                            </button>
+                        </td>
+                        <td className="px-6 py-8 truncate">
+                          <div className={`font-medieval text-2xl leading-none mb-3 truncate ${rarityStyle.color}`}>{item.name}</div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={`text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${rarityStyle.border} ${rarityStyle.color}`}>
+                                {rarityStyle.label}
+                            </span>
+                            {item.isQuestItem && <span className="text-[8px] bg-purple-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Item de Missão</span>}
+                            {item.isNonNegotiable && <span className="text-[8px] bg-red-800 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Inalienável</span>}
+                            {item.carryBonus ? <span className="text-[8px] bg-cyan-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">+{item.carryBonus} Carga</span> : null}
+                          </div>
+                        </td>
+                        <td className="px-6 py-8">
+                          <span className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 flex items-center gap-3 tracking-widest border border-fantasy-wood/10 dark:border-white/10 px-4 py-2 rounded-full w-max">
+                            {item.type === 'Arma' ? <Sword size={16}/> : item.type === 'Equipamento' ? <Shield size={16}/> : <Sparkles size={16}/>}
+                            {item.type}
                           </span>
-                          {item.isQuestItem && <span className="text-[8px] bg-purple-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Item de Missão</span>}
-                          {item.isNonNegotiable && <span className="text-[8px] bg-red-800 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">Inalienável</span>}
-                          {item.carryBonus ? <span className="text-[8px] bg-cyan-700 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">+{item.carryBonus} Carga</span> : null}
-                        </div>
-                      </td>
-                      <td className="px-6 py-8">
-                        <span className="text-[10px] font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 flex items-center gap-3 tracking-widest border border-fantasy-wood/10 dark:border-white/10 px-4 py-2 rounded-full w-max">
-                          {item.type === 'Arma' ? <Sword size={16}/> : item.type === 'Equipamento' ? <Shield size={16}/> : <Sparkles size={16}/>}
-                          {item.type}
-                        </span>
-                        {item.category && (
-                          <span className="text-[8px] font-black uppercase text-fantasy-gold/60 mt-2 block tracking-widest">{CATEGORY_CONFIG[item.category]?.label || item.category}</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-8 text-center font-medieval text-2xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">
-                        {item.space}{item.space === 0.5 ? '' : ''}
-                        <span className="text-[10px] ml-1 opacity-60">esp{item.space !== 1 ? 's' : ''}</span>
-                      </td>
-                      <td className="px-6 py-8 text-center font-medieval text-3xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">{item.quantity}</td>
-                      <td className="px-6 py-8">
-                         <div className="font-medieval text-2xl text-emerald-800 dark:text-emerald-400">T$ {item.value.toLocaleString()}</div>
-                         <div className="text-[9px] text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-black uppercase tracking-widest mt-1">Total: T$ {(item.value * item.quantity).toLocaleString()}</div>
-                      </td>
-                      <td className="px-6 py-8 text-right">
-                        <div className="flex justify-end gap-3">
-                          {item.isNonNegotiable ? (
-                             <div className="p-4 opacity-50 cursor-not-allowed" title="Item Inalienável"><Ban size={20} className="text-red-900 dark:text-red-500"/></div>
-                          ) : (
-                             <button type="button" onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all active:scale-95">
-                                <ShoppingBag size={20} />
-                             </button>
+                          {item.category && (
+                            <span className="text-[8px] font-black uppercase text-fantasy-gold/60 mt-2 block tracking-widest">{CATEGORY_CONFIG[item.category]?.label || item.category}</span>
                           )}
-                          <button type="button" onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all active:scale-95">
-                            <ArrowRightLeft size={20} />
-                          </button>
-                          <button type="button" onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
-                            <Edit size={20} />
-                          </button>
-                          <button type="button" onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all active:scale-95">
-                            <Trash2 size={20} />
-                          </button>
-                        </div>
-                      </td>
-                    </AnimatedCard>
-                  )})}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="px-6 py-8 text-center font-medieval text-2xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">
+                          {item.space}
+                          <span className="text-[10px] ml-1 opacity-60">esp{item.space !== 1 ? 's' : ''}</span>
+                        </td>
+                        <td className="px-6 py-8 text-center font-medieval text-3xl text-fantasy-wood/80 dark:text-fantasy-parchment/80">{item.quantity}</td>
+                        <td className="px-6 py-8">
+                           <div className="font-medieval text-2xl text-emerald-800 dark:text-emerald-400">T$ {item.value.toLocaleString()}</div>
+                           <div className="text-[9px] text-fantasy-wood/40 dark:text-fantasy-parchment/40 font-black uppercase tracking-widest mt-1">Total: T$ {(item.value * item.quantity).toLocaleString()}</div>
+                        </td>
+                        <td className="px-6 py-8 text-right">
+                          <div className="flex justify-end gap-3">
+                            {item.isNonNegotiable ? (
+                               <div className="p-4 opacity-50 cursor-not-allowed" title="Item Inalienável"><Ban size={20} className="text-red-900 dark:text-red-500"/></div>
+                            ) : (
+                               <button type="button" onClick={() => { setActiveItem(item); setModalMode('sell'); }} title="Vender" className="p-4 bg-emerald-700/10 hover:bg-emerald-700/20 text-emerald-800 dark:text-emerald-400 rounded-2xl transition-all active:scale-95">
+                                  <ShoppingBag size={20} />
+                               </button>
+                            )}
+                            <button type="button" onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} title="Retirar" className="p-4 bg-blue-700/10 hover:bg-blue-700/20 text-blue-800 dark:text-blue-400 rounded-2xl transition-all active:scale-95">
+                              <ArrowRightLeft size={20} />
+                            </button>
+                            <button type="button" onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} title="Editar" className="p-4 bg-fantasy-wood/5 dark:bg-white/5 hover:bg-fantasy-wood/10 dark:hover:bg-white/10 rounded-2xl text-fantasy-wood dark:text-fantasy-parchment transition-all active:scale-95">
+                              <Edit size={20} />
+                            </button>
+                            <button type="button" onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} title="Remover" className="p-4 bg-red-700/10 hover:bg-red-700/20 text-red-800 dark:text-red-400 rounded-2xl transition-all active:scale-95">
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
+                        </td>
+                      </AnimatedCard>
+                    )})}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Visão Mobile: Cards individuais dedicados para eliminar qualquer sobreposição */}
+            <div className="md:hidden space-y-4">
+              {/* Barra de controle mobile: Selecionar Todos + Ordenação rápida */}
+              <div className="parchment-card p-3 rounded-2xl border border-fantasy-gold/30 flex items-center justify-between gap-2 shadow-md">
+                <button 
+                  type="button" 
+                  onClick={toggleSelectAll} 
+                  className="flex items-center gap-2 font-black uppercase text-[10px] tracking-wider text-fantasy-wood dark:text-fantasy-parchment active:scale-95"
+                >
+                  {selectedIds.size === sortedItems.length && sortedItems.length > 0 ? (
+                    <CheckSquare size={18} className="text-fantasy-gold"/>
+                  ) : (
+                    <Square size={18} className="text-fantasy-wood/40 dark:text-fantasy-parchment/40"/>
+                  )}
+                  <span>{selectedIds.size > 0 ? `${selectedIds.size} selecionado(s)` : 'Todos'}</span>
+                </button>
+                
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50">Ordem:</span>
+                  <select 
+                    className="bg-black/5 dark:bg-black/40 border border-fantasy-wood/20 dark:border-white/10 rounded-lg px-2 py-1 text-[10px] font-black uppercase text-fantasy-wood dark:text-fantasy-parchment focus:outline-none"
+                    value={sortField}
+                    onChange={e => handleSort(e.target.value as SortField)}
+                  >
+                    <option value="name" className="dark:bg-black">Nome</option>
+                    <option value="type" className="dark:bg-black">Essência</option>
+                    <option value="quantity" className="dark:bg-black">Qtd</option>
+                    <option value="value" className="dark:bg-black">Valor</option>
+                  </select>
+                  <button 
+                    type="button" 
+                    onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="p-1 rounded bg-black/5 dark:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment active:scale-95"
+                    title={sortDirection === 'asc' ? 'Crescente' : 'Decrescente'}
+                  >
+                    {sortDirection === 'asc' ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de Cards de Itens Mobile */}
+              {sortedItems.map((item, index) => {
+                const rarityStyle = RARITY_CONFIG[item.rarity || 'Comum'];
+                const isSelected = selectedIds.has(item.id);
+
+                return (
+                  <AnimatedCard 
+                    key={item.id} 
+                    delay={index * 30} 
+                    className={`parchment-card p-4 rounded-2xl border-2 ${rarityStyle.border} ${rarityStyle.bg} ${isSelected ? 'ring-2 ring-fantasy-gold bg-fantasy-gold/20' : ''} shadow-lg transition-all`}
+                  >
+                    {/* Linha Superior: Checkbox + Nome + Valor */}
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        <button 
+                          type="button" 
+                          onClick={() => toggleSelection(item.id)} 
+                          className={`mt-0.5 shrink-0 transition-transform active:scale-90 ${isSelected ? 'text-fantasy-gold scale-110' : 'text-fantasy-wood/30 dark:text-fantasy-parchment/30'}`}
+                        >
+                          {isSelected ? <CheckSquare size={20}/> : <Square size={20}/>}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <h4 className={`font-medieval text-lg font-bold leading-tight break-words ${rarityStyle.color}`}>
+                            {item.name}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="font-medieval text-lg text-emerald-800 dark:text-emerald-400 font-bold whitespace-nowrap leading-none">
+                          T$ {item.value.toLocaleString()}
+                        </div>
+                        <div className="text-[8px] font-black uppercase text-fantasy-wood/50 dark:text-fantasy-parchment/50 mt-1">
+                          Total: T$ {(item.value * item.quantity).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Badges de Atributo */}
+                    <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                      <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider border ${rarityStyle.border} ${rarityStyle.color}`}>
+                        {rarityStyle.label}
+                      </span>
+                      <span className="text-[8px] font-black uppercase text-fantasy-wood/70 dark:text-fantasy-parchment/70 flex items-center gap-1 border border-fantasy-wood/15 dark:border-white/10 px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5">
+                        {item.type === 'Arma' ? <Sword size={11}/> : item.type === 'Equipamento' ? <Shield size={11}/> : <Sparkles size={11}/>}
+                        {item.type}
+                      </span>
+                      {item.category && (
+                        <span className="text-[8px] font-black uppercase text-fantasy-gold/80 px-2 py-0.5 rounded-full bg-fantasy-gold/10 border border-fantasy-gold/20">
+                          {CATEGORY_CONFIG[item.category]?.label || item.category}
+                        </span>
+                      )}
+                      {item.isQuestItem && (
+                        <span className="text-[8px] bg-purple-700 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                          Missão
+                        </span>
+                      )}
+                      {item.isNonNegotiable && (
+                        <span className="text-[8px] bg-red-800 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                          Inalienável
+                        </span>
+                      )}
+                      {item.carryBonus ? (
+                        <span className="text-[8px] bg-cyan-700 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                          +{item.carryBonus} Carga
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Painel de Métricas (Quantidade e Espaço) */}
+                    <div className="grid grid-cols-2 gap-2 p-2 bg-black/5 dark:bg-black/20 rounded-xl mb-3 text-center border border-fantasy-wood/5 dark:border-white/5">
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/40 block">Estoque</span>
+                        <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment font-bold">{item.quantity} un</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-fantasy-wood/50 dark:text-fantasy-parchment/40 block">Carga</span>
+                        <span className="font-medieval text-base text-fantasy-wood dark:text-fantasy-parchment font-bold">{item.space} esp</span>
+                      </div>
+                    </div>
+
+                    {/* Barra de Ações Mobile Limpa e Confortável */}
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-fantasy-wood/10 dark:border-white/5">
+                      {item.isNonNegotiable ? (
+                        <div className="p-2 opacity-50 cursor-not-allowed" title="Item Inalienável">
+                          <Ban size={18} className="text-red-900 dark:text-red-500"/>
+                        </div>
+                      ) : (
+                        <button 
+                          type="button" 
+                          onClick={() => { setActiveItem(item); setModalMode('sell'); }} 
+                          title="Vender Item" 
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700/15 hover:bg-emerald-700/25 text-emerald-800 dark:text-emerald-400 rounded-xl text-xs font-medieval uppercase transition-all active:scale-95"
+                        >
+                          <ShoppingBag size={14}/> <span>Vender</span>
+                        </button>
+                      )}
+                      <button 
+                        type="button" 
+                        onClick={() => { setActiveItem(item); setModalMode('withdraw'); }} 
+                        title="Retirar para Aventureiro" 
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-700/15 hover:bg-blue-700/25 text-blue-800 dark:text-blue-400 rounded-xl text-xs font-medieval uppercase transition-all active:scale-95"
+                      >
+                        <ArrowRightLeft size={14}/> <span>Retirar</span>
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => { setActiveItem(item); setTempItemData({...item}); setModalMode('edit'); }} 
+                        title="Editar Informações" 
+                        className="p-2 bg-fantasy-wood/10 dark:bg-white/10 hover:bg-fantasy-wood/20 text-fantasy-wood dark:text-fantasy-parchment rounded-xl transition-all active:scale-95"
+                      >
+                        <Edit size={16}/>
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => { setActiveItem(item); setOpQty(1); setModalMode('delete'); }} 
+                        title="Remover Registro" 
+                        className="p-2 bg-red-700/15 hover:bg-red-700/25 text-red-800 dark:text-red-400 rounded-xl transition-all active:scale-95"
+                      >
+                        <Trash2 size={16}/>
+                      </button>
+                    </div>
+                  </AnimatedCard>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
@@ -272,22 +442,22 @@ const InventoryPage: React.FC = () => {
             <button onClick={closeModal} className="absolute top-4 right-4 sm:top-8 sm:right-10 text-fantasy-wood/40 dark:text-fantasy-parchment/40 hover:text-fantasy-wood p-2 sm:p-4 bg-white/20 dark:bg-black/20 rounded-full transition-colors active:scale-95"><X size={20} className="sm:scale-125"/></button>
 
             {(modalMode === 'add' || modalMode === 'edit') && (
-                <form onSubmit={handleSaveItem} className="space-y-10">
+                <form onSubmit={handleSaveItem} className="space-y-6 sm:space-y-10">
                     <div className="flex flex-col items-center text-center">
-                       <div className="wax-seal w-24 h-24 mb-6 flex items-center justify-center text-white shadow-2xl animate-float"><PackagePlus size={48}/></div>
-                       <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'add' ? 'Registrar Nova Relíquia' : 'Alterar Registro do Arsenal'}</h3>
+                       <div className="wax-seal w-16 h-16 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center text-white shadow-2xl animate-float"><PackagePlus size={32} className="sm:scale-150"/></div>
+                       <h3 className="text-2xl sm:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'add' ? 'Registrar Nova Relíquia' : 'Alterar Registro do Arsenal'}</h3>
                     </div>
                     
-                    <div className="space-y-8">
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Nomenclatura da Peça</label>
-                           <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl focus:outline-none focus:border-fantasy-gold shadow-inner" required 
+                    <div className="space-y-6 sm:space-y-8">
+                        <div className="space-y-2 sm:space-y-3">
+                           <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Nomenclatura da Peça</label>
+                           <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl focus:outline-none focus:border-fantasy-gold shadow-inner" required 
                              value={tempItemData.name} onChange={e => setTempItemData({...tempItemData, name: e.target.value})} placeholder="Ex: Machado de Valkaria" />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Categoria</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Categoria</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.category || ''} onChange={e => {
                                         const cat = e.target.value as ItemCategory;
                                         setTempItemData({...tempItemData, category: cat || undefined, type: cat ? (CATEGORY_TO_TYPE[cat] || tempItemData.type) : tempItemData.type, subcategory: undefined});
@@ -297,9 +467,9 @@ const InventoryPage: React.FC = () => {
                                 </select>
                             </div>
                             {tempItemData.category && CATEGORY_CONFIG[tempItemData.category]?.subcategories.length > 0 && (
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Subcategoria</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Subcategoria</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.subcategory || ''} onChange={e => setTempItemData({...tempItemData, subcategory: e.target.value || undefined})}>
                                     <option value="" className="dark:bg-black">Nenhuma</option>
                                     {CATEGORY_CONFIG[tempItemData.category].subcategories.map(s => <option key={s} value={s} className="dark:bg-black">{s.replace(/\//g, ' / ')}</option>)}
@@ -307,58 +477,58 @@ const InventoryPage: React.FC = () => {
                             </div>
                             )}
                             {tempItemData.rarity === 'Superior' && (
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Material Especial</label>
-                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Material Especial</label>
+                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl shadow-inner"
                                     value={tempItemData.specialMaterial || ''} onChange={e => setTempItemData({...tempItemData, specialMaterial: e.target.value || undefined})} placeholder="Ex: Aço-Rubi, Tábuas de Carvalho" />
                             </div>
                             )}
                             {tempItemData.rarity === 'Superior' && (
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Melhorias (separadas por vírgula)</label>
-                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Melhorias (separadas por vírgula)</label>
+                                <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl shadow-inner"
                                     value={tempItemData.improvements?.join(', ') || ''} onChange={e => setTempItemData({...tempItemData, improvements: e.target.value ? e.target.value.split(',').map(s => s.trim()) : undefined})} placeholder="Ex: Masterizada, Maciça" />
                             </div>
                             )}
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Raridade</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Raridade</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.rarity} onChange={e => setTempItemData({...tempItemData, rarity: e.target.value as ItemRarity})}>
                                     {Object.keys(RARITY_CONFIG).map(r => <option key={r} value={r} className="dark:bg-black">{r}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade no Cofre</label>
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Quantidade no Cofre</label>
                                 <input 
                                   type="number" 
                                   min="1" 
-                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl shadow-inner"
                                   value={tempItemData.quantity} 
                                   onChange={e => setTempItemData({...tempItemData, quantity: Number(e.target.value)})}
                                   onFocus={(e) => e.target.select()}
                                 />
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Valor Unitário (T$)</label>
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Valor Unitário (T$)</label>
                                 <input 
                                   type="number" 
                                   min="0" 
-                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl shadow-inner"
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl shadow-inner"
                                   value={tempItemData.value} 
                                   onChange={e => setTempItemData({...tempItemData, value: Number(e.target.value)})}
                                   onFocus={(e) => e.target.select()}
                                 />
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Espaço na Mochila</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Espaço na Mochila</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.space} onChange={e => setTempItemData({...tempItemData, space: Number(e.target.value)})}>
                                     {SPACE_OPTIONS.map(s => <option key={s.value} value={s.value} className="dark:bg-black">{s.label}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Bônus de Carga</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer"
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Bônus de Carga</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer"
                                     value={tempItemData.carryBonus ?? 0} onChange={e => setTempItemData({...tempItemData, carryBonus: Number(e.target.value) || undefined})}>
                                     <option value={0} className="dark:bg-black">Nenhum</option>
                                     <option value={5} className="dark:bg-black">+5 espaços</option>
@@ -368,50 +538,50 @@ const InventoryPage: React.FC = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className="space-y-4 pt-4">
+                        <div className="space-y-4 pt-2 sm:pt-4">
                             <label className="flex items-center gap-4 cursor-pointer group">
-                                <input type="checkbox" checked={tempItemData.isQuestItem} onChange={e => setTempItemData({...tempItemData, isQuestItem: e.target.checked})} className="w-6 h-6 accent-purple-800" />
+                                <input type="checkbox" checked={tempItemData.isQuestItem} onChange={e => setTempItemData({...tempItemData, isQuestItem: e.target.checked})} className="w-5 h-5 sm:w-6 sm:h-6 accent-purple-800" />
                                 <span className="text-xs font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 group-hover:text-fantasy-wood transition-colors">Vínculo de Missão</span>
                             </label>
                             <label className="flex items-center gap-4 cursor-pointer group">
-                                <input type="checkbox" checked={tempItemData.isNonNegotiable} onChange={e => setTempItemData({...tempItemData, isNonNegotiable: e.target.checked})} className="w-6 h-6 accent-red-800" />
+                                <input type="checkbox" checked={tempItemData.isNonNegotiable} onChange={e => setTempItemData({...tempItemData, isNonNegotiable: e.target.checked})} className="w-5 h-5 sm:w-6 sm:h-6 accent-red-800" />
                                 <span className="text-xs font-black uppercase text-fantasy-wood/60 dark:text-fantasy-parchment/60 group-hover:text-fantasy-wood transition-colors">Peça Inalienável</span>
                             </label>
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-fantasy-blood text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-red-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
+                    <button type="submit" className="w-full bg-fantasy-blood text-white py-4 sm:py-8 rounded-2xl sm:rounded-[56px] font-medieval text-xl sm:text-3xl uppercase tracking-widest shadow-5xl border-b-4 sm:border-b-8 border-red-950 transition-all active:translate-y-1 sm:active:translate-y-2 active:border-b-0 active:scale-95">
                         {modalMode === 'add' ? 'Lacrar Arsenal' : 'Atualizar Registro'}
                     </button>
                 </form>
             )}
 
             {(modalMode === 'sell' || modalMode === 'bulkSell') && (
-                <form onSubmit={modalMode === 'bulkSell' ? handleBulkSell : (e) => { e.preventDefault(); if(activeItem) sellItem(activeItem.id, opQty, opMemberId, sellPercent); closeModal(); }} className="space-y-12">
+                <form onSubmit={modalMode === 'bulkSell' ? handleBulkSell : (e) => { e.preventDefault(); if(activeItem) sellItem(activeItem.id, opQty, opMemberId, sellPercent); closeModal(); }} className="space-y-6 sm:space-y-12">
                      <div className="flex flex-col items-center text-center">
-                       <div className="wax-seal w-24 h-24 mb-6 flex items-center justify-center text-white"><ShoppingBag size={48}/></div>
-                       <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'bulkSell' ? 'Venda em Lote' : 'Negociar Relíquia'}</h3>
-                       {modalMode === 'sell' && activeItem && <p className="text-2xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60 mt-4">{activeItem.name}</p>}
-                       {modalMode === 'bulkSell' && <p className="text-sm font-black text-fantasy-wood/50 dark:text-fantasy-parchment/50 uppercase tracking-widest mt-4">{selectedIds.size} Itens Selecionados</p>}
+                       <div className="wax-seal w-16 h-16 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center text-white"><ShoppingBag size={32} className="sm:scale-150"/></div>
+                       <h3 className="text-2xl sm:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">{modalMode === 'bulkSell' ? 'Venda em Lote' : 'Negociar Relíquia'}</h3>
+                       {modalMode === 'sell' && activeItem && <p className="text-lg sm:text-2xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60 mt-2 sm:mt-4">{activeItem.name}</p>}
+                       {modalMode === 'bulkSell' && <p className="text-xs sm:text-sm font-black text-fantasy-wood/50 dark:text-fantasy-parchment/50 uppercase tracking-widest mt-2 sm:mt-4">{selectedIds.size} Itens Selecionados</p>}
                     </div>
 
-                    <div className="space-y-8">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Vendedor Responsável</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer" required value={opMemberId} onChange={e => setOpMemberId(e.target.value)}>
+                    <div className="space-y-6 sm:space-y-8">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Vendedor Responsável</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer" required value={opMemberId} onChange={e => setOpMemberId(e.target.value)}>
                                    <option value="" className="dark:bg-black">Escolha...</option>
                                    {members.map(m => <option key={m.id} value={m.id} className="dark:bg-black">{m.name}</option>)}
                                 </select>
                             </div>
                             {modalMode === 'sell' && activeItem && (
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
+                                <div className="space-y-2 sm:space-y-3">
+                                    <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
                                     <input 
                                       type="number" 
                                       min="1" 
                                       max={activeItem.quantity} 
-                                      className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" 
+                                      className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl" 
                                       required 
                                       value={opQty} 
                                       onChange={e => setOpQty(Number(e.target.value))}
@@ -420,55 +590,55 @@ const InventoryPage: React.FC = () => {
                                 </div>
                             )}
                          </div>
-                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Percentual de Venda: {sellPercent}%</label>
+                         <div className="space-y-2 sm:space-y-3">
+                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Percentual de Venda: {sellPercent}%</label>
                             <input type="range" min="10" max="150" step="5" className="w-full accent-fantasy-gold" value={sellPercent} onChange={e => setSellPercent(Number(e.target.value))} />
                          </div>
                          
                          {modalMode === 'sell' && activeItem && (
-                             <div className="p-8 bg-emerald-900/10 dark:bg-emerald-400/5 rounded-[40px] border-4 border-emerald-900/20 dark:border-emerald-400/20 text-center">
-                                <p className="text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Tibares de Prata a Receber</p>
-                                <p className="text-5xl font-medieval text-emerald-900 dark:text-emerald-400 mt-2">T$ {Math.floor((activeItem.value * opQty) * (sellPercent / 100)).toLocaleString()}</p>
+                             <div className="p-4 sm:p-8 bg-emerald-900/10 dark:bg-emerald-400/5 rounded-2xl sm:rounded-[40px] border-2 sm:border-4 border-emerald-900/20 dark:border-emerald-400/20 text-center">
+                                <p className="text-xs sm:text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Tibares de Prata a Receber</p>
+                                <p className="text-3xl sm:text-5xl font-medieval text-emerald-900 dark:text-emerald-400 mt-2">T$ {Math.floor((activeItem.value * opQty) * (sellPercent / 100)).toLocaleString()}</p>
                              </div>
                          )}
                          {modalMode === 'bulkSell' && (
-                             <div className="p-8 bg-emerald-900/10 dark:bg-emerald-400/5 rounded-[40px] border-4 border-emerald-900/20 dark:border-emerald-400/20 text-center">
-                                <p className="text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Aviso de Lote</p>
-                                <p className="text-lg font-serif italic text-emerald-900/80 dark:text-emerald-400/80 mt-2">Todo o estoque dos itens selecionados será vendido.</p>
+                             <div className="p-4 sm:p-8 bg-emerald-900/10 dark:bg-emerald-400/5 rounded-2xl sm:rounded-[40px] border-2 sm:border-4 border-emerald-900/20 dark:border-emerald-400/20 text-center">
+                                <p className="text-xs sm:text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Aviso de Lote</p>
+                                <p className="text-sm sm:text-lg font-serif italic text-emerald-900/80 dark:text-emerald-400/80 mt-2">Todo o estoque dos itens selecionados será vendido.</p>
                              </div>
                          )}
                     </div>
 
-                    <button type="submit" className="w-full bg-emerald-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-emerald-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
+                    <button type="submit" className="w-full bg-emerald-800 text-white py-4 sm:py-10 rounded-2xl sm:rounded-[56px] font-medieval text-xl sm:text-3xl uppercase tracking-widest shadow-5xl border-b-4 sm:border-b-8 border-emerald-950 transition-all active:translate-y-1 sm:active:translate-y-2 active:border-b-0 active:scale-95">
                         Confirmar Transação
                     </button>
                 </form>
             )}
 
             {modalMode === 'withdraw' && activeItem && (
-                 <form onSubmit={(e) => { e.preventDefault(); withdrawItem(activeItem.id, opMemberId, opReason, opQty); closeModal(); }} className="space-y-12">
+                 <form onSubmit={(e) => { e.preventDefault(); withdrawItem(activeItem.id, opMemberId, opReason, opQty); closeModal(); }} className="space-y-6 sm:space-y-12">
                     <div className="flex flex-col items-center text-center">
-                        <div className="wax-seal w-24 h-24 mb-6 flex items-center justify-center text-white"><ArrowRightLeft size={48}/></div>
-                        <h3 className="text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Retirar do Arsenal</h3>
-                        <p className="text-2xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60 mt-4">{activeItem.name}</p>
+                        <div className="wax-seal w-16 h-16 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center text-white"><ArrowRightLeft size={32} className="sm:scale-150"/></div>
+                        <h3 className="text-2xl sm:text-4xl font-medieval text-fantasy-wood dark:text-fantasy-gold uppercase tracking-tighter">Retirar do Arsenal</h3>
+                        <p className="text-lg sm:text-2xl font-medieval text-fantasy-wood/60 dark:text-fantasy-parchment/60 mt-2 sm:mt-4">{activeItem.name}</p>
                     </div>
 
-                    <div className="space-y-8">
-                         <div className="grid grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Portador Designado</label>
-                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl appearance-none cursor-pointer" required value={opMemberId} onChange={e => setOpMemberId(e.target.value)}>
+                    <div className="space-y-6 sm:space-y-8">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Portador Designado</label>
+                                <select className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl appearance-none cursor-pointer" required value={opMemberId} onChange={e => setOpMemberId(e.target.value)}>
                                    <option value="" className="dark:bg-black">Escolha...</option>
                                    {members.map(m => <option key={m.id} value={m.id} className="dark:bg-black">{m.name}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Quantidade (Máx: {activeItem.quantity})</label>
                                 <input 
                                   type="number" 
                                   min="1" 
                                   max={activeItem.quantity} 
-                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" 
+                                  className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl" 
                                   required 
                                   value={opQty} 
                                   onChange={e => setOpQty(Number(e.target.value))}
@@ -476,36 +646,36 @@ const InventoryPage: React.FC = () => {
                                 />
                             </div>
                          </div>
-                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-6 tracking-widest">Justificativa da Retirada</label>
-                            <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-2xl" required value={opReason} onChange={e => setOpReason(e.target.value)} placeholder="Ex: Preparação para masmorra" />
+                         <div className="space-y-2 sm:space-y-3">
+                            <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase ml-4 sm:ml-6 tracking-widest">Justificativa da Retirada</label>
+                            <input className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-lg sm:text-2xl" required value={opReason} onChange={e => setOpReason(e.target.value)} placeholder="Ex: Preparação para masmorra" />
                          </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-blue-800 text-white py-10 rounded-[56px] font-medieval text-3xl uppercase tracking-widest shadow-5xl border-b-8 border-blue-950 transition-all active:translate-y-2 active:border-b-0 active:scale-95">
+                    <button type="submit" className="w-full bg-blue-800 text-white py-4 sm:py-10 rounded-2xl sm:rounded-[56px] font-medieval text-xl sm:text-3xl uppercase tracking-widest shadow-5xl border-b-4 sm:border-b-8 border-blue-950 transition-all active:translate-y-1 sm:active:translate-y-2 active:border-b-0 active:scale-95">
                         Autorizar Entrega
                     </button>
                  </form>
             )}
 
             {(modalMode === 'delete' || modalMode === 'bulkDelete') && (
-                <div className="space-y-12 text-center">
-                    <div className="wax-seal w-28 h-28 mx-auto flex items-center justify-center text-white"><Trash2 size={56}/></div>
-                    <div className="space-y-4">
-                        <h3 className="text-4xl font-medieval text-fantasy-blood uppercase">Destruir Registro?</h3>
-                        <p className="text-lg text-fantasy-wood/60 dark:text-fantasy-parchment/60 font-serif italic">Esta ação é irreversível.</p>
-                        {modalMode === 'delete' && activeItem && <p className="text-2xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{activeItem.name}</p>}
-                        {modalMode === 'bulkDelete' && <p className="text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{selectedIds.size} Itens Selecionados</p>}
+                <div className="space-y-6 sm:space-y-12 text-center">
+                    <div className="wax-seal w-16 h-16 sm:w-28 sm:h-28 mx-auto flex items-center justify-center text-white"><Trash2 size={32} className="sm:scale-150"/></div>
+                    <div className="space-y-2 sm:space-y-4">
+                        <h3 className="text-2xl sm:text-4xl font-medieval text-fantasy-blood uppercase">Destruir Registro?</h3>
+                        <p className="text-sm sm:text-lg text-fantasy-wood/60 dark:text-fantasy-parchment/60 font-serif italic">Esta ação é irreversível.</p>
+                        {modalMode === 'delete' && activeItem && <p className="text-lg sm:text-2xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{activeItem.name}</p>}
+                        {modalMode === 'bulkDelete' && <p className="text-base sm:text-xl font-medieval text-fantasy-wood dark:text-fantasy-parchment">{selectedIds.size} Itens Selecionados</p>}
                     </div>
                     
                     {modalMode === 'delete' && activeItem && (
-                        <div className="space-y-3 max-w-xs mx-auto">
+                        <div className="space-y-2 sm:space-y-3 max-w-xs mx-auto">
                             <label className="text-[10px] font-black text-fantasy-wood/50 dark:text-fantasy-parchment/40 uppercase tracking-widest">Quantidade a Remover</label>
                             <input 
                               type="number" 
                               min="1" 
                               max={activeItem.quantity} 
-                              className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-[32px] px-8 py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-3xl text-center" 
+                              className="w-full bg-white/40 dark:bg-black/40 border-2 border-fantasy-wood/10 dark:border-white/10 rounded-2xl sm:rounded-[32px] px-4 sm:px-8 py-3 sm:py-6 text-fantasy-wood dark:text-fantasy-parchment font-medieval text-xl sm:text-3xl text-center" 
                               value={opQty} 
                               onChange={e => setOpQty(Number(e.target.value))}
                               onFocus={(e) => e.target.select()}
@@ -513,9 +683,9 @@ const InventoryPage: React.FC = () => {
                         </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row gap-6">
-                        <button onClick={closeModal} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-black/5 dark:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment transition-all hover:bg-black/10 active:scale-95">Manter Relíquia</button>
-                        <button onClick={() => { if(modalMode === 'bulkDelete') handleBulkDelete(); else if (activeItem) deleteItem(activeItem.id, opQty); closeModal(); }} className="flex-1 py-8 rounded-[40px] font-medieval text-2xl uppercase tracking-widest bg-fantasy-blood text-white shadow-2xl transition-all hover:scale-105 active:scale-95">Queimar Registro</button>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                        <button onClick={closeModal} className="flex-1 py-4 sm:py-8 rounded-2xl sm:rounded-[40px] font-medieval text-lg sm:text-2xl uppercase tracking-widest bg-black/5 dark:bg-white/5 text-fantasy-wood dark:text-fantasy-parchment transition-all hover:bg-black/10 active:scale-95">Manter Relíquia</button>
+                        <button onClick={() => { if(modalMode === 'bulkDelete') handleBulkDelete(); else if (activeItem) deleteItem(activeItem.id, opQty); closeModal(); }} className="flex-1 py-4 sm:py-8 rounded-2xl sm:rounded-[40px] font-medieval text-lg sm:text-2xl uppercase tracking-widest bg-fantasy-blood text-white shadow-2xl transition-all hover:scale-105 active:scale-95">Queimar Registro</button>
                     </div>
                 </div>
             )}
