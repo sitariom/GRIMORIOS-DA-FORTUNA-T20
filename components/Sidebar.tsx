@@ -49,8 +49,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
         onClick={toggle}
       />
 
-      <aside className={`fixed md:static inset-y-0 left-0 w-80 max-w-[85vw] md:max-w-none bg-[#1e140d] dark:bg-black border-r-8 border-[#3d2b1f] z-50 transition-all duration-500 md:translate-x-0 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} flex flex-col`}>
-        <div className="pt-12 pb-8 px-8 border-b-4 border-[#3d2b1f] relative bg-black/10">
+      <aside className={`fixed md:static inset-y-0 left-0 w-80 max-w-[85vw] md:max-w-none bg-[#1e140d] dark:bg-black border-r-8 border-[#3d2b1f] z-50 transition-all duration-500 md:translate-x-0 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} flex flex-col h-dvh max-h-[100dvh]`}>
+        <div className="pt-6 pb-4 px-6 md:pt-12 md:pb-8 md:px-8 border-b-4 border-[#3d2b1f] relative bg-black/10 shrink-0">
           <button 
             onClick={toggleTheme}
             className="absolute top-4 left-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-fantasy-gold transition-all active:scale-90 z-10"
@@ -61,19 +61,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
           
           <Logo size="md" />
           
-          <button onClick={toggle} className="md:hidden absolute top-6 right-6 text-fantasy-gold"><X size={32}/></button>
+          <button onClick={toggle} className="md:hidden absolute top-4 right-4 text-fantasy-gold p-1 hover:bg-white/5 rounded-lg"><X size={28}/></button>
         </div>
 
-        <div className="p-6">
-           <div className="parchment-card p-4 rounded-xl border-2 border-fantasy-gold/40 shadow-inner">
-              <span className="text-[10px] font-black uppercase text-[#1a0f08] dark:text-fantasy-parchment/60 block mb-1 tracking-widest">Patrimônio Líquido</span>
-              <span className="font-medieval text-2xl text-[#1a0f08] dark:text-fantasy-gold">
+        <div className="p-3 sm:p-4 md:p-6 shrink-0">
+           <div className="parchment-card p-3 md:p-4 rounded-xl border-2 border-fantasy-gold/40 shadow-inner">
+              <span className="text-[9px] md:text-[10px] font-black uppercase text-[#1a0f08] dark:text-fantasy-parchment/60 block mb-0.5 tracking-widest">Patrimônio Líquido</span>
+              <span className="font-medieval text-xl md:text-2xl text-[#1a0f08] dark:text-fantasy-gold leading-tight block">
                 {isLoading ? 'Calculando...' : `T$ ${totalWealth.toLocaleString('pt-BR')}`}
               </span>
            </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar pb-8">
+        <nav className="flex-1 px-3 sm:px-4 space-y-1 sm:space-y-1.5 md:space-y-2 overflow-y-auto custom-scrollbar overscroll-contain py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -82,22 +82,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, theme, toggleTheme })
                 key={item.path}
                 to={item.path}
                 onClick={() => { if(window.innerWidth < 768) toggle(); }}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-lg transition-all relative group ${
+                className={`w-full flex items-center gap-3 md:gap-4 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-lg transition-all relative group ${
                   isActive 
                     ? 'bg-fantasy-gold/15 text-fantasy-gold border border-fantasy-gold/30 shadow-lg' 
                     : 'text-fantasy-parchment/60 hover:text-fantasy-parchment hover:bg-white/5'
                 }`}
               >
-                {isActive && <div className="absolute left-0 w-1.5 h-8 bg-fantasy-gold rounded-full shadow-[0_0_10px_#d4af37]"></div>}
-                <Icon size={20} className={isActive ? 'text-fantasy-gold' : 'opacity-60 group-hover:opacity-100 transition-opacity'} />
-                <span className="font-medieval uppercase text-xs tracking-[0.15em] text-left leading-none">{item.label}</span>
+                {isActive && <div className="absolute left-0 w-1.5 h-6 md:h-8 bg-fantasy-gold rounded-full shadow-[0_0_10px_#d4af37]"></div>}
+                <Icon size={18} className={`shrink-0 ${isActive ? 'text-fantasy-gold' : 'opacity-60 group-hover:opacity-100 transition-opacity'}`} />
+                <span className="font-medieval uppercase text-[11px] sm:text-xs tracking-[0.12em] md:tracking-[0.15em] text-left leading-tight truncate">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-8 border-t-4 border-[#3d2b1f] bg-black/30">
-          <div className="flex items-center justify-center gap-3 text-[9px] font-black text-fantasy-gold/40 uppercase tracking-[0.4em]">
+        <div className="p-4 md:p-8 border-t-4 border-[#3d2b1f] bg-black/30 shrink-0">
+          <div className="flex items-center justify-center gap-2 md:gap-3 text-[9px] font-black text-fantasy-gold/40 uppercase tracking-[0.3em] md:tracking-[0.4em]">
              <Scroll size={14}/> Grimório da Fortuna
           </div>
         </div>
