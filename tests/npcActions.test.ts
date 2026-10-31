@@ -26,6 +26,7 @@ const initialGuildState: GuildState = {
       id: 'member-1',
       name: 'Valdor',
       status: 'Ativo',
+      strength: 0,
       wallet: { TC: 0, TS: 0, TO: 0, LO: 0 },
       inventory: []
     },
@@ -33,12 +34,14 @@ const initialGuildState: GuildState = {
       id: 'member-2',
       name: 'Lysandra',
       status: 'Ativo',
+      strength: 0,
       wallet: { TC: 0, TS: 0, TO: 0, LO: 0 },
       inventory: []
     }
   ],
   calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
   quests: [],
+  conglomerates: [],
   pointsOfInterest: [],
   reputations: []
 };

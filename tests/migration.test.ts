@@ -28,6 +28,7 @@ const initialGuildState: GuildState = {
     members: [],
     calendar: { day: 1, month: 0, year: 1420, dayOfWeek: 0, isNimbDay: false },
     quests: [],
+    conglomerates: [],
     pointsOfInterest: [],
     reputations: []
 };
@@ -41,6 +42,7 @@ const sanitizeItem = (item: any): Item => ({
     value: typeof item.value === 'number' ? item.value : 0,
     origin: item.origin || '',
     encounter: item.encounter || '',
+    space: typeof item.space === 'number' ? item.space : 0,
     isQuestItem: !!item.isQuestItem,
     isNonNegotiable: !!item.isNonNegotiable
 });
